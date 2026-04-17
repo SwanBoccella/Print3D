@@ -5,16 +5,184 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contatti — Print3D Studio</title>
   <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/pages.css">
+  <style>
+    /* ═══════════════════════════════════════════
+       CONTATTI — CINEMATIC v2
+    ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── CURSOR ── */
+    .c-cursor{position:fixed;top:0;left:0;z-index:99999;pointer-events:none;mix-blend-mode:difference}
+    .c-cursor-dot{width:8px;height:8px;background:#fff;border-radius:50%;transform:translate(-50%,-50%)}
+    .c-cursor-ring{position:fixed;top:0;left:0;width:44px;height:44px;border:1px solid rgba(229,62,62,.5);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:99998;transition:width .35s cubic-bezier(.16,1,.3,1),height .35s cubic-bezier(.16,1,.3,1),border-color .3s}
+    .c-cursor-ring.h{width:68px;height:68px;border-color:#e53e3e}
+
+    /* ── NAV ── */
+    nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 7vw;height:72px;background:rgba(10,10,10,.88);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.04)}
+    .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#fff}
+    .nav-logo span{color:#e53e3e}
+    .nav-logo-img{width:32px;height:32px;object-fit:contain;border-radius:4px}
+    .nav-links{display:flex;list-style:none}
+    .nav-links a{display:block;padding:0 18px;height:72px;line-height:72px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#666;text-decoration:none;transition:color .2s;position:relative}
+    .nav-links a::after{content:'';position:absolute;bottom:0;left:18px;right:18px;height:1px;background:#e53e3e;transform:scaleX(0);transform-origin:center;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+    .nav-links a:hover,.nav-links a.active{color:#fff}
+    .nav-links a:hover::after,.nav-links a.active::after{transform:scaleX(1)}
+    .nav-cta{background:#e53e3e!important;color:#fff!important;margin-left:16px;padding:0 22px!important;height:40px!important;line-height:40px!important;align-self:center}
+    .nav-cta::after{display:none!important}
+    .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px}
+    .nav-toggle span{display:block;width:22px;height:1px;background:#fff;margin:5px 0;transition:all .3s}
+    .nav-mobile{display:none;position:fixed;inset:0;z-index:999;background:#0a0a0a;padding:110px 7vw 40px;flex-direction:column;gap:0}
+    .nav-mobile.open{display:flex}
+    .nav-mobile a{font-family:'Bebas Neue',sans-serif;font-size:48px;color:#fff;text-decoration:none;letter-spacing:2px;border-bottom:1px solid #1e1e1e;padding:20px 0;transition:color .2s}
+    .nav-mobile a:hover{color:#e53e3e}
+    #page-transition{position:fixed;inset:0;z-index:9990;background:#e53e3e;transform:scaleY(0);transform-origin:bottom;pointer-events:none}
+
+    /* ── HERO ── */
+    .ct-hero{position:relative;padding:180px 7vw 120px;overflow:hidden;border-bottom:1px solid #1a1a1a}
+    .ct-hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 50% 70% at 20% 50%,rgba(229,62,62,.055) 0%,transparent 65%),radial-gradient(ellipse 40% 50% at 85% 20%,rgba(229,62,62,.025) 0%,transparent 60%)}
+    .ct-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:80px 80px}
+    .ct-hero-inner{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end}
+    .ct-hero-left{}
+    .ct-eyebrow{display:flex;align-items:center;gap:14px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#e53e3e;margin-bottom:28px}
+    .ct-eyebrow::before{content:'';width:36px;height:1px;background:#e53e3e;flex-shrink:0}
+    .ct-hero-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(80px,13vw,180px);line-height:.88;letter-spacing:-3px}
+    .ct-hero-h1 em{color:#e53e3e;font-style:normal}
+    .ct-hero-right{padding-bottom:12px}
+    .ct-hero-desc{font-size:16px;color:#888;line-height:1.85;border-left:1px solid #e53e3e;padding-left:22px;margin-bottom:40px}
+    .ct-email-hero{display:inline-flex;align-items:center;gap:14px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#fff;text-decoration:none;border:1px solid #333;padding:16px 28px;transition:border-color .3s,background .3s,transform .3s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden}
+    .ct-email-hero::before{content:'';position:absolute;inset:0;background:rgba(229,62,62,.08);transform:translateX(-100%);transition:transform .4s ease}
+    .ct-email-hero:hover{border-color:#e53e3e;transform:translateY(-2px)}
+    .ct-email-hero:hover::before{transform:translateX(0)}
+    .ct-email-hero svg{transition:transform .3s ease;flex-shrink:0}
+    .ct-email-hero:hover svg{transform:translateX(4px)}
+
+    /* Floating decorative numeral */
+    .ct-deco{position:absolute;right:0;top:80px;font-family:'Bebas Neue',sans-serif;font-size:clamp(160px,22vw,300px);color:transparent;-webkit-text-stroke:1px rgba(229,62,62,.055);letter-spacing:-8px;pointer-events:none;user-select:none;line-height:1}
+
+    /* ── CONTACT GRID ── */
+    .ct-contact-grid{padding:100px 7vw;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:#1a1a1a}
+    .ct-info-card{background:#0a0a0a;padding:44px 36px;position:relative;overflow:hidden;transition:background .3s;cursor:default}
+    .ct-info-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--c,#e53e3e);transform:scaleX(0);transform-origin:left;transition:transform .55s cubic-bezier(.16,1,.3,1)}
+    .ct-info-card:hover{background:#0f0f0f}
+    .ct-info-card:hover::before{transform:scaleX(1)}
+    .ct-info-card.main{background:#e53e3e;cursor:pointer}
+    .ct-info-card.main::before{background:#fff}
+    .ct-info-card.main:hover{background:#c53030}
+    .ct-card-icon{width:40px;height:40px;margin-bottom:24px;color:#e53e3e}
+    .ct-info-card.main .ct-card-icon{color:rgba(255,255,255,.7)}
+    .ct-card-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#444;margin-bottom:10px;display:block}
+    .ct-info-card.main .ct-card-label{color:rgba(255,255,255,.6)}
+    .ct-card-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#fff;display:block;margin-bottom:6px;line-height:1.2}
+    .ct-info-card.main .ct-card-val{color:#fff}
+    .ct-card-meta{font-size:12px;color:#444;line-height:1.6}
+    .ct-info-card.main .ct-card-meta{color:rgba(255,255,255,.65)}
+    .ct-card-arrow{position:absolute;top:36px;right:36px;font-size:20px;color:rgba(255,255,255,.4);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+    .ct-info-card.main:hover .ct-card-arrow{transform:translate(4px,-4px)}
+
+    /* ── SPLIT SECTION: FAQ + MAP ── */
+    .ct-split{display:grid;grid-template-columns:5fr 7fr;gap:0;border-top:1px solid #1a1a1a}
+
+    /* FAQ */
+    .ct-faq-col{padding:100px 7vw 100px 7vw;border-right:1px solid #1a1a1a}
+    .ct-section-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#e53e3e;margin-bottom:48px;display:flex;align-items:center;gap:14px}
+    .ct-section-label::before{content:'';width:30px;height:1px;background:#e53e3e;flex-shrink:0}
+    .ct-faq-list{display:flex;flex-direction:column;gap:0}
+    .ct-faq-item{border-bottom:1px solid #1a1a1a;overflow:hidden}
+    .ct-faq-q{width:100%;background:none;border:none;display:flex;align-items:center;justify-content:space-between;padding:24px 0;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#fff;text-align:left;gap:16px;transition:color .2s}
+    .ct-faq-q:hover{color:#e53e3e}
+    .ct-faq-icon{width:24px;height:24px;border:1px solid #333;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;color:#666;transition:border-color .3s,transform .4s cubic-bezier(.34,1.56,.64,1),background .3s,color .3s}
+    .ct-faq-item.open .ct-faq-icon{border-color:#e53e3e;background:#e53e3e;color:#fff;transform:rotate(45deg)}
+    .ct-faq-a{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.16,1,.3,1)}
+    .ct-faq-a-inner{padding:0 0 24px;font-size:14px;color:#888;line-height:1.8}
+    .ct-faq-cta{margin-top:48px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+    .ct-faq-cta p{font-size:14px;color:#666}
+    .ct-faq-link{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#e53e3e;text-decoration:none;border-bottom:1px solid rgba(229,62,62,.4);padding-bottom:3px;transition:border-color .2s}
+    .ct-faq-link:hover{border-color:#e53e3e}
+
+    /* MAP */
+    .ct-map-col{position:relative;min-height:600px;overflow:hidden}
+    .ct-map-header{padding:60px 48px 36px;position:relative;z-index:2}
+    .ct-map-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,5vw,70px);letter-spacing:-1px;line-height:.95}
+    .ct-map-title em{color:#e53e3e;font-style:normal}
+    .ct-map-sub{font-size:12px;color:#666;margin-top:12px;font-family:'Space Mono',monospace;letter-spacing:1px}
+    .ct-map-frame{position:relative;width:100%;height:380px;overflow:hidden}
+    .ct-map-frame iframe{width:100%;height:100%;border:none;display:block;filter:grayscale(1) contrast(1.1) brightness(.7)}
+    .ct-map-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);pointer-events:none;z-index:2}
+    .ct-map-infobar{position:absolute;bottom:0;left:0;right:0;background:rgba(10,10,10,.94);backdrop-filter:blur(10px);border-top:1px solid #1a1a1a;padding:14px 24px;display:flex;align-items:center;gap:24px;z-index:3;flex-wrap:wrap}
+    .ct-map-info-item{display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#555;white-space:nowrap}
+    .ct-map-cta{margin-left:auto;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#e53e3e;text-decoration:none;transition:opacity .2s;white-space:nowrap}
+    .ct-map-cta:hover{opacity:.7}
+
+    /* ── PROCESS STRIP ── */
+    .ct-process{padding:100px 7vw;border-top:1px solid #1a1a1a;position:relative;overflow:hidden}
+    .ct-process-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#e53e3e;margin-bottom:60px;display:flex;align-items:center;gap:14px}
+    .ct-process-label::before{content:'';width:30px;height:1px;background:#e53e3e;flex-shrink:0}
+    .ct-process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:#1a1a1a}
+    .ct-step{background:#0a0a0a;padding:44px 36px;position:relative;overflow:hidden}
+    .ct-step::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:#e53e3e;transform:scaleX(0);transform-origin:left;transition:transform .65s cubic-bezier(.16,1,.3,1)}
+    .ct-step:hover::before{transform:scaleX(1)}
+    .ct-step-num{font-family:'Bebas Neue',sans-serif;font-size:80px;color:rgba(229,62,62,.08);line-height:1;position:absolute;top:12px;right:20px;letter-spacing:-2px;pointer-events:none;user-select:none;transition:color .4s}
+    .ct-step:hover .ct-step-num{color:rgba(229,62,62,.15)}
+    .ct-step-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:12px;position:relative;z-index:1}
+    .ct-step-desc{font-size:13px;color:#666;line-height:1.7;position:relative;z-index:1}
+
+    /* ── CTA FINAL ── */
+    .ct-cta-final{padding:140px 7vw;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;border-top:1px solid #1a1a1a;position:relative;overflow:hidden}
+    .ct-cta-final::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 100% at 70% 50%,rgba(229,62,62,.04) 0%,transparent 70%)}
+    .ct-cta-h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(60px,8vw,110px);line-height:.88;letter-spacing:-2px}
+    .ct-cta-h2 em{color:#e53e3e;font-style:normal}
+    .ct-cta-right{display:flex;flex-direction:column;gap:32px;align-items:flex-start}
+    .ct-cta-p{font-size:15px;color:#888;line-height:1.8;border-left:1px solid #333;padding-left:22px}
+    .ct-btn{display:inline-flex;align-items:center;gap:14px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#fff;text-decoration:none;background:#e53e3e;padding:18px 34px;position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+    .ct-btn::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,.1);transform:translateX(-100%);transition:transform .4s ease}
+    .ct-btn:hover{transform:translateY(-3px)}
+    .ct-btn:hover::before{transform:translateX(0)}
+    .ct-btn svg{transition:transform .3s}
+    .ct-btn:hover svg{transform:translateX(5px)}
+
+    /* ── FOOTER ── */
+    footer{padding:72px 7vw 44px;border-top:1px solid #1a1a1a;display:grid;grid-template-columns:2fr 1fr 1fr;gap:72px}
+    .footer-brand{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px}
+    .footer-brand span{color:#e53e3e}
+    .footer-brand p{font-family:'Inter',sans-serif;font-size:12px;color:#444;font-weight:300;margin-top:12px;line-height:1.7;letter-spacing:0}
+    .footer-col h4{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#333;margin-bottom:18px}
+    .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+    .footer-col a{font-size:13px;color:#666;text-decoration:none;transition:color .2s}
+    .footer-col a:hover{color:#fff}
+    .footer-bottom{grid-column:1/-1;border-top:1px solid #1a1a1a;padding-top:28px;margin-top:16px;display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#333}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:1100px){
+      .ct-hero-inner{grid-template-columns:1fr;gap:40px}
+      .ct-contact-grid{grid-template-columns:repeat(2,1fr)}
+      .ct-split{grid-template-columns:1fr}
+      .ct-faq-col{border-right:none;border-bottom:1px solid #1a1a1a;padding:80px 7vw}
+      .ct-map-col{min-height:auto}
+      .ct-process-steps{grid-template-columns:repeat(2,1fr)}
+      .ct-cta-final{grid-template-columns:1fr;gap:40px}
+      footer{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:768px){
+      .ct-contact-grid{grid-template-columns:1fr}
+      .ct-process-steps{grid-template-columns:1fr}
+      .nav-links{display:none}
+      .nav-toggle{display:block}
+      footer{grid-template-columns:1fr;gap:40px}
+      .ct-deco{display:none}
+    }
+  </style>
 </head>
 <body>
 
-
-
+<div class="c-cursor"><div class="c-cursor-dot"></div></div>
+<div class="c-cursor-ring" id="cRing"></div>
 <div id="page-transition"></div>
 
 <nav>
-  <a href="/" class="nav-logo"><img src="https://i.ibb.co/9mPgGMLk/1774292559672.png" alt="Logo" class="nav-logo-img" onerror="this.style.display='none'">PRINT<span>3D</span></a>
+  <a href="/" class="nav-logo">
+    <img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" onerror="this.style.display='none'">
+    PRINT<span>3D</span>
+  </a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
     <li><a href="/catalogo">Catalogo</a></li>
@@ -22,196 +190,173 @@
     <li><a href="/contatti" class="active">Contatti</a></li>
     <li><a href="/prenotazione" class="nav-cta">Prenota</a></li>
   </ul>
-  <button class="nav-toggle"><span></span><span></span><span></span></button>
+  <button class="nav-toggle" id="navTog"><span></span><span></span><span></span></button>
 </nav>
-<div class="nav-mobile">
+<div class="nav-mobile" id="navMob">
   <a href="/">Home</a><a href="/catalogo">Catalogo</a>
   <a href="/materiali">Materiali</a><a href="/contatti">Contatti</a>
   <a href="/prenotazione">Prenota ora</a>
 </div>
 
-<header class="page-header-sm">
-  <div class="page-header-sm-content">
-    <div class="section-label" style="justify-content:center; margin-bottom:16px;">Siamo qui</div>
-    <h1 class="page-header-sm-title">Scrivici.<br><span>Rispondiamo.</span></h1>
-    <p class="page-header-sm-sub">Hai domande? Vuoi un preventivo rapido? Siamo a un'email di distanza.</p>
-  </div>
-</header>
-
-<section class="contacts-section">
-  <div class="container">
-    <div class="contacts-layout">
-
-      <!-- CONTACT CARDS -->
-      <div class="contact-cards" data-reveal>
-        <a href="mailto:swanboccella@gmail.com" class="contact-card contact-card--main">
-          <div class="contact-card-icon">
-            <svg viewBox="0 0 48 48" fill="none"><rect x="6" y="12" width="36" height="24" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M6 15l18 12 18-12" stroke="currentColor" stroke-width="1.5"/></svg>
-          </div>
-          <div class="contact-card-info">
-            <span class="contact-card-label">Email principale</span>
-            <span class="contact-card-val">swanboccella@gmail.com</span>
-            <span class="contact-card-meta">Risposta entro 24 ore — Lun/Sab</span>
-          </div>
-          <div class="contact-card-arrow">→</div>
-        </a>
-
-        <div class="contact-card contact-card--info">
-          <div class="contact-card-icon">
-            <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="1.5"/><path d="M24 14v10l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          </div>
-          <div class="contact-card-info">
-            <span class="contact-card-label">Disponibilità</span>
-            <span class="contact-card-val">Lun – Sab</span>
-            <span class="contact-card-meta">Risposta entro 24h lavorative</span>
-          </div>
-        </div>
-
-        <div class="contact-card contact-card--info">
-          <div class="contact-card-icon">
-            <svg viewBox="0 0 48 48" fill="none"><path d="M24 6C17.4 6 12 11.4 12 18c0 9 12 24 12 24S36 27 36 18c0-6.6-5.4-12-12-12z" stroke="currentColor" stroke-width="1.5"/><circle cx="24" cy="18" r="4" stroke="currentColor" stroke-width="1.5"/></svg>
-          </div>
-          <div class="contact-card-info">
-            <span class="contact-card-label">Zona operativa</span>
-            <span class="contact-card-val">Italia</span>
-            <span class="contact-card-meta">Spedizione nazionale disponibile</span>
-          </div>
-        </div>
-
-        <div class="contact-card contact-card--info">
-          <div class="contact-card-icon">
-            <svg viewBox="0 0 48 48" fill="none"><rect x="8" y="8" width="32" height="32" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M16 20h16M16 28h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          </div>
-          <div class="contact-card-info">
-            <span class="contact-card-label">File accettati</span>
-            <span class="contact-card-val">.STL .OBJ .3MF</span>
-            <span class="contact-card-meta">Invia via email dopo la prenotazione</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- FAQ -->
-      <div class="faq-section" data-reveal data-delay="0.2">
-        <div class="section-label" style="margin-bottom:32px;">FAQ</div>
-
-        <div class="faq-list">
-          <div class="faq-item">
-            <button class="faq-q" data-faq>
-              <span>Quanto costa una stampa?</span>
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-a">
-              <p>Il costo dipende da dimensioni, materiale, infill e complessità. Inviaci la prenotazione e riceverai un preventivo personalizzato entro 24 ore — senza impegno.</p>
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-q" data-faq>
-              <span>Devo avere già il file 3D?</span>
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-a">
-              <p>No. Puoi descriverci l'oggetto a parole, inviare un disegno, o trovare un file su siti come Thingiverse/Printables. Aiutiamo anche a trovare o adattare modelli esistenti.</p>
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-q" data-faq>
-              <span>Quanto tempo ci vuole?</span>
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-a">
-              <p>La stampa in sé può richiedere da poche ore a qualche giorno a seconda della dimensione. Con tempi di lavorazione e consegna, contiamo tipicamente 3–7 giorni lavorativi.</p>
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-q" data-faq>
-              <span>Come avviene la consegna?</span>
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-a">
-              <p>Spedizione postale/corriere su tutto il territorio italiano, o ritiro diretto in zona (da definire). Le spese di spedizione sono a carico del cliente e incluse nel preventivo.</p>
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-q" data-faq>
-              <span>Posso chiedere colori specifici?</span>
-              <span class="faq-icon">+</span>
-            </button>
-            <div class="faq-a">
-              <p>Sì, abbiamo oltre 30 colori PLA disponibili tra cui bianco, nero, grigio, rosso, e molti altri. Se hai un colore specifico in mente, indicacelo nella prenotazione e faremo del nostro meglio.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="faq-cta">
-          <p>Domanda non trovata? Scrivici direttamente.</p>
-          <a href="mailto:swanboccella@gmail.com" class="btn-outline">
-            Scrivi un'email →
-          </a>
-        </div>
-      </div>
-
+<!-- HERO -->
+<section class="ct-hero">
+  <div class="ct-hero-bg"></div>
+  <div class="ct-grid" id="ctGrid"></div>
+  <div class="ct-deco" aria-hidden="true">CI</div>
+  <div class="ct-hero-inner">
+    <div class="ct-hero-left">
+      <div class="ct-eyebrow" id="ctEyebrow">Siamo qui</div>
+      <h1 class="ct-hero-h1" id="ctH1">SCRI<em>VICI.</em><br>RISPON<em>DIAMO.</em></h1>
     </div>
-  </div>
-</section>
-
-<!-- MAP SECTION -->
-<section class="map-section">
-  <div class="map-section-header container">
-    <div class="section-label">Dove siamo</div>
-    <h2 class="map-section-title">Calenzano<span>,</span> Firenze</h2>
-    <p class="map-section-sub">Zona operativa: Calenzano e dintorni — spedizione su tutta Italia</p>
-  </div>
-
-  <div class="map-wrapper">
-    <!-- Google Maps 3D Satellite embed — tilted view -->
-    <iframe
-      class="map-iframe"
-      id="map-iframe"
-      loading="lazy"
-      allowfullscreen
-      referrerpolicy="no-referrer-when-downgrade"
-      src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3000!2d11.1957172!3d43.8963044!2m3!1f60!2f330!3f0!3m2!1i1024!2i768!4f35!5e1!3m2!1sit!2sit!4v1700000000000!5m2!1sit!2sit"
-    ></iframe>
-
-    <!-- Scanline overlay -->
-    <div class="map-scanlines"></div>
-
-    <!-- Bottom info bar -->
-    <div class="map-infobar">
-      <div class="map-infobar-item">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#e53e3e" stroke-width="1"/><circle cx="6" cy="6" r="2" fill="#e53e3e"/></svg>
-        <span>Calenzano, 50041 FI</span>
-      </div>
-      <div class="map-infobar-item">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="10" height="7" rx="1" stroke="#e53e3e" stroke-width="1"/><path d="M1 5l5 3 5-3" stroke="#e53e3e" stroke-width="1"/></svg>
+    <div class="ct-hero-right" id="ctHeroRight">
+      <p class="ct-hero-desc">Hai domande? Vuoi un preventivo rapido?<br>Siamo a un'email di distanza — rispondiamo entro 24 ore lavorative.</p>
+      <a href="mailto:swanboccella@gmail.com" class="ct-email-hero">
+        <svg width="18" height="18" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="6" y="12" width="36" height="24" rx="3"/><path d="M6 15l18 12 18-12"/>
+        </svg>
         <span>swanboccella@gmail.com</span>
-      </div>
-      <div class="map-infobar-item">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#e53e3e" stroke-width="1"/><path d="M6 3v3l2 2" stroke="#e53e3e" stroke-width="1" stroke-linecap="round"/></svg>
-        <span>Lun–Sab · Risposta 24h</span>
-      </div>
-      <a class="map-infobar-cta" href="https://maps.google.com/?q=Calenzano,FI,Italy" target="_blank" rel="noopener">
-        Apri in Maps ↗
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- CTA STRIP -->
-<section class="page-cta">
-  <div class="container">
-    <div class="page-cta-inner" data-reveal>
-      <h2>Pronto a iniziare?</h2>
-      <p>Compila la prenotazione — è veloce e senza impegno fino al preventivo.</p>
-      <a href="/prenotazione" class="btn-primary" data-magnetic>
-        <span>Prenota Ora</span>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/></svg>
       </a>
     </div>
+  </div>
+</section>
+
+<!-- INFO CARDS -->
+<div class="ct-contact-grid" id="ctCards">
+  <!-- Email -->
+  <a href="mailto:swanboccella@gmail.com" class="ct-info-card main" style="text-decoration:none">
+    <svg class="ct-card-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="12" width="36" height="24" rx="3"/><path d="M6 15l18 12 18-12"/></svg>
+    <span class="ct-card-label">Email principale</span>
+    <span class="ct-card-val">swanboccella<br>@gmail.com</span>
+    <span class="ct-card-meta">Risposta entro 24 ore</span>
+    <span class="ct-card-arrow">→</span>
+  </a>
+  <!-- Orari -->
+  <div class="ct-info-card" style="--c:#e53e3e">
+    <svg class="ct-card-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="24" cy="24" r="18"/><path d="M24 14v10l6 6" stroke-linecap="round"/></svg>
+    <span class="ct-card-label">Disponibilità</span>
+    <span class="ct-card-val">Lun – Sab</span>
+    <span class="ct-card-meta">Risposta entro 24h lavorative</span>
+  </div>
+  <!-- Location -->
+  <div class="ct-info-card" style="--c:#e53e3e">
+    <svg class="ct-card-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M24 6C17.4 6 12 11.4 12 18c0 9 12 24 12 24S36 27 36 18c0-6.6-5.4-12-12-12z"/><circle cx="24" cy="18" r="4"/></svg>
+    <span class="ct-card-label">Zona operativa</span>
+    <span class="ct-card-val">Calenzano, FI</span>
+    <span class="ct-card-meta">Spedizione nazionale disponibile</span>
+  </div>
+  <!-- Files -->
+  <div class="ct-info-card" style="--c:#e53e3e">
+    <svg class="ct-card-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="8" width="32" height="32" rx="2"/><path d="M16 20h16M16 28h10" stroke-linecap="round"/></svg>
+    <span class="ct-card-label">File accettati</span>
+    <span class="ct-card-val">.STL .OBJ .3MF</span>
+    <span class="ct-card-meta">Invia via email dopo prenotazione</span>
+  </div>
+</div>
+
+<!-- FAQ + MAP -->
+<div class="ct-split">
+  <!-- FAQ -->
+  <div class="ct-faq-col">
+    <div class="ct-section-label">FAQ</div>
+    <div class="ct-faq-list" id="faqList">
+      <div class="ct-faq-item">
+        <button class="ct-faq-q"><span>Quanto costa una stampa?</span><span class="ct-faq-icon">+</span></button>
+        <div class="ct-faq-a"><div class="ct-faq-a-inner">Il costo dipende da dimensioni, materiale, infill e complessità. Inviaci la prenotazione e riceverai un preventivo personalizzato entro 24 ore — senza impegno.</div></div>
+      </div>
+      <div class="ct-faq-item">
+        <button class="ct-faq-q"><span>Devo avere già il file 3D?</span><span class="ct-faq-icon">+</span></button>
+        <div class="ct-faq-a"><div class="ct-faq-a-inner">No. Puoi descriverci l'oggetto a parole, inviare un disegno, o trovare un file su siti come Thingiverse o Printables. Aiutiamo anche a trovare e adattare modelli esistenti.</div></div>
+      </div>
+      <div class="ct-faq-item">
+        <button class="ct-faq-q"><span>Quanto tempo ci vuole?</span><span class="ct-faq-icon">+</span></button>
+        <div class="ct-faq-a"><div class="ct-faq-a-inner">La stampa in sé può richiedere da poche ore a qualche giorno a seconda della dimensione. Con tempi di lavorazione e consegna, contiamo tipicamente 3–7 giorni lavorativi.</div></div>
+      </div>
+      <div class="ct-faq-item">
+        <button class="ct-faq-q"><span>Come avviene la consegna?</span><span class="ct-faq-icon">+</span></button>
+        <div class="ct-faq-a"><div class="ct-faq-a-inner">Spedizione postale/corriere su tutto il territorio italiano, o ritiro diretto in zona (da definire). Le spese di spedizione sono a carico del cliente e incluse nel preventivo.</div></div>
+      </div>
+      <div class="ct-faq-item">
+        <button class="ct-faq-q"><span>Posso chiedere colori specifici?</span><span class="ct-faq-icon">+</span></button>
+        <div class="ct-faq-a"><div class="ct-faq-a-inner">Sì, abbiamo oltre 30 colori PLA disponibili tra cui bianco, nero, grigio, rosso e molti altri. Se hai un colore specifico, indicacelo nella prenotazione e faremo del nostro meglio.</div></div>
+      </div>
+    </div>
+    <div class="ct-faq-cta">
+      <p>Domanda non trovata?</p>
+      <a href="mailto:swanboccella@gmail.com" class="ct-faq-link">Scrivici direttamente →</a>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="ct-map-col">
+    <div class="ct-map-header">
+      <div class="ct-section-label">Dove siamo</div>
+      <h2 class="ct-map-title">CALEN<em>ZANO</em><br>FIRENZE</h2>
+      <p class="ct-map-sub">Calenzano, 50041 FI · Spedizione su tutta Italia</p>
+    </div>
+    <div class="ct-map-frame">
+      <iframe
+        loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3000!2d11.1957172!3d43.8963044!2m3!1f60!2f330!3f0!3m2!1i1024!2i768!4f35!5e1!3m2!1sit!2sit!4v1700000000000!5m2!1sit!2sit">
+      </iframe>
+      <div class="ct-map-scanlines"></div>
+      <div class="ct-map-infobar">
+        <span class="ct-map-info-item">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#e53e3e" stroke-width="1"/><circle cx="6" cy="6" r="2" fill="#e53e3e"/></svg>
+          Calenzano, 50041 FI
+        </span>
+        <span class="ct-map-info-item">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="10" height="7" rx="1" stroke="#e53e3e" stroke-width="1"/><path d="M1 5l5 3 5-3" stroke="#e53e3e" stroke-width="1"/></svg>
+          swanboccella@gmail.com
+        </span>
+        <span class="ct-map-info-item">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#e53e3e" stroke-width="1"/><path d="M6 3v3l2 2" stroke="#e53e3e" stroke-width="1" stroke-linecap="round"/></svg>
+          Lun–Sab · 24h
+        </span>
+        <a class="ct-map-cta" href="https://maps.google.com/?q=Calenzano,FI,Italy" target="_blank" rel="noopener">Apri in Maps ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESS STEPS -->
+<section class="ct-process" id="ctProcess">
+  <div class="ct-process-label">Come funziona</div>
+  <div class="ct-process-steps">
+    <div class="ct-step">
+      <span class="ct-step-num">01</span>
+      <h3 class="ct-step-title">Invia la Prenotazione</h3>
+      <p class="ct-step-desc">Compila il form con le specifiche del tuo progetto. Descrivi l'oggetto, il materiale e la deadline desiderata.</p>
+    </div>
+    <div class="ct-step">
+      <span class="ct-step-num">02</span>
+      <h3 class="ct-step-title">Ricevi il Preventivo</h3>
+      <p class="ct-step-desc">Entro 24 ore lavorative ti inviamo un preventivo personalizzato con costi, tempi e materiali consigliati.</p>
+    </div>
+    <div class="ct-step">
+      <span class="ct-step-num">03</span>
+      <h3 class="ct-step-title">Conferma e Stampa</h3>
+      <p class="ct-step-desc">Approvi il preventivo e parte la produzione. Ti teniamo aggiornato su ogni fase della lavorazione.</p>
+    </div>
+    <div class="ct-step">
+      <span class="ct-step-num">04</span>
+      <h3 class="ct-step-title">Consegna</h3>
+      <p class="ct-step-desc">Spedizione su tutto il territorio italiano con corriere tracciato, o ritiro diretto in zona Calenzano.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="ct-cta-final" id="ctFinalCta">
+  <div>
+    <h2 class="ct-cta-h2">PRONTO A<br><em>INIZIARE?</em></h2>
+  </div>
+  <div class="ct-cta-right">
+    <p class="ct-cta-p">Compila la prenotazione — è veloce, senza impegno fino al preventivo approvato.</p>
+    <a href="/prenotazione" class="ct-btn">
+      <span>Prenota Ora</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/></svg>
+    </a>
   </div>
 </section>
 
@@ -220,10 +365,8 @@
   <div class="footer-col">
     <h4>Navigazione</h4>
     <ul>
-      <li><a href="/">Home</a></li>
-      <li><a href="/catalogo">Catalogo</a></li>
-      <li><a href="/materiali">Materiali</a></li>
-      <li><a href="/prenotazione">Prenotazione</a></li>
+      <li><a href="/">Home</a></li><li><a href="/catalogo">Catalogo</a></li>
+      <li><a href="/materiali">Materiali</a></li><li><a href="/prenotazione">Prenotazione</a></li>
       <li><a href="/contatti">Contatti</a></li>
     </ul>
   </div>
@@ -231,13 +374,126 @@
     <h4>Contatti</h4>
     <p><a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br>Risposta entro 24 ore.</p>
   </div>
-  <div class="footer-bottom">
-    <p>© 2025 Print3D Studio</p>
-    <p>Produzione artigianale su prenotazione</p>
-  </div>
+  <div class="footer-bottom"><p>2026/2027 Print3D Studio &copy Tutti i diritti riservati</p>
+    <p>Produzioni artigianali su prenotazione</p></div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* LENIS */
+  let lenis = null;
+  const ls = document.createElement('script');
+  ls.src = 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js';
+  ls.onload = () => {
+    lenis = new Lenis({ lerp: 0.075, smoothWheel: true, syncTouch: false });
+    gsap.ticker.add(t => lenis.raf(t * 1000));
+    gsap.ticker.lagSmoothing(0);
+    lenis.on('scroll', ScrollTrigger.update);
+  };
+  document.head.appendChild(ls);
+
+  /* CURSOR */
+  const ring = document.getElementById('cRing');
+  const dot = document.querySelector('.c-cursor-dot');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+  (function tick(){
+    rx+=(mx-rx)*0.11; ry+=(my-ry)*0.11;
+    if(dot) dot.style.transform=`translate(${mx}px,${my}px) translate(-50%,-50%)`;
+    if(ring){ ring.style.left=rx+'px'; ring.style.top=ry+'px'; }
+    requestAnimationFrame(tick);
+  })();
+  document.querySelectorAll('a,button,.ct-info-card,.ct-step').forEach(el=>{
+    el.addEventListener('mouseenter',()=>ring&&ring.classList.add('h'));
+    el.addEventListener('mouseleave',()=>ring&&ring.classList.remove('h'));
+  });
+
+  /* NAV */
+  document.getElementById('navTog').addEventListener('click',()=>document.getElementById('navMob').classList.toggle('open'));
+
+  /* PAGE TRANSITION IN */
+  gsap.fromTo('#page-transition',{scaleY:1,transformOrigin:'top'},{scaleY:0,duration:.55,ease:'power4.inOut',delay:.05});
+
+  /* HERO ANIMATIONS */
+  gsap.to('#ctGrid',{ yPercent:25, ease:'none', scrollTrigger:{ trigger:'.ct-hero', start:'top top', end:'bottom top', scrub:1 } });
+  gsap.to('.ct-deco',{ yPercent:-15, opacity:0, ease:'none', scrollTrigger:{ trigger:'.ct-hero', start:'top top', end:'bottom top', scrub:1 } });
+
+  const htl = gsap.timeline({ defaults:{ ease:'power4.out' }, delay:.15 });
+  htl.from('#ctEyebrow',{ y:22, opacity:0, duration:.85 })
+     .from('#ctH1',{ y:90, opacity:0, duration:1.1, stagger:.08 }, '-=.55')
+     .from('#ctHeroRight > *',{ x:50, opacity:0, duration:.85, stagger:.12 }, '-=.7');
+
+  /* INFO CARDS REVEAL */
+  gsap.fromTo('.ct-info-card',
+    { y:50, opacity:0 },
+    { y:0, opacity:1, duration:.75, stagger:.1, ease:'power3.out',
+      scrollTrigger:{ trigger:'#ctCards', start:'top 85%', once:true } }
+  );
+
+  /* FAQ ACCORDION */
+  document.querySelectorAll('.ct-faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.ct-faq-item');
+      const answer = item.querySelector('.ct-faq-a');
+      const inner = item.querySelector('.ct-faq-a-inner');
+      const isOpen = item.classList.contains('open');
+
+      // Close all
+      document.querySelectorAll('.ct-faq-item.open').forEach(other => {
+        other.classList.remove('open');
+        const a = other.querySelector('.ct-faq-a');
+        gsap.to(a,{ maxHeight:0, duration:.45, ease:'power3.inOut' });
+      });
+
+      if(!isOpen){
+        item.classList.add('open');
+        const targetH = inner.scrollHeight;
+        gsap.fromTo(answer, { maxHeight:0 }, { maxHeight:targetH+40, duration:.55, ease:'power3.out' });
+        // Text fade in
+        gsap.fromTo(inner, { opacity:0, y:8 }, { opacity:1, y:0, duration:.4, delay:.1, ease:'power2.out' });
+      }
+    });
+  });
+
+  /* PROCESS STEPS REVEAL */
+  gsap.fromTo('.ct-step',
+    { y:60, opacity:0 },
+    { y:0, opacity:1, duration:.75, stagger:.1, ease:'power3.out',
+      scrollTrigger:{ trigger:'#ctProcess', start:'top 82%', once:true } }
+  );
+
+  /* FINAL CTA */
+  gsap.from('.ct-cta-h2',{ x:-70, opacity:0, duration:1.1, ease:'power4.out', scrollTrigger:{ trigger:'#ctFinalCta', start:'top 80%' } });
+  gsap.from('.ct-cta-right > *',{ x:60, opacity:0, duration:.9, ease:'power3.out', stagger:.13, scrollTrigger:{ trigger:'#ctFinalCta', start:'top 80%' } });
+
+  /* MAP parallax */
+  gsap.to('.ct-map-frame iframe',{
+    yPercent: 15, ease:'none',
+    scrollTrigger:{ trigger:'.ct-map-frame', start:'top bottom', end:'bottom top', scrub:1 }
+  });
+
+  /* PAGE EXIT */
+  document.querySelectorAll('a[href]').forEach(link => {
+    const href = link.getAttribute('href');
+    if(!href||href.startsWith('http')||href.startsWith('#')||href.startsWith('mailto')) return;
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      gsap.fromTo('#page-transition',{scaleY:0,transformOrigin:'bottom'},{scaleY:1,duration:.42,ease:'power4.inOut',onComplete:()=>{window.location.href=href;}});
+    });
+  });
+
+  /* RIPPLE */
+  document.addEventListener('click',e=>{
+    const r=document.createElement('div'); r.className='click-ripple';
+    r.style.cssText=`left:${e.clientX}px;top:${e.clientY}px`;
+    document.body.appendChild(r); r.addEventListener('animationend',()=>r.remove());
+  });
+})();
+</script>
 <script src="/js/global.js"></script>
-<script src="/js/contatti.js"></script>
 </body>
 </html>
