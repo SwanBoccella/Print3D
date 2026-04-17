@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prenota — Print3D Studio</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/prenotazione.css">
+</head>
+<body>
+
+
+
+<div id="page-transition"></div>
+
+<nav>
+  <a href="/" class="nav-logo"><img src="https://i.ibb.co/9mPgGMLk/1774292559672.png" alt="Logo" class="nav-logo-img" onerror="this.style.display='none'">PRINT<span>3D</span></a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/catalogo">Catalogo</a></li>
+    <li><a href="/materiali">Materiali</a></li>
+    <li><a href="/contatti">Contatti</a></li>
+    <li><a href="/prenotazione" class="nav-cta active">Prenota</a></li>
+  </ul>
+  <button class="nav-toggle"><span></span><span></span><span></span></button>
+</nav>
+<div class="nav-mobile">
+  <a href="/">Home</a><a href="/catalogo">Catalogo</a>
+  <a href="/materiali">Materiali</a><a href="/contatti">Contatti</a>
+  <a href="/prenotazione">Prenota ora</a>
+</div>
+
+<!-- PAGE HEADER -->
+<header class="page-header">
+  <canvas id="booking-canvas"></canvas>
+  <div class="page-header-content">
+    <div class="section-label" style="justify-content:center; margin-bottom:16px;">Inizia il processo</div>
+    <h1 class="page-header-title">Prenota<br><span>la tua stampa.</span></h1>
+    <p class="page-header-sub">Compila il modulo — rispondiamo entro 24 ore con preventivo.</p>
+  </div>
+</header>
+
+<!-- FORM SECTION -->
+<section class="booking-section">
+  <div class="container">
+    <div class="booking-layout">
+
+      <!-- FORM -->
+      <div class="booking-form-wrap" data-reveal>
+        <form id="booking-form" novalidate>
+
+          <div class="form-section-title">
+            <span class="form-step-num">01</span>
+            Dati personali
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nome">Nome e Cognome *</label>
+              <input type="text" id="nome" name="nome" placeholder="Mario Rossi" required>
+              <div class="field-line"></div>
+              <span class="field-error"></span>
+            </div>
+          </div>
+
+          <div class="form-row form-row--2">
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" placeholder="mario@email.com" required>
+              <div class="field-line"></div>
+              <span class="field-error"></span>
+            </div>
+            <div class="form-group">
+              <label for="telefono">Telefono</label>
+              <input type="tel" id="telefono" name="telefono" placeholder="+39 333 000 0000">
+              <div class="field-line"></div>
+            </div>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <div class="form-section-title">
+            <span class="form-step-num">02</span>
+            Specifiche oggetto
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="oggetto">Descrizione oggetto *</label>
+              <input type="text" id="oggetto" name="oggetto" placeholder="es. Portachiavi personalizzato con logo, 5×3cm" required>
+              <div class="field-line"></div>
+              <span class="field-error"></span>
+            </div>
+          </div>
+
+          <div class="form-row form-row--3">
+            <div class="form-group">
+              <label for="materiale">Materiale</label>
+              <div class="select-wrap">
+                <select id="materiale" name="materiale">
+                  <option value="PLA Standard">PLA Standard</option>
+                  <option value="PLA+">PLA+</option>
+                  <option value="PLA Silk">PLA Silk (lucido)</option>
+                  <option value="PLA Matte">PLA Matte (opaco)</option>
+                  <option value="Altro (da definire)">Altro — da definire</option>
+                </select>
+                <svg class="select-arrow" viewBox="0 0 16 16" fill="none">
+                  <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="colore">Colore preferito</label>
+              <input type="text" id="colore" name="colore" placeholder="es. Rosso, Nero, Bianco...">
+              <div class="field-line"></div>
+            </div>
+            <div class="form-group">
+              <label for="quantita">Quantità</label>
+              <div class="qty-wrap">
+                <button type="button" class="qty-btn" data-dir="-1">−</button>
+                <input type="number" id="quantita" name="quantita" value="1" min="1" max="99">
+                <button type="button" class="qty-btn" data-dir="1">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="deadline">Consegna desiderata entro</label>
+              <input type="date" id="deadline" name="deadline">
+              <div class="field-line"></div>
+            </div>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <div class="form-section-title">
+            <span class="form-step-num">03</span>
+            Note aggiuntive
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="note">Descrizione dettagliata, file disponibili, preferenze</label>
+              <textarea id="note" name="note" placeholder="Hai un file .STL o .OBJ? Misure specifiche? Qualsiasi dettaglio è utile..." rows="4"></textarea>
+              <div class="field-line"></div>
+            </div>
+          </div>
+
+          <!-- File note -->
+          <div class="file-note">
+            <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+              <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M10 9v5M10 6v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Se hai file 3D (.STL, .OBJ, .3MF), inviaci tutto via email dopo la prenotazione a <a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a></span>
+          </div>
+
+          <button type="submit" class="submit-btn" data-magnetic id="submit-btn">
+            <span class="submit-text">Invia Prenotazione</span>
+            <div class="submit-loader" aria-hidden="true">
+              <div class="loader-ring"></div>
+            </div>
+            <svg class="submit-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4 10h12M12 5l5 5-5 5" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </button>
+
+        </form>
+      </div>
+
+      <!-- SIDEBAR INFO -->
+      <aside class="booking-sidebar" data-reveal data-delay="0.2">
+        <div class="sidebar-card">
+          <div class="sidebar-card-label">Tempi di risposta</div>
+          <div class="sidebar-stat">
+            <span class="stat-big">24h</span>
+            <span class="stat-desc">risposta con preventivo</span>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <div class="sidebar-card-label">Come funziona</div>
+          <ol class="sidebar-steps">
+            <li><span>1</span> Compili il modulo</li>
+            <li><span>2</span> Ricevi preventivo via email</li>
+            <li><span>3</span> Approvi e iniziamo</li>
+            <li><span>4</span> Oggetto pronto in 2–7gg</li>
+          </ol>
+        </div>
+
+        <div class="sidebar-card">
+          <div class="sidebar-card-label">Contatto diretto</div>
+          <a href="mailto:swanboccella@gmail.com" class="sidebar-email">
+            swanboccella<br>@gmail.com
+          </a>
+        </div>
+
+        <div class="sidebar-card sidebar-card--red">
+          <div class="sidebar-card-label">Materiale standard</div>
+          <p>PLA — disponibile in oltre 30 colori. Su richiesta è possibile valutare materiali alternativi.</p>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+<!-- SUCCESS OVERLAY -->
+<div id="success-overlay" class="success-overlay">
+  <div class="success-box">
+    <div class="success-icon">
+      <svg viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="30" stroke="#e53e3e" stroke-width="1.5" class="success-circle"/>
+        <path d="M18 32l10 10 18-18" stroke="#e53e3e" stroke-width="2" stroke-linecap="round" class="success-check"/>
+      </svg>
+    </div>
+    <h2>Prenotazione Inviata!</h2>
+    <p>Abbiamo ricevuto la tua richiesta.<br>Riceverai risposta entro 24 ore.</p><p style="color:#e53e3e;font-size:13px;letter-spacing:1px;margin-top:8px;">ID: <strong id="booking-id">—</strong></p>
+    <a href="/" class="btn-primary" style="margin-top:24px; display:inline-flex;">Torna alla Home</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">PRINT<span>3D</span><p>Stampa 3D artigianale<br>su prenotazione</p></div>
+  <div class="footer-col">
+    <h4>Navigazione</h4>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/catalogo">Catalogo</a></li>
+      <li><a href="/materiali">Materiali</a></li>
+      <li><a href="/prenotazione">Prenotazione</a></li>
+      <li><a href="/contatti">Contatti</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Contatti</h4>
+    <p><a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br>Risposta entro 24 ore.</p>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Print3D Studio</p>
+    <p>Produzione artigianale su prenotazione</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="/js/global.js"></script>
+<script src="/js/prenotazione.js"></script>
+</body>
+</html>

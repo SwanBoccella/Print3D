@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Print3D Studio — Oggetti su Misura in Stampa 3D</title>
+  <meta name="description" content="Realizziamo oggetti unici su prenotazione con stampa 3D. Qualità artigianale, materiali selezionati, consegna personalizzata.">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/index.css">
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loading-screen" aria-hidden="true">
+  <!-- Background canvas for wireframe 3D object -->
+  <canvas id="loader-canvas"></canvas>
+
+  <!-- Corner brackets -->
+  <div class="ldr-corner ldr-corner--tl"></div>
+  <div class="ldr-corner ldr-corner--tr"></div>
+  <div class="ldr-corner ldr-corner--bl"></div>
+  <div class="ldr-corner ldr-corner--br"></div>
+
+  <!-- Top status bar -->
+  <div class="ldr-topbar">
+    <span class="ldr-sys">PRINT3D — SYSTEM BOOT</span>
+    <span class="ldr-clock" id="ldr-clock">00:00:00</span>
+    <span class="ldr-status" id="ldr-status">● INITIALIZING</span>
+  </div>
+
+  <!-- Left data stream -->
+  <div class="ldr-datastream" id="ldr-datastream"></div>
+
+  <!-- Right telemetry panel -->
+  <div class="ldr-telemetry">
+    <div class="ldr-tele-row"><span>EXTRUDER TEMP</span><span class="ldr-tele-val" id="tele-temp">--°C</span></div>
+    <div class="ldr-tele-row"><span>BED TEMP</span><span class="ldr-tele-val" id="tele-bed">--°C</span></div>
+    <div class="ldr-tele-row"><span>LAYER HEIGHT</span><span class="ldr-tele-val">0.20mm</span></div>
+    <div class="ldr-tele-row"><span>MATERIAL</span><span class="ldr-tele-val" style="color:#e53e3e">PLA+</span></div>
+    <div class="ldr-tele-row"><span>INFILL</span><span class="ldr-tele-val" id="tele-infill">0%</span></div>
+    <div class="ldr-tele-row"><span>SPEED</span><span class="ldr-tele-val" id="tele-speed">0 mm/s</span></div>
+  </div>
+
+  <!-- Center core -->
+  <div class="ldr-core">
+    <div class="ldr-logo-ring">
+      <svg class="ldr-ring-svg" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="90" class="ldr-ring-track"/>
+        <circle cx="100" cy="100" r="90" class="ldr-ring-fill" id="ldr-ring-fill"/>
+        <circle cx="100" cy="100" r="70" class="ldr-ring-track" style="opacity:0.3"/>
+        <circle cx="100" cy="100" r="70" class="ldr-ring-fill2" id="ldr-ring-fill2"/>
+      </svg>
+      <div class="ldr-logo-center">
+        <img src="https://i.ibb.co/9mPgGMLk/1774292559672.png" alt="" class="ldr-logo-img" />
+      </div>
+    </div>
+
+    <div class="ldr-wordmark">PRINT<span>3D</span> STUDIO</div>
+    <div class="ldr-subtitle">ADDITIVE MANUFACTURING SYSTEM</div>
+
+    <!-- Main progress -->
+    <div class="ldr-progress-wrap">
+      <div class="ldr-progress-head">
+        <span class="ldr-phase-label" id="ldr-phase">BOOT SEQUENCE</span>
+        <span class="ldr-pct" id="ldr-pct">0%</span>
+      </div>
+      <div class="ldr-bar-track">
+        <div class="ldr-bar-fill" id="ldr-bar-fill"></div>
+        <div class="ldr-bar-pulse" id="ldr-bar-pulse"></div>
+      </div>
+      <div class="ldr-bar-segments">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- Sub-tasks checklist -->
+    <div class="ldr-checks">
+      <div class="ldr-check" id="chk-0"><span class="ldr-chk-icon">○</span><span>LOADING ASSETS</span></div>
+      <div class="ldr-check" id="chk-1"><span class="ldr-chk-icon">○</span><span>CALIBRATING AXES</span></div>
+      <div class="ldr-check" id="chk-2"><span class="ldr-chk-icon">○</span><span>SLICING GEOMETRY</span></div>
+      <div class="ldr-check" id="chk-3"><span class="ldr-chk-icon">○</span><span>WARMING EXTRUDER</span></div>
+      <div class="ldr-check" id="chk-4"><span class="ldr-chk-icon">○</span><span>SYSTEM READY</span></div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="ldr-bottombar">
+    <span>v2.4.1 — FDM ENGINE</span>
+    <span id="ldr-layers">LAYERS: 0 / 240</span>
+    <span>NOZZLE: 0.4mm</span>
+  </div>
+</div>
+
+<div id="page-transition"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://i.ibb.co/9mPgGMLk/1774292559672.png" alt="Logo" class="nav-logo-img" />
+    PRINT<span>3D</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/" class="active">Home</a></li>
+    <li><a href="/catalogo">Catalogo</a></li>
+    <li><a href="/materiali">Materiali</a></li>
+    <li><a href="/contatti">Contatti</a></li>
+    <li><a href="/prenotazione" class="nav-cta">Prenota</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile">
+  <a href="/">Home</a>
+  <a href="/catalogo">Catalogo</a>
+  <a href="/materiali">Materiali</a>
+  <a href="/contatti">Contatti</a>
+  <a href="/prenotazione">Prenota ora</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      <span>Stampa 3D su prenotazione</span>
+    </div>
+
+    <h1 class="hero-title">
+      <span class="hero-line" data-line="1">DAL FILE</span>
+      <span class="hero-line hero-line--red" data-line="2">ALL'OGGETTO</span>
+      <span class="hero-line" data-line="3">REALE.</span>
+    </h1>
+
+    <p class="hero-sub">
+      Realizziamo ogni idea con precisione millimetrica.<br>
+      Stampa 3D artigianale su misura — solo su prenotazione.
+    </p>
+
+    <div class="hero-actions">
+      <a href="/prenotazione" class="btn-primary" data-magnetic>
+        <span>Prenota Ora</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </a>
+      <a href="/catalogo" class="btn-ghost">Vedi il Catalogo</a>
+    </div>
+
+    <div class="hero-scroll-hint">
+      <div class="scroll-line"></div>
+      <span>scroll</span>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="printer-wrapper">
+      <div class="printer-3d">
+        <div class="printer-frame"></div>
+        <div class="printer-bed">
+          <div class="printer-object" id="printer-obj"></div>
+        </div>
+        <div class="printer-head" id="printer-head">
+          <div class="printer-nozzle"></div>
+          <div class="printer-drip"></div>
+        </div>
+        <div class="printer-axis-x"></div>
+        <div class="printer-axis-z"></div>
+      </div>
+      <div class="printer-glow"></div>
+      <div class="printer-scanline"></div>
+      <!-- Floating tags -->
+      <div class="float-tag" style="top:10%;right:-60px">
+        <span class="tag-label">LAYER HEIGHT</span>
+        <span class="tag-val">0.2mm</span>
+      </div>
+      <div class="float-tag" style="bottom:20%;left:-70px">
+        <span class="tag-label">MATERIAL</span>
+        <span class="tag-val">PLA+</span>
+      </div>
+      <div class="float-tag" style="top:55%;right:-80px">
+        <span class="tag-label">INFILL</span>
+        <span class="tag-val">20–100%</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-inner">
+    <span>⬡ STAMPA FDM</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ PLA & PLA+</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ SU PRENOTAZIONE</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ LAYER 0.1–0.3mm</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ QUALSIASI FORMA</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ CONSEGNA RAPIDA</span>
+    <span class="ticker-sep">—</span>
+    <!-- repeat -->
+    <span>⬡ STAMPA FDM</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ PLA & PLA+</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ SU PRENOTAZIONE</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ LAYER 0.1–0.3mm</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ QUALSIASI FORMA</span>
+    <span class="ticker-sep">—</span>
+    <span>⬡ CONSEGNA RAPIDA</span>
+    <span class="ticker-sep">—</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="process section-pad">
+  <div class="container">
+    <div class="section-label" data-reveal>Come Funziona</div>
+    <h2 class="section-title" data-reveal data-delay="0.1">
+      Tre passi verso<br>il tuo oggetto.
+    </h2>
+
+    <div class="process-steps">
+      <div class="process-step" data-reveal data-delay="0.1">
+        <div class="step-number">01</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="8" width="32" height="32" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M16 24h16M24 16v16" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h3>Descrivi l'idea</h3>
+        <p>Mandaci la tua idea, un file 3D o anche solo un disegno. Niente è troppo complesso.</p>
+      </div>
+
+      <div class="process-connector" data-reveal data-delay="0.2"></div>
+
+      <div class="process-step" data-reveal data-delay="0.2">
+        <div class="step-number">02</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 8v8M8 24h8M32 24h8M24 32v8" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="24" cy="24" r="8" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="24" cy="24" r="3" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3>Preventivo & Stampa</h3>
+        <p>Ricevi un preventivo in 24h. Approvato il costo, iniziamo la stampa con precisione millimetrica.</p>
+      </div>
+
+      <div class="process-connector" data-reveal data-delay="0.3"></div>
+
+      <div class="process-step" data-reveal data-delay="0.3">
+        <div class="step-number">03</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 24l8 8 16-16" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="24" cy="24" r="16" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h3>Ritiro o Spedizione</h3>
+        <p>Il tuo oggetto è pronto. Ritiro in zona o spedizione tracciata. Qualità garantita.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED / CATEGORIES -->
+<section class="categories section-pad">
+  <div class="container">
+    <div class="section-label" data-reveal>Cosa Realizziamo</div>
+    <h2 class="section-title" data-reveal data-delay="0.1">
+      Dalla piccola<br>decorazione al pezzo tecnico.
+    </h2>
+  </div>
+
+  <div class="cat-grid">
+    <div class="cat-card cat-card--large" data-reveal>
+      <div class="cat-card-bg" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d1010 100%)"></div>
+      <canvas class="noise-canvas cat-noise"></canvas>
+      <div class="cat-card-content">
+        <div class="cat-icon">⬡</div>
+        <h3>Oggetti Decorativi</h3>
+        <p>Statue, vasi, sculture, decorazioni su misura per casa e ufficio.</p>
+        <a href="/catalogo" class="cat-link">Esplora →</a>
+      </div>
+    </div>
+
+    <div class="cat-card" data-reveal data-delay="0.1">
+      <div class="cat-card-bg" style="background: linear-gradient(135deg, #1a1a1a 0%, #0d1a0d 100%)"></div>
+      <canvas class="noise-canvas cat-noise"></canvas>
+      <div class="cat-card-content">
+        <div class="cat-icon">⚙</div>
+        <h3>Componentistica</h3>
+        <p>Parti di ricambio, giunti, supporti e pezzi tecnici funzionali.</p>
+        <a href="/catalogo" class="cat-link">Esplora →</a>
+      </div>
+    </div>
+
+    <div class="cat-card" data-reveal data-delay="0.2">
+      <div class="cat-card-bg" style="background: linear-gradient(135deg, #1a1a1a 0%, #1a1a00 100%)"></div>
+      <canvas class="noise-canvas cat-noise"></canvas>
+      <div class="cat-card-content">
+        <div class="cat-icon">◈</div>
+        <h3>Prototipi</h3>
+        <p>Dai vita a un'invenzione o un prodotto. Rapido, preciso, economico.</p>
+        <a href="/catalogo" class="cat-link">Esplora →</a>
+      </div>
+    </div>
+
+    <div class="cat-card" data-reveal data-delay="0.3">
+      <div class="cat-card-bg" style="background: linear-gradient(135deg, #1a1a1a 0%, #1a0010 100%)"></div>
+      <canvas class="noise-canvas cat-noise"></canvas>
+      <div class="cat-card-content">
+        <div class="cat-icon">♦</div>
+        <h3>Personalizzati</h3>
+        <p>Gadget, regali, targhette, portachiavi e molto altro — tutti unici.</p>
+        <a href="/catalogo" class="cat-link">Esplora →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MATERIAL HIGHLIGHT -->
+<section class="material-highlight section-pad">
+  <div class="container">
+    <div class="mat-hl-grid">
+      <div class="mat-hl-visual" data-reveal>
+        <div class="pla-sphere" id="pla-sphere-wrap">
+          <canvas id="pla-canvas" width="320" height="320"></canvas>
+          <div class="pla-inner" id="pla-inner">
+            <span class="pla-label">PLA</span>
+          </div>
+          <div class="pla-hint" id="pla-hint">DRAG · CLICK · EXPLORE</div>
+        </div>
+      </div>
+
+      <div class="mat-hl-info" data-reveal data-delay="0.2">
+        <div class="section-label">Materiale Principale</div>
+        <h2>PLA — Il meglio<br>per iniziare.</h2>
+        <p>Il PLA (Acido Polilattico) è un bioplastica derivata da amido di mais. Resistente, preciso, disponibile in decine di colori. Il nostro materiale di riferimento per la maggior parte dei progetti.</p>
+
+        <ul class="mat-features">
+          <li><span class="feat-check">✓</span> Alta precisione dimensionale</li>
+          <li><span class="feat-check">✓</span> Biodegradabile ed ecologico</li>
+          <li><span class="feat-check">✓</span> 30+ colori disponibili</li>
+          <li><span class="feat-check">✓</span> Adatto per oggetti decorativi e funzionali</li>
+        </ul>
+
+        <a href="/materiali" class="btn-outline">Scopri tutti i materiali →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA STRIP -->
+<section class="cta-strip">
+  <canvas class="noise-canvas cta-noise"></canvas>
+  <div class="cta-strip-content" data-reveal>
+    <h2>Hai un'idea?<br><span>Realizziamola insieme.</span></h2>
+    <a href="/prenotazione" class="btn-primary btn-primary--large" data-magnetic>
+      <span>Inizia la Prenotazione</span>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M4 10h12M12 5l5 5-5 5" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    PRINT<span>3D</span>
+    <p>Stampa 3D artigianale<br>su prenotazione</p>
+  </div>
+  <div class="footer-col">
+    <h4>Navigazione</h4>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/catalogo">Catalogo</a></li>
+      <li><a href="/materiali">Materiali</a></li>
+      <li><a href="/prenotazione">Prenotazione</a></li>
+      <li><a href="/contatti">Contatti</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Contatti</h4>
+    <p>
+      <a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br>
+      Risposta entro 24 ore.<br>
+      Disponibile Lun–Sab.
+    </p>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Print3D Studio — Tutti i diritti riservati</p>
+    <p>Produzione artigianale su prenotazione</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="/js/global.js"></script>
+<script src="/js/index.js"></script>
+</body>
+</html>

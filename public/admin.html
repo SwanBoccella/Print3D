@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Print3D Studio</title>
+  <style>
+    :root {
+      --bg: #080808; --bg2: #0f0f0f; --bg3: #161616; --bg4: #1c1c1c;
+      --border: #222; --border2: #2a2a2a;
+      --red: #e53e3e; --red-dim: rgba(229,62,62,.12); --red-hover: #f56565;
+      --text: #e8e8e8; --text2: #888; --text3: #555;
+      --green: #48bb78; --yellow: #ecc94b; --blue: #63b3ed; --orange: #ed8936;
+      --font: 'Courier New', 'Courier', monospace;
+      --radius: 6px;
+      --sidebar-w: 220px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.5; overflow-x: hidden; }
+
+    /* LOGIN */
+    #login-screen {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; transition: opacity .4s;
+    }
+    #login-screen.hidden { opacity: 0; pointer-events: none; }
+    .login-box {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 48px 40px; width: 360px; text-align: center;
+    }
+    .login-logo { font-size: 22px; letter-spacing: 3px; margin-bottom: 6px; }
+    .login-logo span { color: var(--red); }
+    .login-sub { color: var(--text3); font-size: 11px; letter-spacing: 2px; margin-bottom: 36px; }
+    .login-box input {
+      width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+      color: var(--text); font-family: var(--font); font-size: 14px;
+      padding: 12px 16px; border-radius: var(--radius); outline: none;
+      transition: border-color .2s; margin-bottom: 16px;
+    }
+    .login-box input:focus { border-color: var(--red); }
+    .login-btn {
+      width: 100%; background: var(--red); color: #fff; border: none; cursor: pointer;
+      font-family: var(--font); font-size: 13px; letter-spacing: 2px;
+      padding: 12px; border-radius: var(--radius); transition: background .2s;
+    }
+    .login-btn:hover { background: var(--red-hover); }
+    .login-error { color: var(--red); font-size: 12px; margin-top: 12px; min-height: 18px; }
+
+    /* LAYOUT */
+    #app { display: flex; height: 100vh; }
+
+    /* SIDEBAR OVERLAY */
+    #sidebar-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65);
+      z-index: 199; backdrop-filter: blur(2px);
+    }
+    #sidebar-overlay.open { display: block; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--bg2);
+      border-right: 1px solid var(--border); display: flex; flex-direction: column;
+      padding: 24px 0; transition: transform .28s cubic-bezier(.4,0,.2,1);
+      z-index: 200;
+    }
+    .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .sidebar-logo-text { font-size: 16px; letter-spacing: 2px; }
+    .sidebar-logo-text span { color: var(--red); }
+    .sidebar-logo-sub { color: var(--text3); font-size: 10px; letter-spacing: 1px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+      color: var(--text2); cursor: pointer; transition: all .15s;
+      border-left: 2px solid transparent; font-size: 12px; letter-spacing: 1px;
+      user-select: none;
+    }
+    .nav-item:hover { color: var(--text); background: var(--bg3); }
+    .nav-item.active { color: var(--red); border-left-color: var(--red); background: var(--red-dim); }
+    .nav-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto; background: var(--red); color: #fff; border-radius: 10px;
+      padding: 1px 7px; font-size: 10px; min-width: 18px; text-align: center;
+    }
+    .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+    .logout-btn {
+      width: 100%; background: none; border: 1px solid var(--border2);
+      color: var(--text3); font-family: var(--font); font-size: 11px;
+      letter-spacing: 1px; padding: 8px; border-radius: var(--radius); cursor: pointer;
+      transition: all .2s;
+    }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    /* MAIN */
+    .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; min-width: 0; }
+    .topbar {
+      padding: 0 20px; height: 54px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg2); position: sticky; top: 0; z-index: 10; gap: 12px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-title { font-size: 13px; letter-spacing: 2px; color: var(--text); }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-time { color: var(--text3); font-size: 11px; letter-spacing: 1px; white-space: nowrap; }
+    .content { padding: 24px; flex: 1; }
+
+    /* HAMBURGER */
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px; cursor: pointer;
+      padding: 4px; background: none; border: none;
+    }
+    .hamburger span { display: block; width: 20px; height: 2px; background: var(--text2); border-radius: 2px; transition: all .25s; }
+    .hamburger:hover span { background: var(--text); }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* PANELS */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+    .stat-label { color: var(--text3); font-size: 10px; letter-spacing: 2px; margin-bottom: 8px; }
+    .stat-val { font-size: 30px; line-height: 1; }
+    .stat-val.red { color: var(--red); } .stat-val.green { color: var(--green); }
+    .stat-val.yellow { color: var(--yellow); } .stat-val.blue { color: var(--blue); }
+    .stat-sub { color: var(--text3); font-size: 10px; margin-top: 4px; }
+
+    /* TABLE */
+    .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .table-header {
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    }
+    .table-header-title { font-size: 11px; letter-spacing: 2px; color: var(--text2); }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 460px; }
+    th { text-align: left; padding: 9px 14px; font-size: 10px; letter-spacing: 2px; color: var(--text3); border-bottom: 1px solid var(--border); background: var(--bg3); font-weight: normal; white-space: nowrap; }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg3); }
+
+    /* BADGES */
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+    .badge-nuova { background: rgba(99,179,237,.15); color: var(--blue); border: 1px solid rgba(99,179,237,.3); }
+    .badge-in_lavorazione { background: rgba(236,201,75,.1); color: var(--yellow); border: 1px solid rgba(236,201,75,.3); }
+    .badge-completata { background: rgba(72,187,120,.1); color: var(--green); border: 1px solid rgba(72,187,120,.3); }
+    .badge-annullata { background: rgba(229,62,62,.08); color: var(--red); border: 1px solid rgba(229,62,62,.2); }
+    .badge-cat { background: var(--bg4); color: var(--text2); border: 1px solid var(--border); }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius); cursor: pointer; font-family: var(--font); font-size: 11px; letter-spacing: 1px; border: 1px solid; transition: all .15s; white-space: nowrap; }
+    .btn-primary { background: var(--red); color: #fff; border-color: var(--red); }
+    .btn-primary:hover { background: var(--red-hover); border-color: var(--red-hover); }
+    .btn-ghost { background: none; color: var(--text2); border-color: var(--border2); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--text3); }
+    .btn-danger { background: none; color: var(--red); border-color: rgba(229,62,62,.3); }
+    .btn-danger:hover { background: var(--red-dim); }
+    .btn-sm { padding: 4px 10px; font-size: 10px; }
+
+    /* SELECT */
+    select.inline-select { background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: var(--font); font-size: 11px; padding: 4px 8px; border-radius: var(--radius); outline: none; cursor: pointer; }
+    select.inline-select:focus { border-color: var(--red); }
+
+    /* MODAL */
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.72); z-index: 500; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .2s; padding: 16px; }
+    .modal-bg.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; width: 540px; max-width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-head { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg2); z-index: 1; }
+    .modal-head h3 { font-size: 13px; letter-spacing: 2px; }
+    .modal-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 20px; line-height: 1; padding: 2px 6px; }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 22px; }
+    .detail-row { display: flex; gap: 12px; margin-bottom: 11px; }
+    .detail-label { color: var(--text3); font-size: 11px; min-width: 100px; flex-shrink: 0; }
+    .detail-val { color: var(--text); font-size: 12px; flex: 1; word-break: break-word; }
+    .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .nota-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: var(--font); font-size: 12px; padding: 10px; border-radius: var(--radius); resize: vertical; outline: none; margin-top: 8px; min-height: 80px; }
+    .nota-input:focus { border-color: var(--red); }
+
+    /* FORM */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field label { color: var(--text3); font-size: 10px; letter-spacing: 1px; }
+    .form-field input, .form-field select, .form-field textarea { background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: var(--font); font-size: 12px; padding: 9px 12px; border-radius: var(--radius); outline: none; transition: border-color .2s; }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--red); }
+    .form-field textarea { resize: vertical; min-height: 80px; }
+    .form-hint { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+    /* SETTINGS */
+    .settings-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
+    .settings-card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .settings-card-title { font-size: 11px; letter-spacing: 2px; color: var(--text2); }
+    .settings-card-body { padding: 20px; }
+    .settings-footer { padding: 0 20px 20px; display: flex; align-items: center; gap: 12px; }
+
+    /* SETTINGS TABS */
+    .stab-bar { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; overflow-x: auto; }
+    .stab { padding: 10px 18px; font-size: 11px; letter-spacing: 1px; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; white-space: nowrap; font-family: var(--font); background: none; border-top: none; border-left: none; border-right: none; }
+    .stab:hover { color: var(--text2); }
+    .stab.active { color: var(--red); border-bottom-color: var(--red); }
+    .stab-panel { display: none; }
+    .stab-panel.active { display: block; }
+
+    /* TOGGLE */
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .toggle { width: 36px; height: 20px; background: var(--bg4); border-radius: 10px; position: relative; transition: background .2s; border: 1px solid var(--border2); flex-shrink: 0; }
+    .toggle::after { content:''; position:absolute; top:2px; left:2px; width:14px; height:14px; background:#555; border-radius:50%; transition: all .2s; }
+    .toggle.on { background: var(--red-dim); border-color: var(--red); }
+    .toggle.on::after { left: 18px; background: var(--red); }
+    .toggle-label { color: var(--text2); font-size: 11px; letter-spacing: 1px; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info { flex: 1; }
+    .toggle-info strong { display: block; font-size: 12px; color: var(--text); font-weight: normal; margin-bottom: 2px; }
+    .toggle-info span { font-size: 10px; color: var(--text3); }
+
+    /* FILTERS */
+    .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-chip { padding: 5px 12px; border-radius: 20px; font-size: 10px; letter-spacing: 1px; cursor: pointer; border: 1px solid var(--border2); color: var(--text2); background: none; font-family: var(--font); transition: all .15s; }
+    .filter-chip.active, .filter-chip:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+
+    /* EMPTY */
+    .empty-state { text-align: center; padding: 52px 20px; color: var(--text3); }
+    .empty-state .empty-icon { font-size: 34px; margin-bottom: 10px; opacity: .3; }
+
+    /* TOAST */
+    #toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 11px 18px; font-size: 12px; z-index: 9999; transform: translateY(80px); opacity: 0; transition: all .3s; max-width: calc(100vw - 40px); }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { border-left: 3px solid var(--green); }
+    #toast.error   { border-left: 3px solid var(--red); }
+    #toast.info    { border-left: 3px solid var(--blue); }
+
+    /* SEARCH */
+    .search-input { background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: var(--font); font-size: 12px; padding: 7px 12px; border-radius: var(--radius); outline: none; width: 200px; transition: border-color .2s; }
+    .search-input:focus { border-color: var(--red); }
+
+    /* INFO BOX */
+    .info-box { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px 16px; font-size: 11px; color: var(--text2); line-height: 1.7; margin-bottom: 16px; }
+    .info-box.warn   { border-left: 3px solid var(--yellow); color: var(--yellow); }
+    .info-box.danger { border-left: 3px solid var(--red);    color: var(--red); }
+
+    /* DOWNLOAD ROW */
+    .dl-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--bg3); border-radius: var(--radius); border: 1px solid var(--border2); margin-bottom: 10px; }
+    .dl-row-title { font-size: 12px; color: var(--text); margin-bottom: 2px; }
+    .dl-row-sub   { font-size: 10px; color: var(--text3); }
+    .danger-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--bg3); border-radius: var(--radius); border: 1px solid rgba(229,62,62,.15); margin-bottom: 10px; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .hamburger { display: flex; }
+      .sidebar { position: fixed; top: 0; left: 0; height: 100vh; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .content { padding: 16px; }
+      .topbar { padding: 0 14px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid .form-field.full { grid-column: 1; }
+      .search-input { width: 100%; }
+      .filter-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+      .filter-chip { flex-shrink: 0; }
+      .modal-footer { flex-direction: column-reverse; }
+      .modal-footer .btn { width: 100%; justify-content: center; }
+      .stat-val { font-size: 24px; }
+      .stab { padding: 10px 12px; font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">PRINT<span>3D</span></div>
+    <div class="login-sub">PANNELLO ADMIN</div>
+    <input type="password" id="login-pwd" placeholder="Password" autocomplete="current-password">
+    <button class="login-btn" id="login-btn">ACCEDI</button>
+    <div class="login-error" id="login-err"></div>
+  </div>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebar-overlay"></div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">PRINT<span>3D</span></div>
+      <div class="sidebar-logo-sub">ADMIN PANEL</div>
+    </div>
+    <nav>
+      <div class="nav-item active" data-panel="dashboard">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-panel="prenotazioni">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Prenotazioni
+        <span class="nav-badge" id="badge-nuove">0</span>
+      </div>
+      <div class="nav-item" data-panel="catalogo">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="1" width="6" height="6" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="9" width="6" height="6" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M12 11v2M11 12h2" stroke="currentColor" stroke-width="1.2"/></svg>
+        Catalogo
+      </div>
+      <div class="nav-item" data-panel="settings">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.5 3.5l1 1M11.5 11.5l1 1M12.5 3.5l-1 1M4.5 11.5l-1 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Impostazioni
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" id="logout-btn">LOGOUT</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+        <span class="topbar-title" id="topbar-title">DASHBOARD</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-time" id="topbar-time"></span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="panel active" id="panel-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">TOTALE</div>
+            <div class="stat-val" id="stat-totale">—</div>
+            <div class="stat-sub" id="stat-sub-mese">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">NUOVE</div>
+            <div class="stat-val blue" id="stat-nuove">—</div>
+            <div class="stat-sub">Da gestire</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">IN LAVORAZIONE</div>
+            <div class="stat-val yellow" id="stat-lavorazione">—</div>
+            <div class="stat-sub">In corso</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">COMPLETATE</div>
+            <div class="stat-val green" id="stat-completate">—</div>
+            <div class="stat-sub">Consegnate</div>
+          </div>
+        </div>
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="stat-card">
+            <div class="stat-label">OGGI</div>
+            <div class="stat-val red" id="stat-oggi">—</div>
+            <div class="stat-sub" id="stat-sub-settimana">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">ANNULLATE</div>
+            <div class="stat-val" style="color:var(--text3)" id="stat-annullate">—</div>
+            <div class="stat-sub">Cancellate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">CATALOGO</div>
+            <div class="stat-val" id="stat-catalogo">—</div>
+            <div class="stat-sub" id="stat-sub-visibili">—</div>
+          </div>
+        </div>
+        <div class="table-wrap" style="margin-top:24px">
+          <div class="table-header">
+            <span class="table-header-title">ULTIME PRENOTAZIONI</span>
+            <button class="btn btn-ghost btn-sm" onclick="showPanel('prenotazioni')">Vedi tutte →</button>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>ID</th><th>NOME</th><th>OGGETTO</th><th>DATA</th><th>STATO</th></tr></thead>
+              <tbody id="dashboard-recent"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRENOTAZIONI -->
+      <div class="panel" id="panel-prenotazioni">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+          <input class="search-input" id="search-prenotazioni" placeholder="Cerca nome, email, oggetto…" style="flex:1;min-width:150px;">
+          <button class="btn btn-ghost btn-sm" id="btn-export-pre">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4 5 4-5M3 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            CSV
+          </button>
+        </div>
+        <div class="filter-row">
+          <button class="filter-chip active" data-stato="all">Tutte</button>
+          <button class="filter-chip" data-stato="nuova">Nuove</button>
+          <button class="filter-chip" data-stato="in_lavorazione">In lavorazione</button>
+          <button class="filter-chip" data-stato="completata">Completate</button>
+          <button class="filter-chip" data-stato="annullata">Annullate</button>
+        </div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>ID</th><th>NOME / EMAIL</th><th>OGGETTO</th><th>DATA</th><th>STATO</th><th></th></tr></thead>
+              <tbody id="table-prenotazioni"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="empty-prenotazioni" style="display:none">
+            <div class="empty-icon">📋</div>Nessuna prenotazione trovata
+          </div>
+        </div>
+      </div>
+
+      <!-- CATALOGO -->
+      <div class="panel" id="panel-catalogo">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+          <div class="filter-row" style="margin:0;flex-wrap:nowrap;overflow-x:auto;">
+            <button class="filter-chip active" data-cat="all">Tutti</button>
+            <button class="filter-chip" data-cat="decorativo">Decorativo</button>
+            <button class="filter-chip" data-cat="gadget">Gadget</button>
+            <button class="filter-chip" data-cat="tecnico">Tecnico</button>
+            <button class="filter-chip" data-cat="prototipo">Prototipo</button>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm" id="btn-export-cat">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4 5 4-5M3 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              CSV
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-new-cat">+ NUOVO</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>NOME</th><th>CATEGORIA</th><th>MATERIALE</th><th>TAG</th><th>VISIBILE</th><th></th></tr></thead>
+              <tbody id="table-catalogo"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="empty-catalogo" style="display:none">
+            <div class="empty-icon">📦</div>Nessun articolo
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="panel" id="panel-settings">
+        <div class="stab-bar">
+          <button class="stab active" data-stab="generale">STUDIO</button>
+          <button class="stab" data-stab="orari">ORARI</button>
+          <button class="stab" data-stab="seo">SEO</button>
+          <button class="stab" data-stab="notifiche">NOTIFICHE</button>
+          <button class="stab" data-stab="sicurezza">SICUREZZA</button>
+          <button class="stab" data-stab="backup">BACKUP</button>
+        </div>
+
+        <!-- TAB STUDIO -->
+        <div class="stab-panel active" id="stab-generale">
+          <div class="settings-card">
+            <div class="settings-card-head"><span class="settings-card-title">INFORMAZIONI STUDIO</span><span>🏢</span></div>
+            <div class="settings-card-body">
+              <div class="form-grid">
+                <div class="form-field full"><label>NOME STUDIO</label><input type="text" id="set-nome" placeholder="Print3D Studio"></div>
+                <div class="form-field"><label>EMAIL CONTATTO</label><input type="email" id="set-email" placeholder="info@print3d.studio"></div>
+                <div class="form-field"><label>TELEFONO</label><input type="tel" id="set-telefono" placeholder="+39 02 1234567"></div>
+                <div class="form-field"><label>INDIRIZZO</label><input type="text" id="set-indirizzo" placeholder="Via Roma 1"></div>
+                <div class="form-field"><label>CITTÀ</label><input type="text" id="set-citta" placeholder="Milano"></div>
+                <div class="form-field"><label>SITO WEB</label><input type="url" id="set-sito" placeholder="https://print3d.studio"></div>
+                <div class="form-field"><label>ORARIO APERTURA (form)</label><input type="text" id="set-disponibilita" placeholder="Lun–Ven 9:00–18:00"><span class="form-hint">Mostrato nel form prenotazione</span></div>
+                <div class="form-field"><label>TEMPI RISPOSTA</label><input type="text" id="set-risposta" placeholder="Entro 24h"><span class="form-hint">Mostrato nella pagina contatti</span></div>
+              </div>
+            </div>
+            <div class="settings-footer"><button class="btn btn-primary" id="btn-save-generale">SALVA</button></div>
+          </div>
+        </div>
+
+        <!-- TAB ORARI -->
+        <div class="stab-panel" id="stab-orari">
+          <div class="settings-card">
+            <div class="settings-card-head"><span class="settings-card-title">ORARI APERTURA</span><span>🕐</span></div>
+            <div class="settings-card-body">
+              <div class="form-grid">
+                <div class="form-field"><label>LUNEDÌ – VENERDÌ</label><input type="text" id="set-orari-lv" placeholder="09:00–18:00"></div>
+                <div class="form-field"><label>SABATO</label><input type="text" id="set-orari-sab" placeholder="10:00–14:00"></div>
+                <div class="form-field"><label>DOMENICA</label><input type="text" id="set-orari-dom" placeholder="Chiuso"></div>
+              </div>
+            </div>
+            <div class="settings-footer"><button class="btn btn-primary" id="btn-save-orari">SALVA ORARI</button></div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-card-head"><span class="settings-card-title">MATERIALI & COLORI DISPONIBILI</span><span>🎨</span></div>
+            <div class="settings-card-body">
+              <div class="form-field" style="margin-bottom:14px">
+                <label>MATERIALI (separati da virgola)</label>
+                <textarea id="set-materiali" rows="3" placeholder="PLA, PLA+, PLA Silk, PETG, ABS, TPU"></textarea>
+                <span class="form-hint">Opzioni mostrate nel form di prenotazione</span>
+              </div>
+              <div class="form-field">
+                <label>COLORI (separati da virgola)</label>
+                <textarea id="set-colori" rows="3" placeholder="Bianco, Nero, Rosso, Blu, Verde, Grigio"></textarea>
+              </div>
+            </div>
+            <div class="settings-footer"><button class="btn btn-primary" id="btn-save-servizi">SALVA MATERIALI</button></div>
+          </div>
+        </div>
+
+        <!-- TAB SEO -->
+        <div class="stab-panel" id="stab-seo">
+          <div class="settings-card">
+            <div class="settings-card-head"><span class="settings-card-title">META TAG & SEO</span><span>🔍</span></div>
+            <div class="settings-card-body">
+              <div class="info-box">
+                Questi dati sono esposti via <code>/api/settings</code> e usabili per i meta tag delle pagine.
+              </div>
+              <div class="form-field" style="margin-bottom:14px">
+                <label>META DESCRIZIONE</label>
+                <textarea id="set-metadesc" rows="3" placeholder="Stampa 3D professionale su misura…"></textarea>
+                <span class="form-hint">Idealmente 120–160 caratteri. Attuale: <span id="metadesc-count">0</span></span>
+              </div>
+              <div class="form-field">
+                <label>META KEYWORDS (separate da virgola)</label>
+                <input type="text" id="set-keywords" placeholder="stampa 3D, prototipazione, PLA, Milano">
+              </div>
+            </div>
+            <div class="settings-footer"><button class="btn btn-primary" id="btn-save-seo">SALVA SEO</button></div>
+          </div>
+        </div>
+
+        <!-- TAB NOTIFICHE -->
+        <div class="stab-panel" id="stab-notifiche">
+          <div class="settings-card">
+            <div class="settings-card-head"><span class="settings-card-title">EMAIL AUTOMATICHE — EMAILJS</span><span>📧</span></div>
+            <div class="settings-card-body">
+              <div class="info-box" style="background:rgba(229,62,62,.08);border-color:rgba(229,62,62,.25);margin-bottom:20px;">
+                <strong style="color:var(--red);">Setup rapido (5 minuti, gratis):</strong><br>
+                1. Vai su <a href="https://www.emailjs.com" target="_blank" style="color:var(--red);">emailjs.com</a> &rarr; crea account gratuito<br>
+                2. <b>Email Services</b> &rarr; Add Service &rarr; connetti il tuo Gmail<br>
+                3. <b>Email Templates</b> &rarr; Create Template (usa i parametri sotto)<br>
+                4. <b>Account &rarr; API Keys</b> &rarr; copia la Public Key<br>
+                5. Incolla tutto qui e clicca Salva
+              </div>
+              <div class="form-field">
+                <label>SERVICE ID <span style="color:var(--text3);font-weight:400;">(da Email Services)</span></label>
+                <input type="text" id="set-ejs-service" placeholder="service_xxxxxxx">
+              </div>
+              <div class="form-field">
+                <label>PUBLIC KEY <span style="color:var(--text3);font-weight:400;">(da Account → API Keys)</span></label>
+                <input type="text" id="set-ejs-pubkey" placeholder="xxxxxxxxxxxxxxxxxxxxxx">
+              </div>
+              <div class="form-field">
+                <label>TEMPLATE ID — Notifica a te <span style="color:var(--text3);font-weight:400;">(obbligatorio)</span></label>
+                <input type="text" id="set-ejs-tpl-owner" placeholder="template_xxxxxxx">
+                <small style="color:var(--text3);font-size:11px;margin-top:4px;display:block;">
+                  Variabili disponibili nel template: <code>{{booking_id}}</code> <code>{{cliente_nome}}</code> <code>{{cliente_email}}</code> <code>{{cliente_tel}}</code> <code>{{oggetto}}</code> <code>{{materiale}}</code> <code>{{quantita}}</code> <code>{{deadline}}</code> <code>{{note}}</code> <code>{{data_invio}}</code>
+                </small>
+              </div>
+              <div class="form-field">
+                <label>TEMPLATE ID — Conferma al cliente <span style="color:var(--text3);font-weight:400;">(opzionale)</span></label>
+                <input type="text" id="set-ejs-tpl-client" placeholder="template_xxxxxxx">
+                <small style="color:var(--text3);font-size:11px;margin-top:4px;display:block;">
+                  Usa anche: <code>{{to_name}}</code> <code>{{to_email}}</code> per personalizzare la risposta al cliente
+                </small>
+              </div>
+              <div style="margin-top:16px;">
+                <button class="btn" id="btn-test-emailjs" style="background:var(--bg3);border:1px solid var(--border);color:var(--text1);padding:8px 18px;border-radius:var(--radius);cursor:pointer;font-size:11px;letter-spacing:1px;">
+                  🧪 TESTA CONFIGURAZIONE
+                </button>
+                <span id="test-emailjs-result" style="font-size:12px;margin-left:12px;"></span>
+              </div>
+            </div>
+            <div class="settings-footer"><button class="btn btn-primary" id="btn-save-notifiche">SALVA CONFIGURAZIONE EMAIL</button></div>
+          </div>
+        </div>
+
+        <!-- TAB SICUREZZA -->
+        <div class="stab-panel" id="stab-sicurezza">
+          <div class="settings-card">
+            <div class="settings-card-head"><span class="settings-card-title">CAMBIA PASSWORD ADMIN</span><span>🔒</span></div>
+            <div class="settings-card-body">
+              <div class="info-box">
+                La password è salvata come hash SHA-256. Default: <code>print3d2025</code>
+              </div>
+              <div class="form-grid" style="max-width:460px">
+                <div class="form-field"><label>NUOVA PASSWORD</label><input type="password" id="set-newpwd" placeholder="Minimo 8 caratteri"></div>
+                <div class="form-field"><label>CONFERMA</label><input type="password" id="set-confirmpwd" placeholder="Ripeti password"></div>
+              </div>
+              <div id="pwd-strength" style="margin-top:10px;font-size:11px;color:var(--text3);min-height:18px;"></div>
+            </div>
+            <div class="settings-footer"><button class="btn btn-primary" id="btn-save-pwd">CAMBIA PASSWORD</button></div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-card-head"><span class="settings-card-title">SESSIONE CORRENTE</span><span>🛡</span></div>
+            <div class="settings-card-body">
+              <div class="detail-row"><span class="detail-label">Token</span><span class="detail-val" id="session-token-display" style="font-size:10px;color:var(--text3);word-break:break-all;">—</span></div>
+              <div class="detail-row"><span class="detail-label">Login alle</span><span class="detail-val" id="session-login-time">—</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB BACKUP -->
+        <div class="stab-panel" id="stab-backup">
+          <div class="settings-card">
+            <div class="settings-card-head"><span class="settings-card-title">ESPORTA DATI</span><span>💾</span></div>
+            <div class="settings-card-body">
+              <p style="color:var(--text2);font-size:12px;margin-bottom:18px;line-height:1.7;">Scarica i dati del pannello. I CSV si aprono con Excel o Google Sheets.</p>
+              <div class="dl-row">
+                <div><div class="dl-row-title">Prenotazioni — CSV</div><div class="dl-row-sub">Tutte le prenotazioni con dettagli e stato</div></div>
+                <button class="btn btn-ghost btn-sm" id="btn-dl-pre">
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4 5 4-5M3 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> SCARICA
+                </button>
+              </div>
+              <div class="dl-row">
+                <div><div class="dl-row-title">Catalogo — CSV</div><div class="dl-row-sub">Tutti gli articoli del catalogo</div></div>
+                <button class="btn btn-ghost btn-sm" id="btn-dl-cat">
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4 5 4-5M3 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> SCARICA
+                </button>
+              </div>
+              <div class="dl-row">
+                <div><div class="dl-row-title">Backup completo — JSON</div><div class="dl-row-sub">Tutti i dati incluse impostazioni</div></div>
+                <button class="btn btn-ghost btn-sm" id="btn-dl-backup">
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4 5 4-5M3 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> SCARICA
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="settings-card">
+            <div class="settings-card-head"><span class="settings-card-title">ZONA PERICOLOSA</span><span>⚠️</span></div>
+            <div class="settings-card-body">
+              <div class="info-box" style="border-left:3px solid var(--red);color:var(--red)">Azioni irreversibili. Procedi con cautela.</div>
+              <div class="danger-row">
+                <div><div class="dl-row-title">Elimina prenotazioni completate</div><div class="dl-row-sub">Rimuove tutte le prenotazioni con stato "completata"</div></div>
+                <button class="btn btn-danger btn-sm" id="btn-purge-complete">ELIMINA</button>
+              </div>
+              <div class="danger-row">
+                <div><div class="dl-row-title">Elimina prenotazioni annullate</div><div class="dl-row-sub">Rimuove tutte le prenotazioni con stato "annullata"</div></div>
+                <button class="btn btn-danger btn-sm" id="btn-purge-annullate">ELIMINA</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panel-settings -->
+    </div>
+  </main>
+</div>
+
+<!-- MODAL PRENOTAZIONE -->
+<div class="modal-bg" id="modal-pre">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-pre-title">PRENOTAZIONE</h3>
+      <button class="modal-close" data-close="modal-pre">×</button>
+    </div>
+    <div class="modal-body" id="modal-pre-body"></div>
+    <div class="modal-footer" id="modal-pre-footer"></div>
+  </div>
+</div>
+
+<!-- MODAL CATALOGO -->
+<div class="modal-bg" id="modal-cat">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-cat-title">ARTICOLO</h3>
+      <button class="modal-close" data-close="modal-cat">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field full"><label>NOME *</label><input type="text" id="cat-nome" placeholder="Nome articolo"></div>
+        <div class="form-field">
+          <label>CATEGORIA</label>
+          <select id="cat-cat">
+            <option value="decorativo">Decorativo</option>
+            <option value="gadget">Gadget</option>
+            <option value="tecnico">Tecnico</option>
+            <option value="prototipo">Prototipo</option>
+          </select>
+        </div>
+        <div class="form-field"><label>MATERIALE</label><input type="text" id="cat-mat" placeholder="PLA, PLA+…"></div>
+        <div class="form-field full"><label>DESCRIZIONE</label><textarea id="cat-desc" rows="3"></textarea></div>
+        <div class="form-field"><label>TAG</label><input type="text" id="cat-tag" placeholder="Su misura"></div>
+        <div class="form-field"><label>BG COLOR</label><input type="text" id="cat-bg" placeholder="#111"></div>
+        <div class="form-field full"><label>SVG (opzionale)</label><textarea id="cat-svg" rows="3" placeholder="<svg viewBox=…></svg>"></textarea></div>
+        <div class="form-field full" id="cat-foto-field">
+          <label>FOTO</label>
+          <div id="cat-foto-preview" style="display:none;position:relative;margin-bottom:8px;">
+            <img id="cat-foto-img" src="" alt="Preview" style="width:100%;max-height:200px;object-fit:cover;border-radius:4px;border:1px solid var(--border);">
+            <button type="button" id="cat-foto-remove" title="Rimuovi foto" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);border:none;color:#fff;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;">×</button>
+          </div>
+          <label id="cat-foto-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;border:1px dashed var(--border2);border-radius:var(--radius);padding:12px 16px;color:var(--text2);font-size:11px;transition:border-color .2s;">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="7.5" r="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 11l3.5-3.5 2.5 2.5 2-2 4 4" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span id="cat-foto-label-text">Clicca per caricare una foto (JPG, PNG, WEBP — max 8MB)</span>
+            <input type="file" id="cat-foto-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
+          </label>
+        </div>
+        <div class="form-field full">
+          <div class="toggle-wrap" id="cat-large-toggle">
+            <div class="toggle" id="cat-large-t"></div>
+            <span class="toggle-label">CARD GRANDE (2 colonne)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" data-close="modal-cat">Annulla</button>
+      <button class="btn btn-primary" id="btn-save-cat">SALVA</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// PRINT3D ADMIN
+// ============================================================
+// ── Token persistente in sessionStorage ───────────────────
+let TOKEN      = sessionStorage.getItem('admin_token')      || null;
+let LOGIN_TIME = sessionStorage.getItem('admin_login_time') ? new Date(sessionStorage.getItem('admin_login_time')) : null;
+let allPrenotazioni = [], allCatalogo = [];
+let editingCatId = null, catLarge = false, catFotoStaged = null, catFotoRemove = false;
+
+// ── Foto handlers ──────────────────────────────────────────
+document.getElementById('cat-foto-input').addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  catFotoStaged = file;
+  catFotoRemove = false;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('cat-foto-img');
+    img.src = e.target.result;
+    document.getElementById('cat-foto-preview').style.display = 'block';
+    document.getElementById('cat-foto-label-text').textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById('cat-foto-remove').addEventListener('click', () => {
+  catFotoStaged = null;
+  catFotoRemove = true;
+  document.getElementById('cat-foto-preview').style.display = 'none';
+  document.getElementById('cat-foto-img').src = '';
+  document.getElementById('cat-foto-input').value = '';
+  document.getElementById('cat-foto-label-text').textContent = 'Clicca per caricare una foto (JPG, PNG, WEBP — max 8MB)';
+});
+
+// ── Utils ──────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = '', 2800);
+}
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' })
+    + ' ' + d.toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit' });
+}
+function badgeHTML(stato) {
+  const L = { nuova:'NUOVA', in_lavorazione:'LAVORAZIONE', completata:'COMPLETATA', annullata:'ANNULLATA' };
+  return `<span class="badge badge-${stato}">${L[stato] || stato}</span>`;
+}
+async function api(path, method = 'GET', body = null) {
+  const opts = { method, headers: { 'Content-Type':'application/json', 'x-admin-token': TOKEN } };
+  if (body !== null) opts.body = JSON.stringify(body);
+  let res;
+  try { res = await fetch(path, opts); }
+  catch (e) { toast('Errore di rete — controlla la connessione', 'error'); throw e; }
+  if (res.status === 401) { toast('Sessione scaduta — rieffettua il login', 'error'); doLogout(); throw new Error('401'); }
+  if (!res.ok) {
+    let msg = `Errore ${res.status}`;
+    try { const d = await res.json(); msg = d.message || msg; } catch {}
+    toast(msg, 'error'); throw new Error(msg);
+  }
+  const data = await res.json();
+  if (data && data.success === false) {
+    toast(data.message || 'Operazione fallita', 'error');
+    throw new Error(data.message || 'Operazione fallita');
+  }
+  return data;
+}
+function downloadViaToken(url, filename) {
+  const a = document.createElement('a');
+  a.href = url + '?token=' + encodeURIComponent(TOKEN);
+  a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function updateToggle(id, val) {
+  document.getElementById(id).className = 'toggle' + (val ? ' on' : '');
+}
+
+// ── Clock ──────────────────────────────────────────────────
+function updateClock() {
+  document.getElementById('topbar-time').textContent =
+    new Date().toLocaleTimeString('it-IT', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ── Hamburger ──────────────────────────────────────────────
+const hBtn    = document.getElementById('hamburger-btn');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebar-overlay');
+function openSidebar()  { sidebar.classList.add('open'); overlay.classList.add('open'); hBtn.classList.add('open'); }
+function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); hBtn.classList.remove('open'); }
+hBtn.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+overlay.addEventListener('click', closeSidebar);
+
+// ── Login ──────────────────────────────────────────────────
+async function doLogin() {
+  const pwd = document.getElementById('login-pwd').value;
+  const err = document.getElementById('login-err');
+  err.textContent = '';
+  if (!pwd) return;
+  try {
+    const d = await fetch('/api/admin/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    }).then(r => r.json());
+    if (d.success) {
+      TOKEN = d.token; LOGIN_TIME = new Date();
+      sessionStorage.setItem('admin_token', TOKEN);
+      sessionStorage.setItem('admin_login_time', LOGIN_TIME.toISOString());
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app').style.display = 'flex';
+      loadDashboard();
+    } else { err.textContent = d.message || 'Password errata'; }
+  } catch { err.textContent = 'Errore di connessione'; }
+}
+document.getElementById('login-btn').addEventListener('click', doLogin);
+document.getElementById('login-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ── Ripristino automatico sessione ─────────────────────────
+(async function tryRestoreSession() {
+  if (!TOKEN) return; // nessun token salvato, mostra login normalmente
+  try {
+    // Verifica che il token sia ancora valido
+    const res = await fetch('/api/admin/stats', {
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN }
+    });
+    if (res.ok) {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app').style.display = 'flex';
+      loadDashboard();
+    } else {
+      // Token non più valido, rimuovi e mostra login
+      sessionStorage.removeItem('admin_token');
+      sessionStorage.removeItem('admin_login_time');
+      TOKEN = null; LOGIN_TIME = null;
+    }
+  } catch {
+    // Errore di rete, lascia login screen
+  }
+})();
+
+// ── Logout ─────────────────────────────────────────────────
+function doLogout() {
+  TOKEN = null;
+  sessionStorage.removeItem('admin_token');
+  sessionStorage.removeItem('admin_login_time');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-pwd').value = '';
+  closeSidebar();
+}
+document.getElementById('logout-btn').addEventListener('click', doLogout);
+
+// ── Panel nav ──────────────────────────────────────────────
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  const nav = document.querySelector(`.nav-item[data-panel="${name}"]`);
+  if (nav) nav.classList.add('active');
+  const T = { dashboard:'DASHBOARD', prenotazioni:'PRENOTAZIONI', catalogo:'CATALOGO', settings:'IMPOSTAZIONI' };
+  document.getElementById('topbar-title').textContent = T[name] || name.toUpperCase();
+  closeSidebar();
+  if (name === 'dashboard')    loadDashboard();
+  if (name === 'prenotazioni') loadPrenotazioni();
+  if (name === 'catalogo')     loadCatalogo();
+  if (name === 'settings')     loadSettings();
+}
+document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => showPanel(el.dataset.panel)));
+
+// ── Settings tabs ──────────────────────────────────────────
+document.querySelectorAll('.stab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.stab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const tp = document.getElementById('stab-' + btn.dataset.stab);
+    if (tp) tp.classList.add('active');
+  });
+});
+
+// ── Modals ─────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', () => closeModal(el.dataset.close)));
+document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); }));
+
+// ── Dashboard ──────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const s = await api('/api/admin/stats');
+    document.getElementById('stat-totale').textContent      = s.totale;
+    document.getElementById('stat-nuove').textContent       = s.nuove;
+    document.getElementById('stat-lavorazione').textContent = s.in_lavorazione;
+    document.getElementById('stat-completate').textContent  = s.completate;
+    document.getElementById('stat-oggi').textContent        = s.oggi;
+    document.getElementById('stat-annullate').textContent   = s.annullate;
+    document.getElementById('stat-catalogo').textContent    = s.catalogo;
+    document.getElementById('stat-sub-mese').textContent    = s.mese + ' questo mese';
+    document.getElementById('stat-sub-settimana').textContent = s.settimana + ' questa settimana';
+    document.getElementById('stat-sub-visibili').textContent  = s.catalogo_visibili + ' visibili';
+    document.getElementById('badge-nuove').textContent      = s.nuove;
+
+    const pre = await api('/api/admin/prenotazioni');
+    allPrenotazioni = pre;
+    const tbody = document.getElementById('dashboard-recent');
+    tbody.innerHTML = pre.slice(0, 8).length
+      ? pre.slice(0, 8).map(p => `
+        <tr style="cursor:pointer" onclick="openPrenotazione('${p.id}')">
+          <td style="color:var(--text3);font-size:11px;">${p.id}</td>
+          <td><strong>${p.nome}</strong></td>
+          <td style="color:var(--text2)">${p.oggetto}</td>
+          <td style="color:var(--text3);font-size:11px;white-space:nowrap;">${formatDate(p.data)}</td>
+          <td>${badgeHTML(p.stato)}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:32px">Nessuna prenotazione</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+// ── Prenotazioni ───────────────────────────────────────────
+let filterStato = 'all', searchQuery = '';
+
+async function loadPrenotazioni() {
+  allPrenotazioni = await api('/api/admin/prenotazioni');
+  renderPrenotazioni();
+}
+
+function renderPrenotazioni() {
+  let list = allPrenotazioni;
+  if (filterStato !== 'all') list = list.filter(p => p.stato === filterStato);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(p => p.nome.toLowerCase().includes(q) || p.email.toLowerCase().includes(q) || p.oggetto.toLowerCase().includes(q));
+  }
+  const tbody = document.getElementById('table-prenotazioni');
+  const empty = document.getElementById('empty-prenotazioni');
+  if (!list.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  tbody.innerHTML = list.map(p => `
+    <tr style="cursor:pointer" onclick="openPrenotazione('${p.id}')">
+      <td style="color:var(--text3);font-size:10px;">${p.id}</td>
+      <td><strong>${p.nome}</strong><br><span style="color:var(--text3);font-size:11px;">${p.email}</span></td>
+      <td style="color:var(--text2)">${p.oggetto}</td>
+      <td style="color:var(--text3);font-size:11px;white-space:nowrap;">${formatDate(p.data)}</td>
+      <td>${badgeHTML(p.stato)}</td>
+      <td onclick="event.stopPropagation()">
+        <select class="inline-select" onchange="changeStato('${p.id}',this.value)">
+          <option value="nuova"          ${p.stato==='nuova'          ?'selected':''}>Nuova</option>
+          <option value="in_lavorazione" ${p.stato==='in_lavorazione' ?'selected':''}>Lavorazione</option>
+          <option value="completata"     ${p.stato==='completata'     ?'selected':''}>Completata</option>
+          <option value="annullata"      ${p.stato==='annullata'      ?'selected':''}>Annullata</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+document.querySelectorAll('[data-stato]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-stato]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterStato = btn.dataset.stato;
+    renderPrenotazioni();
+  });
+});
+document.getElementById('search-prenotazioni').addEventListener('input', e => { searchQuery = e.target.value; renderPrenotazioni(); });
+document.getElementById('btn-export-pre').addEventListener('click', () => { downloadViaToken('/api/admin/export/prenotazioni','prenotazioni.csv'); toast('Download avviato','info'); });
+
+async function changeStato(id, stato) {
+  await api(`/api/admin/prenotazioni/${id}`, 'PATCH', { stato });
+  allPrenotazioni = allPrenotazioni.map(p => p.id === id ? { ...p, stato } : p);
+  renderPrenotazioni();
+  toast('Stato aggiornato');
+  document.getElementById('badge-nuove').textContent = allPrenotazioni.filter(p => p.stato === 'nuova').length;
+}
+
+function openPrenotazione(id) {
+  const p = allPrenotazioni.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modal-pre-title').textContent = p.id;
+  document.getElementById('modal-pre-body').innerHTML = `
+    <div class="detail-row"><span class="detail-label">Nome</span><span class="detail-val"><strong>${p.nome}</strong></span></div>
+    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-val"><a href="mailto:${p.email}" style="color:var(--red)">${p.email}</a></span></div>
+    <div class="detail-row"><span class="detail-label">Telefono</span><span class="detail-val">${p.telefono||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Oggetto</span><span class="detail-val">${p.oggetto}</span></div>
+    <div class="detail-row"><span class="detail-label">Materiale</span><span class="detail-val">${p.materiale}</span></div>
+    <div class="detail-row"><span class="detail-label">Colore</span><span class="detail-val">${p.colore||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Quantità</span><span class="detail-val">${p.quantita}</span></div>
+    <div class="detail-row"><span class="detail-label">Deadline</span><span class="detail-val">${p.deadline||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Ricevuta</span><span class="detail-val">${formatDate(p.data)}</span></div>
+    <div class="detail-row"><span class="detail-label">Note cliente</span><span class="detail-val">${p.note||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Stato</span><span class="detail-val">
+      <select class="inline-select" id="modal-stato-sel">
+        <option value="nuova"          ${p.stato==='nuova'          ?'selected':''}>Nuova</option>
+        <option value="in_lavorazione" ${p.stato==='in_lavorazione' ?'selected':''}>In lavorazione</option>
+        <option value="completata"     ${p.stato==='completata'     ?'selected':''}>Completata</option>
+        <option value="annullata"      ${p.stato==='annullata'      ?'selected':''}>Annullata</option>
+      </select>
+    </span></div>
+    <div style="margin-top:14px">
+      <label style="color:var(--text3);font-size:10px;letter-spacing:1px;">NOTA ADMIN</label>
+      <textarea class="nota-input" id="modal-nota">${p.nota_admin||''}</textarea>
+    </div>`;
+  document.getElementById('modal-pre-footer').innerHTML = `
+    <button class="btn btn-danger btn-sm" onclick="deletePrenotazione('${p.id}')">ELIMINA</button>
+    <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-pre')">Chiudi</button>
+    <button class="btn btn-primary btn-sm" onclick="savePrenotazione('${p.id}')">SALVA</button>`;
+  openModal('modal-pre');
+}
+
+async function savePrenotazione(id) {
+  const stato      = document.getElementById('modal-stato-sel').value;
+  const nota_admin = document.getElementById('modal-nota').value;
+  await api(`/api/admin/prenotazioni/${id}`, 'PATCH', { stato, nota_admin });
+  allPrenotazioni = allPrenotazioni.map(p => p.id === id ? { ...p, stato, nota_admin } : p);
+  renderPrenotazioni();
+  closeModal('modal-pre');
+  toast('Prenotazione aggiornata');
+  document.getElementById('badge-nuove').textContent = allPrenotazioni.filter(p => p.stato === 'nuova').length;
+}
+
+async function deletePrenotazione(id) {
+  if (!confirm('Eliminare questa prenotazione? Azione irreversibile.')) return;
+  await api(`/api/admin/prenotazioni/${id}`, 'DELETE');
+  allPrenotazioni = allPrenotazioni.filter(p => p.id !== id);
+  renderPrenotazioni();
+  closeModal('modal-pre');
+  toast('Prenotazione eliminata', 'error');
+  document.getElementById('badge-nuove').textContent = allPrenotazioni.filter(p => p.stato === 'nuova').length;
+}
+
+// ── Catalogo ───────────────────────────────────────────────
+let filterCat = 'all';
+
+async function loadCatalogo() { allCatalogo = await api('/api/admin/catalogo'); renderCatalogo(); }
+
+function renderCatalogo() {
+  let list = allCatalogo;
+  if (filterCat !== 'all') list = list.filter(c => c.categoria === filterCat);
+  const tbody = document.getElementById('table-catalogo');
+  const empty = document.getElementById('empty-catalogo');
+  if (!list.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  tbody.innerHTML = list.map(c => `
+    <tr>
+      <td>
+        ${c.foto ? `<img src="${c.foto}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:8px;border:1px solid var(--border);">` : ''}
+        <strong>${c.nome}</strong>${c.large ? ' <span style="font-size:10px;color:var(--text3);">[grande]</span>' : ''}
+      </td>
+      <td><span class="badge badge-cat">${c.categoria}</span></td>
+      <td style="color:var(--text2)">${c.materiale||'—'}</td>
+      <td style="color:var(--text2);font-size:11px;">${c.tag||'—'}</td>
+      <td><div class="toggle-wrap" onclick="toggleVisibile('${c.id}')"><div class="toggle ${c.visibile !== false ? 'on' : ''}"></div></div></td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="editCatalogo('${c.id}')">MODIFICA</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:6px" onclick="deleteCatalogo('${c.id}')">×</button>
+      </td>
+    </tr>`).join('');
+}
+
+document.querySelectorAll('[data-cat]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterCat = btn.dataset.cat;
+    renderCatalogo();
+  });
+});
+document.getElementById('btn-export-cat').addEventListener('click', () => { downloadViaToken('/api/admin/export/catalogo','catalogo.csv'); toast('Download avviato','info'); });
+
+async function toggleVisibile(id) {
+  const item = allCatalogo.find(c => c.id === id);
+  if (!item) return;
+  const ns = item.visibile === false ? true : false;
+  await api(`/api/admin/catalogo/${id}`, 'PATCH', { visibile: ns });
+  allCatalogo = allCatalogo.map(c => c.id === id ? { ...c, visibile: ns } : c);
+  renderCatalogo();
+  toast(ns ? 'Articolo visibile' : 'Articolo nascosto');
+}
+
+function openCatModal(item = null) {
+  editingCatId = item ? item.id : null;
+  catLarge = item ? !!item.large : false;
+  document.getElementById('modal-cat-title').textContent = item ? 'MODIFICA ARTICOLO' : 'NUOVO ARTICOLO';
+  document.getElementById('cat-nome').value = item?.nome || '';
+  document.getElementById('cat-cat').value  = item?.categoria || 'decorativo';
+  document.getElementById('cat-mat').value  = item?.materiale || '';
+  document.getElementById('cat-desc').value = item?.descrizione || '';
+  document.getElementById('cat-tag').value  = item?.tag || '';
+  document.getElementById('cat-bg').value   = item?.bg || '#111';
+  document.getElementById('cat-svg').value  = item?.svg || '';
+  document.getElementById('cat-large-t').className = 'toggle' + (catLarge ? ' on' : '');
+  // Foto
+  catFotoStaged   = null; // file scelto ma non ancora caricato
+  catFotoRemove   = false;
+  const existingFoto = item?.foto || null;
+  const preview  = document.getElementById('cat-foto-preview');
+  const img      = document.getElementById('cat-foto-img');
+  const lbl      = document.getElementById('cat-foto-label-text');
+  const fileInput = document.getElementById('cat-foto-input');
+  fileInput.value = '';
+  if (existingFoto) {
+    img.src = existingFoto;
+    preview.style.display = 'block';
+    lbl.textContent = 'Sostituisci foto';
+  } else {
+    preview.style.display = 'none';
+    img.src = '';
+    lbl.textContent = 'Clicca per caricare una foto (JPG, PNG, WEBP — max 8MB)';
+  }
+  openModal('modal-cat');
+}
+document.getElementById('cat-large-toggle').addEventListener('click', () => { catLarge = !catLarge; document.getElementById('cat-large-t').className = 'toggle' + (catLarge ? ' on' : ''); });
+document.getElementById('btn-new-cat').addEventListener('click', () => openCatModal());
+function editCatalogo(id) { const i = allCatalogo.find(c => c.id === id); if (i) openCatModal(i); }
+
+document.getElementById('btn-save-cat').addEventListener('click', async () => {
+  const nome = document.getElementById('cat-nome').value.trim();
+  if (!nome) { toast('Il nome è obbligatorio','error'); return; }
+  const payload = {
+    nome, categoria: document.getElementById('cat-cat').value,
+    materiale: document.getElementById('cat-mat').value, descrizione: document.getElementById('cat-desc').value,
+    tag: document.getElementById('cat-tag').value, bg: document.getElementById('cat-bg').value || '#111',
+    svg: document.getElementById('cat-svg').value, large: catLarge,
+  };
+
+  let articleId = editingCatId;
+
+  if (editingCatId) {
+    const r = await api(`/api/admin/catalogo/${editingCatId}`, 'PATCH', payload);
+    if (!r.success) { toast('Errore salvataggio','error'); return; }
+    allCatalogo = allCatalogo.map(c => c.id === editingCatId ? r.articolo : c);
+    toast('Articolo aggiornato');
+  } else {
+    const r = await api('/api/admin/catalogo', 'POST', payload);
+    if (!r.success) { toast('Errore salvataggio','error'); return; }
+    allCatalogo.push(r.articolo);
+    articleId = r.articolo.id;
+    toast('Articolo aggiunto');
+  }
+
+  // Gestione foto
+  if (catFotoStaged && articleId) {
+    const fd = new FormData();
+    fd.append('foto', catFotoStaged);
+    try {
+      const resp = await fetch(`/api/admin/catalogo/${articleId}/foto`, {
+        method: 'POST',
+        headers: { 'x-admin-token': TOKEN },
+        body: fd,
+      });
+      const result = await resp.json();
+      if (result.success) {
+        const idx = allCatalogo.findIndex(c => c.id === articleId);
+        if (idx !== -1) allCatalogo[idx].foto = result.foto;
+        toast('Foto caricata ✓');
+      } else {
+        toast('Errore upload foto: ' + result.message, 'error');
+      }
+    } catch(e) { toast('Errore upload foto','error'); }
+  } else if (catFotoRemove && articleId) {
+    try {
+      await fetch(`/api/admin/catalogo/${articleId}/foto`, {
+        method: 'DELETE',
+        headers: { 'x-admin-token': TOKEN },
+      });
+      const idx = allCatalogo.findIndex(c => c.id === articleId);
+      if (idx !== -1) delete allCatalogo[idx].foto;
+    } catch(e) { /* ignora */ }
+  }
+
+  renderCatalogo(); closeModal('modal-cat');
+});
+
+async function deleteCatalogo(id) {
+  if (!confirm('Eliminare questo articolo?')) return;
+  await api(`/api/admin/catalogo/${id}`, 'DELETE');
+  allCatalogo = allCatalogo.filter(c => c.id !== id);
+  renderCatalogo(); toast('Articolo eliminato','error');
+}
+
+// ── Settings ───────────────────────────────────────────────
+async function loadSettings() {
+  const s = await api('/api/admin/settings');
+  // Studio
+  document.getElementById('set-nome').value         = s.site_nome      || '';
+  document.getElementById('set-email').value        = s.site_email     || '';
+  document.getElementById('set-telefono').value     = s.site_telefono  || '';
+  document.getElementById('set-indirizzo').value    = s.site_indirizzo || '';
+  document.getElementById('set-citta').value        = s.site_citta     || '';
+  document.getElementById('set-sito').value         = s.site_sito      || '';
+  document.getElementById('set-disponibilita').value = s.disponibilita || '';
+  document.getElementById('set-risposta').value     = s.risposta_tempi || '';
+  // Orari
+  document.getElementById('set-orari-lv').value  = s.orari_lun_ven          || '';
+  document.getElementById('set-orari-sab').value = s.orari_sab              || '';
+  document.getElementById('set-orari-dom').value = s.orari_dom              || '';
+  document.getElementById('set-materiali').value = s.materiali_disponibili  || '';
+  document.getElementById('set-colori').value    = s.colori_disponibili     || '';
+  // SEO
+  const md = document.getElementById('set-metadesc');
+  md.value = s.meta_descrizione || '';
+  document.getElementById('metadesc-count').textContent = md.value.length;
+  document.getElementById('set-keywords').value = s.meta_keywords || '';
+  // EmailJS
+  document.getElementById('set-ejs-service').value    = s.emailjs_service_id      || '';
+  document.getElementById('set-ejs-pubkey').value     = s.emailjs_public_key       || '';
+  document.getElementById('set-ejs-tpl-owner').value  = s.emailjs_template_owner  || '';
+  document.getElementById('set-ejs-tpl-client').value = s.emailjs_template_client || '';
+  // Sicurezza sessione
+  document.getElementById('session-token-display').textContent = TOKEN ? TOKEN.slice(0,24) + '…' : '—';
+  document.getElementById('session-login-time').textContent    = LOGIN_TIME ? formatDate(LOGIN_TIME.toISOString()) : '—';
+}
+
+document.getElementById('set-metadesc').addEventListener('input', e => {
+  document.getElementById('metadesc-count').textContent = e.target.value.length;
+});
+document.getElementById('set-newpwd').addEventListener('input', e => {
+  const v = e.target.value, el = document.getElementById('pwd-strength');
+  if (!v) { el.textContent = ''; return; }
+  let s = 0;
+  if (v.length>=8)s++; if(v.length>=12)s++;
+  if(/[A-Z]/.test(v))s++; if(/[0-9]/.test(v))s++; if(/[^A-Za-z0-9]/.test(v))s++;
+  const L=['','⚠ Molto debole','⚠ Debole','▲ Discreta','✓ Buona','✓ Ottima'];
+  const C=['','#e53e3e','#ed8936','#ecc94b','#48bb78','#68d391'];
+  el.textContent = L[s]||''; el.style.color = C[s]||'var(--text3)';
+});
+
+document.getElementById('btn-save-notifiche').addEventListener('click', async () => {
+  try {
+    await api('/api/admin/settings', 'PATCH', {
+      emailjs_service_id:      document.getElementById('set-ejs-service').value.trim(),
+      emailjs_public_key:       document.getElementById('set-ejs-pubkey').value.trim(),
+      emailjs_template_owner:  document.getElementById('set-ejs-tpl-owner').value.trim(),
+      emailjs_template_client: document.getElementById('set-ejs-tpl-client').value.trim(),
+    });
+    toast('Configurazione email salvata');
+  } catch {}
+});
+
+document.getElementById('btn-test-emailjs').addEventListener('click', async () => {
+  const resultEl = document.getElementById('test-emailjs-result');
+  const serviceId   = document.getElementById('set-ejs-service').value.trim();
+  const pubKey      = document.getElementById('set-ejs-pubkey').value.trim();
+  const templateId  = document.getElementById('set-ejs-tpl-owner').value.trim();
+  if (!serviceId || !pubKey || !templateId) {
+    resultEl.textContent = '⚠ Compila Service ID, Public Key e Template ID prima di testare';
+    resultEl.style.color = '#ed8936'; return;
+  }
+  resultEl.textContent = '⏳ Invio in corso…'; resultEl.style.color = 'var(--text2)';
+  try {
+    if (!window.emailjs) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+        s.onload = res; s.onerror = rej; document.head.appendChild(s);
+      });
+    }
+    emailjs.init({ publicKey: pubKey });
+    // Recupera l'email via API (il campo DOM potrebbe non essere ancora caricato)
+    const settingsData = await api('/api/admin/settings');
+    const toEmail = settingsData?.site_email?.trim() || '';
+    if (!toEmail) {
+      resultEl.textContent = '⚠ Imposta la tua email in Impostazioni → Studio e salva prima di testare';
+      resultEl.style.color = '#ed8936'; return;
+    }
+    await emailjs.send(serviceId, templateId, {
+      booking_id:    'TEST-' + Date.now(),
+      cliente_nome:  'Cliente Test',
+      cliente_email: 'test@test.com',
+      cliente_tel:   '+39 000 000 0000',
+      oggetto:       'Test configurazione EmailJS',
+      materiale:     'PLA',
+      colore:        'Bianco',
+      quantita:      1,
+      deadline:      'Non specificata',
+      note:          'Questo è un messaggio di test automatico.',
+      data_invio:    new Date().toLocaleString('it-IT'),
+      studio_nome:   'Print3D Studio',
+      to_email:      toEmail,
+      to_name:       'Admin Print3D',
+    });
+    resultEl.textContent = '✓ Email di test inviata!';
+    resultEl.style.color = '#48bb78';
+  } catch (e) {
+    resultEl.textContent = '✗ Errore: ' + (e.text || e.message || JSON.stringify(e));
+    resultEl.style.color = '#e53e3e';
+  }
+});
+
+document.getElementById('btn-save-generale').addEventListener('click', async () => {
+  try {
+    await api('/api/admin/settings', 'PATCH', {
+      site_nome: document.getElementById('set-nome').value,
+      site_email: document.getElementById('set-email').value,
+      site_telefono: document.getElementById('set-telefono').value,
+      site_indirizzo: document.getElementById('set-indirizzo').value,
+      site_citta: document.getElementById('set-citta').value,
+      site_sito: document.getElementById('set-sito').value,
+      disponibilita: document.getElementById('set-disponibilita').value,
+      risposta_tempi: document.getElementById('set-risposta').value,
+    });
+    toast('Informazioni studio salvate');
+  } catch {}
+});
+document.getElementById('btn-save-orari').addEventListener('click', async () => {
+  try {
+    await api('/api/admin/settings', 'PATCH', {
+      orari_lun_ven: document.getElementById('set-orari-lv').value,
+      orari_sab: document.getElementById('set-orari-sab').value,
+      orari_dom: document.getElementById('set-orari-dom').value,
+    });
+    toast('Orari salvati');
+  } catch {}
+});
+document.getElementById('btn-save-servizi').addEventListener('click', async () => {
+  try {
+    await api('/api/admin/settings', 'PATCH', {
+      materiali_disponibili: document.getElementById('set-materiali').value,
+      colori_disponibili: document.getElementById('set-colori').value,
+    });
+    toast('Materiali e colori salvati');
+  } catch {}
+});
+document.getElementById('btn-save-seo').addEventListener('click', async () => {
+  try {
+    await api('/api/admin/settings', 'PATCH', {
+      meta_descrizione: document.getElementById('set-metadesc').value,
+      meta_keywords: document.getElementById('set-keywords').value,
+    });
+    toast('SEO salvato');
+  } catch {}
+});
+document.getElementById('btn-save-pwd').addEventListener('click', async () => {
+  const np = document.getElementById('set-newpwd').value;
+  const cp = document.getElementById('set-confirmpwd').value;
+  if (!np || np.length < 8) { toast('Minimo 8 caratteri','error'); return; }
+  if (np !== cp) { toast('Le password non coincidono','error'); return; }
+  await api('/api/admin/settings', 'PATCH', { nuova_password: np });
+  document.getElementById('set-newpwd').value = '';
+  document.getElementById('set-confirmpwd').value = '';
+  document.getElementById('pwd-strength').textContent = '';
+  toast('Password aggiornata — rieffettua il login','info');
+  setTimeout(doLogout, 2000);
+});
+
+// Download
+document.getElementById('btn-dl-pre').addEventListener('click', () => { downloadViaToken('/api/admin/export/prenotazioni','prenotazioni.csv'); toast('Download avviato','info'); });
+document.getElementById('btn-dl-cat').addEventListener('click', () => { downloadViaToken('/api/admin/export/catalogo','catalogo.csv'); toast('Download avviato','info'); });
+document.getElementById('btn-dl-backup').addEventListener('click', () => { downloadViaToken('/api/admin/export/backup',`backup-${new Date().toISOString().slice(0,10)}.json`); toast('Backup avviato','info'); });
+
+// Purge
+async function purgeByStato(stato) {
+  if (!allPrenotazioni.length) allPrenotazioni = await api('/api/admin/prenotazioni');
+  const targets = allPrenotazioni.filter(p => p.stato === stato);
+  if (!targets.length) { toast(`Nessuna prenotazione ${stato}`, 'info'); return; }
+  if (!confirm(`Eliminare ${targets.length} prenotazione/i con stato "${stato}"? Irreversibile.`)) return;
+  for (const p of targets) await api(`/api/admin/prenotazioni/${p.id}`, 'DELETE');
+  allPrenotazioni = allPrenotazioni.filter(p => p.stato !== stato);
+  toast(`${targets.length} prenotazioni eliminate`, 'error');
+}
+document.getElementById('btn-purge-complete').addEventListener('click', () => purgeByStato('completata'));
+document.getElementById('btn-purge-annullate').addEventListener('click', () => purgeByStato('annullata'));
+</script>
+</body>
+</html>

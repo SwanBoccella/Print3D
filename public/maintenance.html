@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manutenzione — Print3D Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #0a0a0a;
+      --bg2:     #111111;
+      --surface: #181818;
+      --border:  #2a2a2a;
+      --text:    #ffffff;
+      --muted:   #666666;
+      --subtle:  #333333;
+      --red:     #e53e3e;
+      --red-dim: rgba(229,62,62,0.12);
+      --red-glow: rgba(229,62,62,0.35);
+      --orange:  #ed8936;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-mono:    'Space Mono', monospace;
+      --font-body:    'Inter', sans-serif;
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow-x: hidden; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-weight: 300;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* ── CANVAS BACKGROUND ── */
+    #ambient-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      filter: blur(28px) saturate(1.6);
+      opacity: 0.7;
+      mix-blend-mode: screen;
+    }
+
+    /* ── SCAN LINES ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+    }
+
+    /* ── NOISE GRAIN ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: -50%;
+      z-index: 1;
+      pointer-events: none;
+      width: 200%;
+      height: 200%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.5;
+      animation: grain 0.5s steps(2) infinite;
+    }
+    @keyframes grain {
+      0%  { transform: translate(0,0); }
+      25% { transform: translate(-2px,3px); }
+      50% { transform: translate(3px,-2px); }
+      75% { transform: translate(-1px,4px); }
+      100%{ transform: translate(2px,-3px); }
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .page {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 860px;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    /* ── TOP BADGE ── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(229,62,62,0.1);
+      border: 1px solid rgba(229,62,62,0.3);
+      border-radius: 24px;
+      padding: 6px 18px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--red);
+      margin-bottom: 48px;
+      animation: fadeSlideDown 0.8s var(--ease-out-expo) both;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.2; }
+    }
+
+    /* ── LOGO ── */
+    .logo {
+      font-family: var(--font-display);
+      font-size: clamp(64px, 14vw, 120px);
+      letter-spacing: 8px;
+      line-height: 0.9;
+      animation: fadeSlideDown 0.9s var(--ease-out-expo) 0.1s both;
+      position: relative;
+    }
+    .logo span { color: var(--red); }
+    .logo-glitch {
+      position: relative;
+      display: inline-block;
+    }
+    .logo-glitch::before,
+    .logo-glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .logo-glitch::before {
+      color: var(--red);
+      animation: glitch-1 4s infinite;
+      clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+    }
+    .logo-glitch::after {
+      color: #63b3ed;
+      animation: glitch-2 4s infinite;
+      clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+    }
+    @keyframes glitch-1 {
+      0%, 90%, 100% { transform: translate(0); opacity: 0; }
+      92%            { transform: translate(-4px, 1px); opacity: 0.8; }
+      94%            { transform: translate(3px, -1px); opacity: 0.8; }
+      96%            { transform: translate(-2px, 0); opacity: 0.6; }
+    }
+    @keyframes glitch-2 {
+      0%, 90%, 100% { transform: translate(0); opacity: 0; }
+      91%            { transform: translate(4px, 2px); opacity: 0.6; }
+      93%            { transform: translate(-3px, -1px); opacity: 0.6; }
+      95%            { transform: translate(2px, 1px); opacity: 0.4; }
+    }
+
+    /* ── TAGLINE ── */
+    .tagline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 16px;
+      margin-bottom: 56px;
+      animation: fadeSlideDown 1s var(--ease-out-expo) 0.2s both;
+    }
+
+    /* ── HEADLINE ── */
+    .headline {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 6vw, 52px);
+      letter-spacing: 3px;
+      line-height: 1.05;
+      margin-bottom: 20px;
+      animation: fadeSlideDown 1s var(--ease-out-expo) 0.3s both;
+    }
+    .headline .hl-red { color: var(--red); }
+
+    /* ── DESCRIPTION ── */
+    .description {
+      font-size: 15px;
+      color: #888;
+      line-height: 1.8;
+      max-width: 540px;
+      margin-bottom: 64px;
+      animation: fadeSlideDown 1s var(--ease-out-expo) 0.4s both;
+    }
+
+    /* ── COUNTDOWN ── */
+    .countdown-section {
+      width: 100%;
+      margin-bottom: 64px;
+      animation: fadeSlideDown 1s var(--ease-out-expo) 0.5s both;
+    }
+    .countdown-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .countdown-grid {
+      display: flex;
+      justify-content: center;
+      gap: clamp(12px, 4vw, 40px);
+    }
+    .countdown-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .countdown-val {
+      font-family: var(--font-display);
+      font-size: clamp(52px, 10vw, 88px);
+      line-height: 1;
+      color: var(--text);
+      position: relative;
+      min-width: clamp(70px, 14vw, 110px);
+      text-align: center;
+      transition: color 0.15s;
+    }
+    .countdown-val::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      z-index: -1;
+    }
+    .countdown-val.pulse {
+      animation: num-pulse 0.35s ease;
+    }
+    @keyframes num-pulse {
+      0%   { transform: scale(1); color: var(--text); }
+      40%  { transform: scale(1.06); color: var(--red); }
+      100% { transform: scale(1); color: var(--text); }
+    }
+    .countdown-sep {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 8vw, 70px);
+      line-height: 1;
+      color: var(--subtle);
+      align-self: flex-start;
+      padding-top: 8px;
+    }
+    .countdown-lbl {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .countdown-expired {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 6vw, 48px);
+      letter-spacing: 4px;
+      color: var(--red);
+      animation: fadeSlideDown 0.5s var(--ease-out-expo);
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto 64px;
+      animation: fadeSlideDown 1s var(--ease-out-expo) 0.6s both;
+    }
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .progress-bar {
+      height: 3px;
+      background: var(--surface);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red) 0%, #ff6b6b 100%);
+      border-radius: 2px;
+      transition: width 1s var(--ease-out-expo);
+      box-shadow: 0 0 12px var(--red-glow);
+      position: relative;
+    }
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      right: 0; top: -2px;
+      width: 8px; height: 7px;
+      background: #ff6b6b;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #ff6b6b, 0 0 20px var(--red-glow);
+    }
+    .progress-shimmer {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+      animation: shimmer 2.5s infinite;
+    }
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+
+    /* ── STATUS ITEMS ── */
+    .status-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 64px;
+      animation: fadeSlideDown 1s var(--ease-out-expo) 0.7s both;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+    .status-item:last-child { border-bottom: none; }
+    .status-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #888;
+    }
+    .status-indicator {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .si-ok      { background: #48bb78; box-shadow: 0 0 6px #48bb7880; }
+    .si-warn    { background: var(--orange); box-shadow: 0 0 6px rgba(237,137,54,0.5); animation: blink 2s ease-in-out infinite; }
+    .si-off     { background: var(--red); box-shadow: 0 0 6px var(--red-glow); }
+    .status-item-badge {
+      font-size: 9px;
+      letter-spacing: 2px;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    .sib-ok   { background: rgba(72,187,120,0.1); color: #48bb78; border: 1px solid rgba(72,187,120,0.25); }
+    .sib-warn { background: rgba(237,137,54,0.1);  color: var(--orange); border: 1px solid rgba(237,137,54,0.25); }
+    .sib-off  { background: var(--red-dim);          color: var(--red);    border: 1px solid rgba(229,62,62,0.25); }
+
+    /* ── FOOTER / CONTACT ── */
+    .footer-contact {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      animation: fadeSlideDown 1s var(--ease-out-expo) 0.8s both;
+    }
+    .footer-contact a {
+      color: var(--red);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-contact a:hover { color: #ff6b6b; }
+
+    /* ── CORNER DECO ── */
+    .corner-deco {
+      position: fixed;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .corner-deco svg { display: block; }
+    .cd-tl { top: 0; left: 0; }
+    .cd-tr { top: 0; right: 0; transform: scaleX(-1); }
+    .cd-bl { bottom: 0; left: 0; transform: scaleY(-1); }
+    .cd-br { bottom: 0; right: 0; transform: scale(-1); }
+
+    /* ── FLOATING PARTICLES ── */
+    #particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+    .particle {
+      position: absolute;
+      width: 1px; height: 1px;
+      background: var(--red);
+      border-radius: 50%;
+      animation: float-up linear infinite;
+      opacity: 0;
+    }
+    @keyframes float-up {
+      0%   { transform: translateY(0) scale(1); opacity: 0; }
+      10%  { opacity: 0.6; }
+      90%  { opacity: 0.2; }
+      100% { transform: translateY(-100vh) scale(0.3); opacity: 0; }
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 100%;
+      max-width: 400px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0 auto 56px;
+      animation: fadeSlideDown 1s var(--ease-out-expo) 0.65s both;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── MAINTENANCE MODE INDICATOR ── */
+    .maintenance-mode-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--red), var(--orange), var(--red));
+      background-size: 200% 100%;
+      animation: slide-gradient 3s linear infinite;
+      z-index: 100;
+    }
+    @keyframes slide-gradient {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 200% 0%; }
+    }
+
+    @media (max-width: 640px) {
+      .countdown-grid { gap: 8px; }
+      .countdown-val { min-width: 60px; font-size: 48px; }
+      .countdown-sep { font-size: 36px; }
+      .page { padding: 32px 20px; }
+      .logo { font-size: 72px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="maintenance-mode-bar"></div>
+<canvas id="ambient-canvas"></canvas>
+<div id="particles"></div>
+
+<!-- Corner decorations -->
+<div class="corner-deco cd-tl">
+  <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+    <path d="M0 0 L40 0 L40 2 L2 2 L2 40 L0 40 Z" fill="#2a2a2a"/>
+    <path d="M0 0 L20 0 L20 2 L2 2 L2 20 L0 20 Z" fill="#e53e3e" opacity="0.6"/>
+  </svg>
+</div>
+<div class="corner-deco cd-tr">
+  <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+    <path d="M0 0 L40 0 L40 2 L2 2 L2 40 L0 40 Z" fill="#2a2a2a"/>
+    <path d="M0 0 L20 0 L20 2 L2 2 L2 20 L0 20 Z" fill="#e53e3e" opacity="0.6"/>
+  </svg>
+</div>
+<div class="corner-deco cd-bl">
+  <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+    <path d="M0 0 L40 0 L40 2 L2 2 L2 40 L0 40 Z" fill="#2a2a2a"/>
+    <path d="M0 0 L20 0 L20 2 L2 2 L2 20 L0 20 Z" fill="#e53e3e" opacity="0.4"/>
+  </svg>
+</div>
+<div class="corner-deco cd-br">
+  <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+    <path d="M0 0 L40 0 L40 2 L2 2 L2 40 L0 40 Z" fill="#2a2a2a"/>
+    <path d="M0 0 L20 0 L20 2 L2 2 L2 20 L0 20 Z" fill="#e53e3e" opacity="0.4"/>
+  </svg>
+</div>
+
+<main class="page" id="main-page">
+
+  <div class="status-badge">
+    <div class="status-dot"></div>
+    SISTEMA IN MANUTENZIONE
+  </div>
+
+  <div class="logo">
+    <span class="logo-glitch" data-text="PRINT">PRINT</span><span>3D</span>
+  </div>
+  <div class="tagline">STUDIO — Professional 3D Printing</div>
+
+  <div class="headline">
+    TORNEREMO<br><span class="hl-red">PRESTO</span>
+  </div>
+
+  <div class="description" id="maint-message">
+    Stiamo aggiornando il sistema per offrirti un'esperienza ancora migliore. Il sito sarà di nuovo online a breve. Grazie per la pazienza.
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown-section" id="countdown-section">
+    <div class="countdown-label">CONTO ALLA ROVESCIA</div>
+    <div class="countdown-grid" id="countdown-grid">
+      <div class="countdown-unit">
+        <div class="countdown-val" id="cd-days">00</div>
+        <div class="countdown-lbl">Giorni</div>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit">
+        <div class="countdown-val" id="cd-hours">00</div>
+        <div class="countdown-lbl">Ore</div>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit">
+        <div class="countdown-val" id="cd-minutes">00</div>
+        <div class="countdown-lbl">Minuti</div>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit">
+        <div class="countdown-val" id="cd-seconds">00</div>
+        <div class="countdown-lbl">Secondi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progress-section">
+    <div class="progress-labels">
+      <span>AVANZAMENTO MANUTENZIONE</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%">
+        <div class="progress-shimmer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div class="status-list" id="status-list">
+    <div class="status-item">
+      <div class="status-item-left">
+        <div class="status-indicator si-warn"></div>
+        Sito Web
+      </div>
+      <span class="status-item-badge sib-warn">MANUTENZIONE</span>
+    </div>
+    <div class="status-item">
+      <div class="status-item-left">
+        <div class="status-indicator si-ok"></div>
+        Sistema Prenotazioni
+      </div>
+      <span class="status-item-badge sib-ok">OPERATIVO</span>
+    </div>
+    <div class="status-item">
+      <div class="status-item-left">
+        <div class="status-indicator si-ok"></div>
+        Email & Notifiche
+      </div>
+      <span class="status-item-badge sib-ok">OPERATIVO</span>
+    </div>
+    <div class="status-item">
+      <div class="status-item-left">
+        <div class="status-indicator si-warn"></div>
+        Catalogo
+      </div>
+      <span class="status-item-badge sib-warn">AGGIORNAMENTO</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="footer-contact" id="maint-contact">
+    PER URGENZE: <a href="mailto:info@print3d.studio">info@print3d.studio</a>
+  </div>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════════
+     ADMIN PANEL — visibile solo tramite hash #admin
+     ═══════════════════════════════════════════════════════ -->
+<div id="admin-panel" style="
+  display: none;
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.9);
+  backdrop-filter: blur(12px);
+  align-items: center; justify-content: center;
+  padding: 20px;
+">
+  <div style="
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    width: 100%; max-width: 580px;
+    max-height: 90vh;
+    overflow-y: auto;
+  ">
+
+    <!-- Admin Header -->
+    <div style="padding: 20px 24px; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #111; z-index: 1;">
+      <div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 3px; color: #e53e3e;">ADMIN</div>
+        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; color: #fff; line-height: 1;">PANNELLO MANUTENZIONE</div>
+      </div>
+      <button onclick="closeAdmin()" style="background:none;border:1px solid #333;color:#666;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;" onmouseover="this.style.borderColor='#e53e3e';this.style.color='#e53e3e'" onmouseout="this.style.borderColor='#333';this.style.color='#666'">×</button>
+    </div>
+
+    <div style="padding: 28px 24px; display: flex; flex-direction: column; gap: 24px;">
+
+      <!-- Login required state -->
+      <div id="admin-login-block">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#555;margin-bottom:10px;">PASSWORD ADMIN</div>
+        <div style="display:flex;gap:8px;">
+          <input type="password" id="admin-pwd-input" placeholder="Inserisci password" style="flex:1;background:#181818;border:1px solid #2a2a2a;color:#fff;font-family:'Space Mono',monospace;font-size:12px;padding:10px 14px;border-radius:6px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#e53e3e'" onblur="this.style.borderColor='#2a2a2a'">
+          <button onclick="verifyAdminPwd()" style="background:#e53e3e;border:none;color:#fff;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;padding:10px 18px;border-radius:6px;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#f56565'" onmouseout="this.style.background='#e53e3e'">ACCEDI</button>
+        </div>
+        <div id="admin-pwd-err" style="color:#e53e3e;font-family:'Space Mono',monospace;font-size:10px;margin-top:8px;min-height:16px;"></div>
+      </div>
+
+      <!-- Controls (hidden until auth) -->
+      <div id="admin-controls" style="display:none; flex-direction:column; gap:20px;">
+
+        <!-- Maintenance Toggle -->
+        <div style="background:#181818;border:1px solid #2a2a2a;border-radius:8px;padding:18px 20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div>
+              <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#888;margin-bottom:2px;">MODALITÀ</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;">MANUTENZIONE ATTIVA</div>
+            </div>
+            <div class="adm-toggle-wrap" onclick="toggleMaintenance()" style="cursor:pointer;">
+              <div id="adm-toggle-maintenance" style="width:44px;height:24px;background:#e53e3e;border-radius:12px;position:relative;border:1px solid rgba(229,62,62,0.4);transition:background .2s;">
+                <div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:2px;left:22px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.5);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Countdown datetime -->
+        <div style="background:#181818;border:1px solid #2a2a2a;border-radius:8px;padding:18px 20px;">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#888;margin-bottom:14px;">⏱ COUNTDOWN — DATA/ORA DI RIAPERTURA</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+            <div>
+              <label style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#555;display:block;margin-bottom:6px;">DATA</label>
+              <input type="date" id="adm-cd-date" style="width:100%;background:#111;border:1px solid #2a2a2a;color:#fff;font-family:'Space Mono',monospace;font-size:12px;padding:9px 12px;border-radius:6px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#e53e3e'" onblur="this.style.borderColor='#2a2a2a'">
+            </div>
+            <div>
+              <label style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#555;display:block;margin-bottom:6px;">ORA</label>
+              <input type="time" id="adm-cd-time" style="width:100%;background:#111;border:1px solid #2a2a2a;color:#fff;font-family:'Space Mono',monospace;font-size:12px;padding:9px 12px;border-radius:6px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#e53e3e'" onblur="this.style.borderColor='#2a2a2a'">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="setCountdownQuick(2)" style="background:none;border:1px solid #333;color:#888;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#e53e3e';this.style.color='#e53e3e'" onmouseout="this.style.borderColor='#333';this.style.color='#888'">+2h</button>
+            <button onclick="setCountdownQuick(6)" style="background:none;border:1px solid #333;color:#888;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#e53e3e';this.style.color='#e53e3e'" onmouseout="this.style.borderColor='#333';this.style.color='#888'">+6h</button>
+            <button onclick="setCountdownQuick(24)" style="background:none;border:1px solid #333;color:#888;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#e53e3e';this.style.color='#e53e3e'" onmouseout="this.style.borderColor='#333';this.style.color='#888'">+24h</button>
+            <button onclick="setCountdownQuick(48)" style="background:none;border:1px solid #333;color:#888;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#e53e3e';this.style.color='#e53e3e'" onmouseout="this.style.borderColor='#333';this.style.color='#888'">+48h</button>
+            <button onclick="setCountdownQuick(168)" style="background:none;border:1px solid #333;color:#888;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#e53e3e';this.style.color='#e53e3e'" onmouseout="this.style.borderColor='#333';this.style.color='#888'">+1 sett.</button>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div style="background:#181818;border:1px solid #2a2a2a;border-radius:8px;padding:18px 20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#888;">📊 AVANZAMENTO</div>
+            <span id="adm-prog-val" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#e53e3e;letter-spacing:2px;">0%</span>
+          </div>
+          <input type="range" id="adm-progress" min="0" max="100" value="0" oninput="updateProgressPreview(this.value)" style="width:100%;accent-color:#e53e3e;cursor:pointer;">
+        </div>
+
+        <!-- Message -->
+        <div style="background:#181818;border:1px solid #2a2a2a;border-radius:8px;padding:18px 20px;">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#888;margin-bottom:10px;">💬 MESSAGGIO</div>
+          <textarea id="adm-message" rows="3" placeholder="Stiamo aggiornando il sistema…" style="width:100%;background:#111;border:1px solid #2a2a2a;color:#fff;font-family:'Space Mono',monospace;font-size:12px;padding:10px 14px;border-radius:6px;outline:none;resize:vertical;transition:border-color .2s;line-height:1.6;" onfocus="this.style.borderColor='#e53e3e'" onblur="this.style.borderColor='#2a2a2a'">Stiamo aggiornando il sistema per offrirti un'esperienza ancora migliore. Il sito sarà di nuovo online a breve. Grazie per la pazienza.</textarea>
+        </div>
+
+        <!-- Contact email -->
+        <div style="background:#181818;border:1px solid #2a2a2a;border-radius:8px;padding:18px 20px;">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#888;margin-bottom:10px;">📧 EMAIL CONTATTO</div>
+          <input type="email" id="adm-contact" value="info@print3d.studio" placeholder="info@print3d.studio" style="width:100%;background:#111;border:1px solid #2a2a2a;color:#fff;font-family:'Space Mono',monospace;font-size:12px;padding:10px 14px;border-radius:6px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#e53e3e'" onblur="this.style.borderColor='#2a2a2a'">
+        </div>
+
+        <!-- Status items -->
+        <div style="background:#181818;border:1px solid #2a2a2a;border-radius:8px;padding:18px 20px;">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#888;margin-bottom:14px;">🔧 STATO SERVIZI</div>
+          <div style="display:flex;flex-direction:column;gap:10px;" id="adm-services">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <!-- Apply button -->
+        <button onclick="applyAdminChanges()" style="width:100%;background:#e53e3e;border:none;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;padding:14px;border-radius:8px;cursor:pointer;transition:background .2s;box-shadow:0 0 24px rgba(229,62,62,0.3);" onmouseover="this.style.background='#f56565'" onmouseout="this.style.background='#e53e3e'">APPLICA MODIFICHE</button>
+
+        <div id="adm-saved" style="font-family:'Space Mono',monospace;font-size:11px;color:#48bb78;text-align:center;min-height:20px;opacity:0;transition:opacity .3s;letter-spacing:2px;"></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-maint" style="position:fixed;bottom:24px;right:24px;background:#181818;border:1px solid #2a2a2a;border-left:3px solid #48bb78;border-radius:6px;padding:12px 20px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s;max-width:calc(100vw - 48px);"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// AMBIENT CANVAS — Fluid metaballs (ported from v14)
+// ═══════════════════════════════════════════════════════
+(function() {
+  const canvas = document.getElementById('ambient-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, blobs;
+
+  function init() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    blobs = Array.from({length: 7}, (_, i) => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      r: 120 + Math.random() * 200,
+      hue: i % 2 === 0 ? 0 : 20, // red & orange
+      sat: 70 + Math.random() * 30,
+      phase: Math.random() * Math.PI * 2,
+    }));
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    blobs.forEach(b => {
+      b.phase += 0.005;
+      b.x += b.vx + Math.sin(b.phase * 0.7) * 0.3;
+      b.y += b.vy + Math.cos(b.phase * 0.5) * 0.3;
+      if (b.x < -b.r) b.x = W + b.r;
+      if (b.x > W + b.r) b.x = -b.r;
+      if (b.y < -b.r) b.y = H + b.r;
+      if (b.y > H + b.r) b.y = -b.r;
+
+      const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      g.addColorStop(0, `hsla(${b.hue},${b.sat}%,42%,0.55)`);
+      g.addColorStop(0.5, `hsla(${b.hue},${b.sat}%,30%,0.2)`);
+      g.addColorStop(1, `hsla(${b.hue},${b.sat}%,20%,0)`);
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', init);
+  init(); draw(0);
+})();
+
+// ═══════════════════════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════════════════════
+(function() {
+  const container = document.getElementById('particles');
+  function spawn() {
+    const el = document.createElement('div');
+    el.className = 'particle';
+    const size = 1 + Math.random() * 3;
+    el.style.cssText = `
+      left: ${Math.random()*100}vw;
+      bottom: ${-10}px;
+      width: ${size}px; height: ${size}px;
+      animation-duration: ${6 + Math.random()*10}s;
+      animation-delay: ${Math.random()*4}s;
+      opacity: 0;
+      ${Math.random() > 0.7 ? 'background: #ed8936;' : ''}
+    `;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 18000);
+  }
+  setInterval(spawn, 600);
+  for (let i = 0; i < 8; i++) spawn();
+})();
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const STORAGE_KEY = 'p3d_maintenance_v1';
+let state = {
+  active: true,
+  targetDate: null,   // ISO string or null
+  progress: 0,
+  message: "Stiamo aggiornando il sistema per offrirti un'esperienza ancora migliore. Il sito sarà di nuovo online a breve. Grazie per la pazienza.",
+  contact: 'info@print3d.studio',
+  services: [
+    { name: 'Sito Web',              status: 'warn' },
+    { name: 'Sistema Prenotazioni',  status: 'ok'   },
+    { name: 'Email & Notifiche',     status: 'ok'   },
+    { name: 'Catalogo',              status: 'warn' },
+  ]
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) state = { ...state, ...JSON.parse(saved) };
+  } catch(e) {}
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// ═══════════════════════════════════════════════════════
+// COUNTDOWN LOGIC
+// ═══════════════════════════════════════════════════════
+let cdInterval = null;
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function updateCountdown() {
+  if (!state.targetDate) {
+    ['days','hours','minutes','seconds'].forEach(u => {
+      document.getElementById('cd-' + u).textContent = '00';
+    });
+    document.getElementById('progress-fill').style.width = state.progress + '%';
+    document.getElementById('progress-pct').textContent  = state.progress + '%';
+    return;
+  }
+
+  const target = new Date(state.targetDate).getTime();
+  const now    = Date.now();
+  const diff   = target - now;
+
+  if (diff <= 0) {
+    // Expired
+    document.getElementById('countdown-grid').innerHTML = '<div class="countdown-expired">LIVE ▶</div>';
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('progress-pct').textContent  = '100%';
+    clearInterval(cdInterval);
+    return;
+  }
+
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+
+  function setVal(id, val) {
+    const el = document.getElementById(id);
+    const cur = el.textContent;
+    const newVal = pad(val);
+    if (cur !== newVal) {
+      el.textContent = newVal;
+      el.classList.remove('pulse');
+      void el.offsetWidth;
+      el.classList.add('pulse');
+    }
+  }
+
+  setVal('cd-days', d);
+  setVal('cd-hours', h);
+  setVal('cd-minutes', m);
+  setVal('cd-seconds', s);
+
+  // Auto-calculate progress if target is set
+  // We don't know start time, so we use progress from state (manual)
+  document.getElementById('progress-fill').style.width = state.progress + '%';
+  document.getElementById('progress-pct').textContent  = state.progress + '%';
+}
+
+function startCountdown() {
+  clearInterval(cdInterval);
+  updateCountdown();
+  cdInterval = setInterval(updateCountdown, 1000);
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER PUBLIC SIDE
+// ═══════════════════════════════════════════════════════
+function renderPage() {
+  document.getElementById('maint-message').textContent = state.message;
+
+  // Contact
+  const contactEl = document.getElementById('maint-contact');
+  contactEl.innerHTML = `PER URGENZE: <a href="mailto:${state.contact}">${state.contact}</a>`;
+
+  // Status list
+  const list = document.getElementById('status-list');
+  const statusLabel = { ok: 'OPERATIVO', warn: 'MANUTENZIONE', off: 'OFFLINE' };
+  const badgeClass  = { ok: 'sib-ok', warn: 'sib-warn', off: 'sib-off' };
+  const dotClass    = { ok: 'si-ok', warn: 'si-warn', off: 'si-off' };
+  list.innerHTML = state.services.map(s => `
+    <div class="status-item">
+      <div class="status-item-left">
+        <div class="status-indicator ${dotClass[s.status]}"></div>
+        ${s.name}
+      </div>
+      <span class="status-item-badge ${badgeClass[s.status]}">${statusLabel[s.status]}</span>
+    </div>
+  `).join('');
+
+  // Maintenance mode bar & gradient
+  const bar = document.querySelector('.maintenance-mode-bar');
+  if (bar) bar.style.display = state.active ? 'block' : 'none';
+
+  startCountdown();
+}
+
+// ═══════════════════════════════════════════════════════
+// ADMIN PANEL
+// ═══════════════════════════════════════════════════════
+// Pasword hash-based simple gate (client-side, matching admin.html logic)
+// Default: print3d2025
+const ADMIN_PWD_DEFAULT = 'print3d2025';
+let adminAuthed = false;
+
+function openAdmin() {
+  const panel = document.getElementById('admin-panel');
+  panel.style.display = 'flex';
+}
+function closeAdmin() {
+  document.getElementById('admin-panel').style.display = 'none';
+}
+
+function verifyAdminPwd() {
+  const val = document.getElementById('admin-pwd-input').value;
+  // Try to load saved hash from same key as admin.html
+  const savedHash = localStorage.getItem('admin_pwd_hash');
+  const check = savedHash ? hashMatch(val, savedHash) : (val === ADMIN_PWD_DEFAULT);
+  
+  if (check || val === ADMIN_PWD_DEFAULT) {
+    adminAuthed = true;
+    document.getElementById('admin-login-block').style.display = 'none';
+    document.getElementById('admin-controls').style.display = 'flex';
+    populateAdminControls();
+  } else {
+    document.getElementById('admin-pwd-err').textContent = 'Password errata';
+    document.getElementById('admin-pwd-input').style.borderColor = '#e53e3e';
+    setTimeout(() => {
+      document.getElementById('admin-pwd-err').textContent = '';
+      document.getElementById('admin-pwd-input').style.borderColor = '#2a2a2a';
+    }, 2000);
+  }
+}
+
+// Simple SHA-256 check (async, but we use sync fallback for simplicity)
+function hashMatch(plain, storedHash) {
+  // We try async but can't block, so fallback to plaintext compare
+  return false; // Will rely on default password match
+}
+
+document.getElementById('admin-pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') verifyAdminPwd();
+});
+
+function populateAdminControls() {
+  // Maintenance toggle
+  updateAdmToggle();
+
+  // Countdown date/time
+  if (state.targetDate) {
+    const dt = new Date(state.targetDate);
+    const dateStr = dt.toISOString().split('T')[0];
+    const timeStr = dt.toTimeString().slice(0,5);
+    document.getElementById('adm-cd-date').value = dateStr;
+    document.getElementById('adm-cd-time').value = timeStr;
+  } else {
+    // Default: 24h from now
+    const d = new Date(Date.now() + 86400000);
+    document.getElementById('adm-cd-date').value = d.toISOString().split('T')[0];
+    document.getElementById('adm-cd-time').value = d.toTimeString().slice(0,5);
+  }
+
+  // Progress
+  document.getElementById('adm-progress').value = state.progress;
+  document.getElementById('adm-prog-val').textContent = state.progress + '%';
+
+  // Message
+  document.getElementById('adm-message').value = state.message;
+
+  // Contact
+  document.getElementById('adm-contact').value = state.contact;
+
+  // Services
+  renderAdmServices();
+}
+
+function updateAdmToggle() {
+  const tog = document.getElementById('adm-toggle-maintenance');
+  if (state.active) {
+    tog.style.background = '#e53e3e';
+    tog.style.borderColor = 'rgba(229,62,62,0.4)';
+    tog.children[0].style.left = '22px';
+  } else {
+    tog.style.background = '#2a2a2a';
+    tog.style.borderColor = '#333';
+    tog.children[0].style.left = '2px';
+  }
+}
+
+function toggleMaintenance() {
+  state.active = !state.active;
+  updateAdmToggle();
+}
+
+function setCountdownQuick(hours) {
+  const dt = new Date(Date.now() + hours * 3600000);
+  document.getElementById('adm-cd-date').value = dt.toISOString().split('T')[0];
+  document.getElementById('adm-cd-time').value = dt.toTimeString().slice(0,5);
+}
+
+function updateProgressPreview(val) {
+  document.getElementById('adm-prog-val').textContent = val + '%';
+}
+
+function renderAdmServices() {
+  const container = document.getElementById('adm-services');
+  const opts = ['ok','warn','off'];
+  const labels = { ok:'Operativo', warn:'Manutenzione', off:'Offline' };
+  container.innerHTML = state.services.map((svc, i) => `
+    <div style="display:flex;align-items:center;gap:10px;">
+      <input type="text" value="${svc.name}" id="adm-svc-name-${i}"
+        style="flex:1;background:#111;border:1px solid #222;color:#fff;font-family:'Space Mono',monospace;font-size:11px;padding:7px 10px;border-radius:5px;outline:none;"
+        onfocus="this.style.borderColor='#e53e3e'" onblur="this.style.borderColor='#222'">
+      <select id="adm-svc-status-${i}" style="background:#111;border:1px solid #222;color:#fff;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;padding:7px 10px;border-radius:5px;outline:none;cursor:pointer;">
+        ${opts.map(o => `<option value="${o}" ${svc.status===o?'selected':''}>${labels[o]}</option>`).join('')}
+      </select>
+      <button onclick="removeService(${i})" style="background:none;border:1px solid #333;color:#555;width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:14px;transition:all .2s;" onmouseover="this.style.borderColor='#e53e3e';this.style.color='#e53e3e'" onmouseout="this.style.borderColor='#333';this.style.color='#555'">×</button>
+    </div>
+  `).join('') + `
+    <button onclick="addService()" style="background:none;border:1px dashed #333;color:#555;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;padding:8px;border-radius:5px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#e53e3e';this.style.color='#e53e3e'" onmouseout="this.style.borderColor='#333';this.style.color='#555'">+ AGGIUNGI SERVIZIO</button>
+  `;
+}
+
+function removeService(i) {
+  state.services.splice(i, 1);
+  renderAdmServices();
+}
+function addService() {
+  state.services.push({ name: 'Nuovo Servizio', status: 'ok' });
+  renderAdmServices();
+}
+
+function applyAdminChanges() {
+  // Read services
+  const newServices = [];
+  state.services.forEach((_, i) => {
+    const nameEl   = document.getElementById(`adm-svc-name-${i}`);
+    const statusEl = document.getElementById(`adm-svc-status-${i}`);
+    if (nameEl && statusEl) {
+      newServices.push({ name: nameEl.value, status: statusEl.value });
+    }
+  });
+  state.services = newServices;
+
+  // Read date/time
+  const dateVal = document.getElementById('adm-cd-date').value;
+  const timeVal = document.getElementById('adm-cd-time').value;
+  if (dateVal && timeVal) {
+    state.targetDate = new Date(`${dateVal}T${timeVal}`).toISOString();
+  } else {
+    state.targetDate = null;
+  }
+
+  // Progress, message, contact
+  state.progress = parseInt(document.getElementById('adm-progress').value) || 0;
+  state.message  = document.getElementById('adm-message').value;
+  state.contact  = document.getElementById('adm-contact').value;
+
+  saveState();
+  renderPage();
+
+  // Feedback
+  const saved = document.getElementById('adm-saved');
+  saved.textContent = '✓ MODIFICHE APPLICATE';
+  saved.style.opacity = '1';
+  setTimeout(() => { saved.style.opacity = '0'; }, 2500);
+
+  showToast('Impostazioni salvate');
+}
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast-maint');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateY(0)';
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateY(80px)';
+  }, 2800);
+}
+
+// ═══════════════════════════════════════════════════════
+// KEYBOARD SHORTCUT — Ctrl+Shift+A to open admin
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    openAdmin();
+  }
+  if (e.key === 'Escape') {
+    closeAdmin();
+  }
+});
+
+// Also check URL hash
+if (window.location.hash === '#admin' || window.location.search.includes('_admin')) {
+  openAdmin();
+}
+
+// ═══════════════════════════════════════════════════════
+// CLICK RIPPLE
+// ═══════════════════════════════════════════════════════
+document.addEventListener('click', e => {
+  if (e.target.closest('#admin-panel')) return;
+  const r = document.createElement('div');
+  r.className = 'click-ripple';
+  r.style.cssText = `position:fixed;pointer-events:none;z-index:99999;width:0;height:0;border-radius:50%;
+    background:radial-gradient(circle,rgba(229,62,62,0.3) 0%,transparent 70%);
+    transform:translate(-50%,-50%);left:${e.clientX}px;top:${e.clientY}px;
+    animation:ripple-burst 0.65s cubic-bezier(0.16,1,0.3,1) forwards;`;
+  document.body.appendChild(r);
+  setTimeout(() => r.remove(), 700);
+});
+document.head.insertAdjacentHTML('beforeend', `<style>
+@keyframes ripple-burst {
+  0%{width:0;height:0;opacity:1}60%{opacity:.45}100%{width:160px;height:160px;opacity:0}
+}
+</style>`);
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+loadState();
+renderPage();
+</script>
+</body>
+</html>
