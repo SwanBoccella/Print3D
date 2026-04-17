@@ -1,0 +1,96 @@
+{
+  "prenotazioni": [],
+  "catalogo": [
+    {
+      "id": "cat-001",
+      "nome": "Vaso Geometrico",
+      "categoria": "decorativo",
+      "descrizione": "Vaso con pattern esagonale. Disponibile in varie altezze e colori PLA.",
+      "materiale": "PLA",
+      "tag": "Su misura",
+      "visibile": true,
+      "svg": "<svg viewBox=\"0 0 80 80\" fill=\"none\"><polygon points=\"40,8 72,68 8,68\" stroke=\"#e53e3e\" stroke-width=\"1.5\" fill=\"none\"/><circle cx=\"40\" cy=\"44\" r=\"12\" stroke=\"#555\" stroke-width=\"1\"/></svg>",
+      "bg": "#0a0a0a"
+    },
+    {
+      "id": "cat-002",
+      "nome": "Portachiavi Logo",
+      "categoria": "gadget",
+      "descrizione": "Portachiavi personalizzato con testo, logo o forma a scelta.",
+      "materiale": "PLA+",
+      "tag": "Personalizzabile",
+      "visibile": true,
+      "svg": "<svg viewBox=\"0 0 80 80\" fill=\"none\"><rect x=\"20\" y=\"20\" width=\"40\" height=\"40\" rx=\"4\" stroke=\"#e53e3e\" stroke-width=\"1.5\" fill=\"none\"/><circle cx=\"40\" cy=\"40\" r=\"8\" stroke=\"#555\" stroke-width=\"1\"/></svg>",
+      "bg": "#1a1a1a"
+    },
+    {
+      "id": "cat-003",
+      "nome": "Ingranaggi & Giunti",
+      "categoria": "tecnico",
+      "descrizione": "Componenti meccanici funzionali. Tolleranze strette, infill variabile. Ideali per riparazione o prototipazione rapida.",
+      "materiale": "PLA+",
+      "tag": "Alta resistenza",
+      "visibile": true,
+      "large": true,
+      "svg": "<svg viewBox=\"0 0 80 80\" fill=\"none\"><circle cx=\"40\" cy=\"40\" r=\"28\" stroke=\"#e53e3e\" stroke-width=\"1.5\" fill=\"none\"/><circle cx=\"40\" cy=\"40\" r=\"14\" stroke=\"#555\" stroke-width=\"1\" fill=\"none\"/><line x1=\"12\" y1=\"40\" x2=\"68\" y2=\"40\" stroke=\"#333\" stroke-width=\"1\"/><line x1=\"40\" y1=\"12\" x2=\"40\" y2=\"68\" stroke=\"#333\" stroke-width=\"1\"/></svg>",
+      "bg": "#111"
+    },
+    {
+      "id": "cat-004",
+      "nome": "Scultura Parametrica",
+      "categoria": "decorativo",
+      "descrizione": "Forme scultoree generate da parametri matematici. Uniche per definizione.",
+      "materiale": "PLA Silk",
+      "tag": "Lucido",
+      "visibile": true,
+      "svg": "<svg viewBox=\"0 0 80 80\" fill=\"none\"><path d=\"M40 12 L68 28 L68 52 L40 68 L12 52 L12 28 Z\" stroke=\"#e53e3e\" stroke-width=\"1.5\" fill=\"none\"/></svg>",
+      "bg": "#181818"
+    },
+    {
+      "id": "cat-005",
+      "nome": "Box Elettronica",
+      "categoria": "prototipo",
+      "descrizione": "Contenitori su misura per schede Arduino, Raspberry Pi, PCB custom.",
+      "materiale": "PLA",
+      "tag": "Misure custom",
+      "visibile": true,
+      "svg": "<svg viewBox=\"0 0 80 80\" fill=\"none\"><rect x=\"16\" y=\"30\" width=\"48\" height=\"20\" rx=\"2\" stroke=\"#e53e3e\" stroke-width=\"1.5\" fill=\"none\"/><rect x=\"28\" y=\"22\" width=\"24\" height=\"8\" stroke=\"#555\" stroke-width=\"1\" fill=\"none\"/><line x1=\"40\" y1=\"50\" x2=\"40\" y2=\"58\" stroke=\"#555\" stroke-width=\"1\"/></svg>",
+      "bg": "#141414"
+    },
+    {
+      "id": "cat-006",
+      "nome": "Supporto Desktop",
+      "categoria": "gadget",
+      "descrizione": "Stand per telefono, tablet, pennini. Ergonomia e stile su misura.",
+      "materiale": "PLA Matte",
+      "tag": "Opaco",
+      "visibile": true,
+      "svg": "<svg viewBox=\"0 0 80 80\" fill=\"none\"><path d=\"M20 60 L40 12 L60 60 Z\" stroke=\"#e53e3e\" stroke-width=\"1.5\" fill=\"none\"/><line x1=\"27\" y1=\"44\" x2=\"53\" y2=\"44\" stroke=\"#555\" stroke-width=\"1\"/></svg>",
+      "bg": "#1c1010"
+    }
+  ],
+  "settings": {
+    "admin_password": "be527bb790a25c35f4a38ca8a6835aeb7d4b6a291a8df0b5a7c31ba278920bac",
+    "site_nome": "Print3D Studio",
+    "site_email": "swanboccella@gmail.com",
+    "site_telefono": "",
+    "site_indirizzo": "",
+    "site_citta": "",
+    "site_sito": "",
+    "disponibilita": "Lun – Sab",
+    "risposta_tempi": "24 ore",
+    "orari_lun_ven": "09:00–18:00",
+    "orari_sab": "10:00–14:00",
+    "orari_dom": "Chiuso",
+    "materiali_disponibili": "PLA, PLA+, PLA Silk, PLA Matte, PETG, ABS",
+    "colori_disponibili": "Bianco, Nero, Rosso, Blu, Verde, Giallo, Grigio, Arancione",
+    "meta_descrizione": "Stampa 3D professionale su misura. Prototipazione, gadget, componenti tecnici e oggetti decorativi.",
+    "meta_keywords": "stampa 3D, prototipazione, PLA, Milano, su misura",
+    "emailjs_service_id": "",
+    "emailjs_template_owner": "",
+    "emailjs_template_client": "",
+    "emailjs_public_key": "",
+    "notifiche_email": false,
+    "notifiche_nuove": true
+  }
+}
