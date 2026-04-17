@@ -63,6 +63,7 @@ const DEFAULT_DATA = {
     emailjs_template_owner:  '',
     emailjs_template_client: '',
     emailjs_public_key:      '',
+    emailjs_owner_email:     '',   // email destinatario notifiche owner
     // ── Manutenzione ──────────────────────────────────────
     maintenance_enabled:  false,
     maintenance_target:   '',
@@ -200,6 +201,7 @@ app.get('/api/emailjs-config', (req, res) => {
     template_owner_id: s.emailjs_template_owner  || '',
     template_client_id:s.emailjs_template_client || '',
     public_key:        s.emailjs_public_key       || '',
+    owner_email:       s.emailjs_owner_email      || s.site_email || '',
   });
 });
 
@@ -265,7 +267,7 @@ app.post('/api/prenota', (req, res) => {
     data_invio:    new Date(nuova.data).toLocaleString('it-IT'),
     studio_nome:   s.site_nome     || 'Print3D Studio',
     studio_email:  s.site_email    || '',
-    to_email:      s.site_email    || '',
+    to_email:      s.emailjs_owner_email || s.site_email || '',
     to_name:       s.site_nome     || 'Print3D Studio',
   };
   sendEmailJS(s.emailjs_template_owner, emailParams);

@@ -92,9 +92,10 @@
     "emailjs_public_key": "",
     "notifiche_email": false,
     "notifiche_nuove": true,
+    "emailjs_owner_email": "",
     "maintenance_enabled": false,
-    "maintenance_target": "2026-06-17T07:00:00.000Z",
-    "maintenance_progress": 67,
+    "maintenance_target": "",
+    "maintenance_progress": 0,
     "maintenance_message": "",
     "maintenance_title": "",
     "maintenance_submsg": ""
