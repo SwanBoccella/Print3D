@@ -4,7 +4,295 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ---- LOADING SCREEN — Advanced ----
+  // ================================================================
+  // DEVICE DETECTION — choose which loading screen to show
+  // Desktop: pointer device + wide screen + not touch-primary
+  // Mobile:  touch-primary OR narrow viewport
+  // ================================================================
+  const isDesktop = (() => {
+    const ua = navigator.userAgent;
+    const isMobileDevice =
+      /Android/i.test(ua) ||
+      /iPhone|iPod/i.test(ua) ||
+      /iPad/i.test(ua) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isMobileDevice) return false;
+    return window.innerWidth >= 1024;
+  })();
+
+  // Show / hide the right loader
+  const mobileLoader  = document.getElementById('loading-screen');
+  const desktopLoader = document.getElementById('loading-screen-desktop');
+
+  if (isDesktop) {
+    if (mobileLoader)  mobileLoader.style.display  = 'none';
+    if (desktopLoader) desktopLoader.classList.add('ldd-active');
+  } else {
+    if (desktopLoader) desktopLoader.style.display = 'none';
+    // mobile loader keeps its default display
+  }
+
+  // ================================================================
+  // DESKTOP LOADING SCREEN ENGINE
+  // ================================================================
+  if (isDesktop && desktopLoader) {
+    const lddCanvas   = document.getElementById('ldd-canvas');
+    const lddPhaseEl  = document.getElementById('ldd-phase');
+    const lddPctEl    = document.getElementById('ldd-pct');
+    const lddSegs     = document.getElementById('ldd-segs');
+    const lddLayersD  = document.getElementById('ldd-layers-d');
+    const lddEta      = document.getElementById('ldd-eta');
+    const lddTempEl   = document.getElementById('ldd-temp');
+    const lddBedEl    = document.getElementById('ldd-bed');
+    const lddSpeedEl  = document.getElementById('ldd-speed');
+    const lddInfillEl = document.getElementById('ldd-infill');
+    const lddLog      = document.getElementById('ldd-log');
+    const lddClockEl  = document.getElementById('ldd-clock-d');
+    const lddStatusEl = document.getElementById('ldd-status-text');
+    const lddSidDate  = document.getElementById('ldd-sid-date');
+
+    // Update date in top-right
+    const now = new Date();
+    if (lddSidDate) lddSidDate.textContent =
+      now.getFullYear() + '.' +
+      String(now.getMonth()+1).padStart(2,'0') + '.' +
+      String(now.getDate()).padStart(2,'0');
+
+    // ---- Build 20 progress segments ----
+    const SEG_COUNT = 20;
+    if (lddSegs) {
+      for (let i = 0; i < SEG_COUNT; i++) {
+        const s = document.createElement('div');
+        s.className = 'ldd-seg';
+        s.id = 'ldd-s' + i;
+        lddSegs.appendChild(s);
+      }
+    }
+
+    // ---- Orbit ring circumferences (for dashoffset) ----
+    // outer r200 circ ≈ 1257.1, mid r150 ≈ 942.5, inner r88 ≈ 553.0
+    const CIRC_OUTER = 1257.1, CIRC_MID = 942.5, CIRC_INNER = 553.0;
+    const lddOrbitOuter = document.getElementById('ldd-orbit-outer');
+    const lddOrbitMid   = document.getElementById('ldd-orbit-mid');
+    const lddOrbitInner = document.getElementById('ldd-orbit-inner');
+
+    function setLddProgress(pct) {
+      const frac = pct / 100;
+
+      // Segments
+      const litCount = Math.round(frac * SEG_COUNT);
+      for (let i = 0; i < SEG_COUNT; i++) {
+        const s = document.getElementById('ldd-s' + i);
+        if (!s) continue;
+        s.className = 'ldd-seg' +
+          (i < litCount ? ' ldd-seg--lit' + (i === litCount - 1 ? ' ldd-seg--tip' : '') : '');
+      }
+
+      // Orbit fill arcs
+      if (lddOrbitOuter) lddOrbitOuter.style.strokeDashoffset = CIRC_OUTER * (1 - frac);
+      if (lddOrbitMid)   lddOrbitMid.style.strokeDashoffset   = CIRC_MID   * (1 - frac);
+      if (lddOrbitInner) lddOrbitInner.style.strokeDashoffset = CIRC_INNER * (1 - frac);
+
+      // Pct text
+      if (lddPctEl) lddPctEl.textContent = pct + '%';
+
+      // Layer count
+      if (lddLayersD) lddLayersD.textContent = 'LAYERS: ' + Math.floor(frac * 240) + ' / 240';
+
+      // ETA
+      const remaining = Math.max(0, Math.round((100 - pct) / 100 * 4.4));
+      if (lddEta) lddEta.textContent = 'ETA: ' + remaining + 's';
+    }
+
+    // ---- Clock ----
+    const lddStart = Date.now();
+    const lddClockTick = setInterval(() => {
+      const el = Date.now() - lddStart;
+      const ms = el % 1000;
+      const s  = Math.floor(el / 1000) % 60;
+      const m  = Math.floor(el / 60000) % 60;
+      if (lddClockEl) lddClockEl.textContent =
+        String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + ':' + String(ms).padStart(3,'0').slice(0,2);
+    }, 50);
+
+    // ---- Log stream ----
+    const logLines = [
+      'G28 X Y Z — HOME ALL AXES','EEPROM: 512B OK','FW: MARLIN 3.6.2',
+      'MESH BED LEVELING: ACTIVE','PID AUTOTUNE: E0 PASS','M104 S210 T0',
+      'M140 S60 BED PREHEAT','AXIS X: HOMED OK','AXIS Z: HOMED OK',
+      'ABL PROBE PASS','SLICER: CURA 5.4 READY','NOZZLE: 0.4mm BRASS',
+      'FLOW RATE: 100%','RETRACT: 5.0mm','FAN: LAYER 3+ 100%',
+      'PRINT SPEED: 60mm/s','INFILL: GRID 20%','SUPPORT: DISABLED',
+      '0xE5 0x3E 0x3E 0xFF','COMMS: USB+SD OK',
+    ];
+    let lddLogIdx = 0;
+    const lddLogTick = setInterval(() => {
+      if (!lddLog) return;
+      const ln = document.createElement('div');
+      ln.className = 'ldd-log-line' + (Math.random() > 0.75 ? ' hot' : '');
+      ln.textContent = logLines[lddLogIdx % logLines.length];
+      lddLog.appendChild(ln);
+      if (lddLog.children.length > 12) lddLog.removeChild(lddLog.firstChild);
+      lddLogIdx++;
+    }, 180);
+
+    // ---- Telemetry live countup ----
+    function lddAnimTele(el, from, to, unit, dur) {
+      if (!el) return;
+      const t0 = Date.now();
+      function tick() {
+        const t = Math.min((Date.now()-t0)/dur, 1);
+        el.textContent = Math.round(from + (to-from)*t) + unit;
+        if (t < 1) requestAnimationFrame(tick);
+        else el.classList.add('live');
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // ---- Checklist helpers ----
+    function lddSetChk(i, state) {
+      const el = document.getElementById('ldd-chk-'+i);
+      if (!el) return;
+      const icon = el.querySelector('.ldd-chk-i');
+      el.className = 'ldd-chk ' + (state === 'done' ? 'ldd-done' : state === 'active' ? 'ldd-active' : '');
+      if (icon) icon.textContent = state === 'done' ? '✓' : state === 'active' ? '▶' : '○';
+    }
+
+    // ---- Phases ----
+    const lddPhases = [
+      { pct: 12,  label: 'LOADING ASSETS',     chk: 0, delay: 200  },
+      { pct: 30,  label: 'CALIBRATING AXES',   chk: 1, delay: 750  },
+      { pct: 55,  label: 'SLICING GEOMETRY',   chk: 2, delay: 1550 },
+      { pct: 78,  label: 'HEATING EXTRUDER',   chk: 3, delay: 2400 },
+      { pct: 100, label: 'SYSTEM READY',       chk: 4, delay: 3300 },
+    ];
+
+    let lddCurrPct = 0;
+    lddPhases.forEach(({ pct, label, chk, delay }) => {
+      setTimeout(() => {
+        if (lddPhaseEl) lddPhaseEl.textContent = label;
+        if (lddStatusEl) lddStatusEl.textContent = label;
+
+        // Animate pct
+        const from = lddCurrPct, to = pct;
+        const dur = 420;
+        const t0 = Date.now();
+        function tick() {
+          const t = Math.min((Date.now()-t0)/dur, 1);
+          const ease = 1 - Math.pow(1-t, 3);
+          setLddProgress(Math.round(from + (to-from)*ease));
+          if (t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        lddCurrPct = pct;
+
+        // Checklist
+        for (let i = 0; i <= chk; i++) {
+          lddSetChk(i, i < chk ? 'done' : 'active');
+        }
+
+        // Telemetry
+        if (chk === 2) {
+          lddAnimTele(lddTempEl, 25, 210, '°C', 650);
+          lddAnimTele(lddBedEl,  25,  60, '°C', 650);
+        }
+        if (chk === 3) {
+          lddAnimTele(lddSpeedEl,  0, 60, ' mm/s', 400);
+          lddAnimTele(lddInfillEl, 0, 20, '%', 400);
+        }
+      }, delay);
+    });
+
+    // Mark all done
+    setTimeout(() => {
+      for (let i = 0; i < 5; i++) lddSetChk(i, 'done');
+      if (lddStatusEl) lddStatusEl.textContent = 'ALL SYSTEMS NOMINAL — READY';
+      const dot = desktopLoader.querySelector('.ldd-bb-dot');
+      if (dot) dot.style.background = '#4caf50';
+    }, 3900);
+
+    // Hide desktop loader
+    setTimeout(() => {
+      clearInterval(lddClockTick);
+      clearInterval(lddLogTick);
+      if (desktopLoader) desktopLoader.classList.add('ldd-hide');
+      setTimeout(() => {
+        if (desktopLoader) desktopLoader.remove();
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
+      }, 950);
+    }, 4500);
+
+    // ---- Desktop canvas: parametric grid + oscillating lines ----
+    if (lddCanvas) {
+      const dctx = lddCanvas.getContext('2d');
+      lddCanvas.width  = window.innerWidth;
+      lddCanvas.height = window.innerHeight;
+      const W = lddCanvas.width, H = lddCanvas.height;
+
+      // Parametric points on a torus-like surface
+      const RINGS = 8, PTS = 40;
+      let angle = 0;
+      function drawDesktopCanvas() {
+        dctx.clearRect(0, 0, W, H);
+        angle += 0.004;
+        const cx = W/2, cy = H/2;
+        const R1 = Math.min(W,H) * 0.32; // major radius
+        const R2 = Math.min(W,H) * 0.08; // minor radius
+
+        for (let ring = 0; ring < RINGS; ring++) {
+          const phi = (ring / RINGS) * Math.PI * 2 + angle * 0.7;
+          const pts = [];
+          for (let i = 0; i <= PTS; i++) {
+            const theta = (i / PTS) * Math.PI * 2 + angle;
+            const rx = (R1 + R2 * Math.cos(phi)) * Math.cos(theta);
+            const ry = (R1 + R2 * Math.cos(phi)) * Math.sin(theta);
+            const rz = R2 * Math.sin(phi);
+            // Simple perspective
+            const persp = 5 / (5 + rz / Math.min(W,H) * 1.5);
+            pts.push([cx + rx * persp, cy + ry * persp]);
+          }
+          const alpha = 0.08 + 0.06 * Math.sin(phi + angle);
+          dctx.beginPath();
+          dctx.moveTo(pts[0][0], pts[0][1]);
+          for (let i = 1; i < pts.length; i++) {
+            dctx.lineTo(pts[i][0], pts[i][1]);
+          }
+          dctx.strokeStyle = `rgba(229,62,62,${alpha})`;
+          dctx.lineWidth = 0.7;
+          dctx.stroke();
+        }
+
+        // Cross-meridian lines
+        for (let i = 0; i < PTS; i += 4) {
+          const theta = (i / PTS) * Math.PI * 2;
+          const pts2 = [];
+          for (let ring = 0; ring <= RINGS; ring++) {
+            const phi = (ring / RINGS) * Math.PI * 2 + angle * 0.7;
+            const rx = (R1 + R2 * Math.cos(phi)) * Math.cos(theta + angle);
+            const ry = (R1 + R2 * Math.cos(phi)) * Math.sin(theta + angle);
+            const rz = R2 * Math.sin(phi);
+            const persp = 5 / (5 + rz / Math.min(W,H) * 1.5);
+            pts2.push([cx + rx * persp, cy + ry * persp]);
+          }
+          dctx.beginPath();
+          dctx.moveTo(pts2[0][0], pts2[0][1]);
+          for (let i = 1; i < pts2.length; i++) dctx.lineTo(pts2[i][0], pts2[i][1]);
+          dctx.strokeStyle = 'rgba(229,62,62,0.04)';
+          dctx.lineWidth = 0.5;
+          dctx.stroke();
+        }
+
+        requestAnimationFrame(drawDesktopCanvas);
+      }
+      drawDesktopCanvas();
+    }
+  }
+  // ================================================================
+  // END DESKTOP LOADING SCREEN ENGINE
+  // ================================================================
+
+  // ---- LOADING SCREEN — Advanced (MOBILE, skipped on desktop) ----
+  if (!isDesktop) {
   const loadScreen = document.getElementById('loading-screen');
   const ldrBarFill = document.getElementById('ldr-bar-fill');
   const ldrBarPulse = document.getElementById('ldr-bar-pulse');
@@ -30,7 +318,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let lcAngle = 0;
     const cx = lc.width / 2, cy = lc.height / 2;
-    const SIZE = Math.min(Math.min(lc.width, lc.height) * 0.28, 220);
+    // No hard pixel cap — scales with viewport so it fills space on "desktop mode" phones
+    const SIZE = Math.min(lc.width, lc.height) * 0.28;
 
     // Cube vertices
     const verts = [
@@ -229,6 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.ScrollTrigger) ScrollTrigger.refresh();
     }, 850);
   }, 4400);
+  } // end if (!isDesktop) — mobile loader
 
   // ---- HERO CANVAS — Particle Grid ----
   const canvas = document.getElementById('hero-canvas');
@@ -355,8 +645,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- CRAZY MODE SYSTEM ----
     const MODES = [
-      'NORMAL','ELECTRIC','SONAR','MATRIX',
-      'PARTY','BLACKHOLE','VORTEX','MAGNET','RAINBOW',
+      'BLACKHOLE','NORMAL','ELECTRIC','SONAR','MATRIX',
+      'PARTY','VORTEX','MAGNET','RAINBOW',
       'FORGE','EXPLODE','GLITCH'
     ];
     let currentMode = 'NORMAL';
@@ -373,6 +663,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let liquidDrops = [];
     let vortexParticles = [];
     let magnetRepel = false;
+    let magnetParticles = [];
+    let magnetFieldPhase = 0;
+    let magnetPulse = 0;
     let rainbowPhase = 0;
     let explodeFrags = [];
     let glitchOffset = 0;
@@ -420,12 +713,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Initialize mode
       if (mode === 'ELECTRIC') {
-        electricArcs = Array.from({length:12}, () => ({
-          angle: Math.random() * Math.PI * 2,
-          len: 40 + Math.random() * 60,
+        electricArcs = Array.from({length: 8}, (_, i) => ({
+          angle: (i / 8) * Math.PI * 2 + Math.random() * 0.5,
+          len: 55 + Math.random() * 70,
           life: Math.random(),
-          speed: 0.08 + Math.random() * 0.1,
-          segs: Math.floor(4 + Math.random() * 5),
+          speed: 0.06 + Math.random() * 0.07,
+          segs: Math.floor(7 + Math.random() * 7),
+          jitter: 14 + Math.random() * 12,
+          branches: [],
+          width: 0.8 + Math.random() * 1.2,
+          bright: Math.random() > 0.4,
         }));
       }
       if (mode === 'MATRIX') {
@@ -506,6 +803,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (mode === 'MAGNET') {
         magnetRepel = false;
+        magnetFieldPhase = 0;
+        magnetPulse = 0;
+        magnetParticles = Array.from({length: 28}, (_, i) => {
+          const angle = (i / 28) * Math.PI * 2;
+          const orbitR = 85 + Math.random() * 55;
+          return {
+            angle,
+            orbitR,
+            orbitSpeed: (0.008 + Math.random() * 0.012) * (Math.random() > 0.5 ? 1 : -1),
+            size: 1.5 + Math.random() * 2.5,
+            alpha: 0.4 + Math.random() * 0.6,
+            life: Math.random(),
+            phase: Math.random() * Math.PI * 2,
+          };
+        });
         if (hint) hint.textContent = '🧲 DRAG PER INVERTIRE — CLICK PER AVANZARE';
       }
     }
@@ -625,44 +937,118 @@ document.addEventListener('DOMContentLoaded', () => {
       drawBaseReflection();
     }
 
+    // Helper: draw a single Lichtenberg-style bolt from (sx,sy) in direction (angle) for length (len)
+    function drawLightningBolt(sx, sy, angle, len, segs, jitter, alpha, width, depth) {
+      if (depth > 3 || len < 8) return;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      let cx2 = sx, cy2 = sy;
+      const pts = [[sx, sy]];
+      for (let s = 1; s <= segs; s++) {
+        const prog = s / segs;
+        const wander = (Math.random() - 0.5) * jitter * (1 - prog * 0.4);
+        const perpAngle = angle + Math.PI * 0.5;
+        const nx = sx + Math.cos(angle) * len * prog + Math.cos(perpAngle) * wander;
+        const ny = sy + Math.sin(angle) * len * prog + Math.sin(perpAngle) * wander;
+        ctx.lineTo(nx, ny);
+        pts.push([nx, ny]);
+        cx2 = nx; cy2 = ny;
+      }
+      // Core bright line
+      ctx.strokeStyle = `rgba(220,240,255,${alpha * 0.95})`;
+      ctx.lineWidth = width * (depth === 0 ? 1.6 : 0.9 / depth);
+      ctx.shadowColor = '#7df';
+      ctx.shadowBlur = depth === 0 ? 14 : 7;
+      ctx.stroke();
+      // Outer glow pass
+      ctx.beginPath();
+      pts.forEach(([px, py], i) => i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py));
+      ctx.strokeStyle = `rgba(100,190,255,${alpha * 0.35})`;
+      ctx.lineWidth = width * (depth === 0 ? 5 : 2.5 / depth);
+      ctx.shadowBlur = 0;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      // Branches at random segment points
+      const branchCount = depth === 0 ? Math.floor(2 + Math.random() * 3) : (Math.random() > 0.4 ? 1 : 0);
+      for (let b = 0; b < branchCount; b++) {
+        const bIdx = Math.floor(1 + Math.random() * (pts.length - 2));
+        const [bx, by] = pts[bIdx];
+        const branchAngle = angle + (Math.random() - 0.5) * 1.4 + (Math.random() > 0.5 ? Math.PI * 0.25 : -Math.PI * 0.25);
+        const branchLen = len * (0.3 + Math.random() * 0.4);
+        const branchAlpha = alpha * (0.5 + Math.random() * 0.3);
+        drawLightningBolt(bx, by, branchAngle, branchLen, Math.floor(segs * 0.6), jitter * 0.7, branchAlpha, width * 0.55, depth + 1);
+      }
+    }
+
     function renderElectric() {
-      drawHalo('100,180,255', 2);
-      rings.forEach((ring,i) => drawOrbitRing(ring, 0, `rgba(100,180,255,${0.4+i*0.1})`));
-      dots.forEach(d => drawOrbitDot(d, 'rgba(100,200,255,0.9)'));
+      // ── Electric atmosphere background pulse ──
+      const bgFlash = 0.04 + 0.04 * Math.sin(t * 0.15);
+      const bgGrd = ctx.createRadialGradient(CX, CY, 20, CX, CY, 160);
+      bgGrd.addColorStop(0, `rgba(80,160,255,${bgFlash})`);
+      bgGrd.addColorStop(0.5, `rgba(50,100,200,${bgFlash * 0.5})`);
+      bgGrd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(CX, CY, 160, 0, Math.PI * 2);
+      ctx.fillStyle = bgGrd; ctx.fill();
+
+      drawHalo('100,180,255', 2.2);
+      rings.forEach((ring, i) => drawOrbitRing(ring, 0, `rgba(100,200,255,${0.3 + i * 0.1})`));
+      dots.forEach(d => drawOrbitDot(d, 'rgba(180,230,255,0.95)'));
       drawBaseReflection();
 
-      electricArcs.forEach(arc => {
+      // ── Main lightning bolts ──
+      electricArcs.forEach((arc, idx) => {
         arc.life += arc.speed;
-        if (arc.life > 1) { arc.angle = Math.random()*Math.PI*2; arc.life = 0; arc.len = 40+Math.random()*60; }
-        const alpha = Math.sin(arc.life * Math.PI) * 0.9;
-        if (alpha < 0.05) return;
-        const startR = 75;
-        const sx = CX + Math.cos(arc.angle + autoRotate) * startR;
-        const sy = CY + Math.sin(arc.angle + autoRotate) * startR;
-        ctx.beginPath(); ctx.moveTo(sx, sy);
-        let px = sx, py = sy;
-        for (let s = 0; s < arc.segs; s++) {
-          const progress = (s+1)/arc.segs;
-          const ex = sx + Math.cos(arc.angle+autoRotate)*arc.len*progress;
-          const ey = sy + Math.sin(arc.angle+autoRotate)*arc.len*progress;
-          const ox = (Math.random()-0.5)*18*(1-progress);
-          const oy = (Math.random()-0.5)*18*(1-progress);
-          ctx.lineTo(ex+ox, ey+oy);
-          px=ex+ox; py=ey+oy;
+        if (arc.life > 1) {
+          // Respawn with new properties
+          arc.angle = Math.random() * Math.PI * 2;
+          arc.len = 55 + Math.random() * 70;
+          arc.life = 0;
+          arc.segs = Math.floor(7 + Math.random() * 7);
+          arc.jitter = 14 + Math.random() * 12;
+          arc.width = 0.8 + Math.random() * 1.2;
+          arc.bright = Math.random() > 0.4;
         }
-        ctx.strokeStyle = `rgba(150,220,255,${alpha})`;
-        ctx.lineWidth = 0.8 + Math.random()*1.5;
-        ctx.shadowColor = '#4af'; ctx.shadowBlur = 8;
-        ctx.stroke(); ctx.shadowBlur = 0;
-        // fork
-        if (Math.random()>0.5) {
-          ctx.beginPath(); ctx.moveTo(px,py);
-          ctx.lineTo(px+(Math.random()-0.5)*30, py+(Math.random()-0.5)*30);
-          ctx.strokeStyle=`rgba(200,240,255,${alpha*0.4})`; ctx.lineWidth=0.4; ctx.stroke();
+
+        // Life curve: quick rise, slow fade → sharp strike feel
+        const lifeAlpha = Math.pow(Math.sin(arc.life * Math.PI), 0.5) * 0.92;
+        if (lifeAlpha < 0.04) return;
+
+        const startR = 72;
+        const startAngle = arc.angle + autoRotate;
+        const sx = CX + Math.cos(startAngle) * startR;
+        const sy = CY + Math.sin(startAngle) * startR;
+
+        // Each bolt re-randomizes geometry every frame for flickering effect
+        ctx.save();
+        drawLightningBolt(sx, sy, startAngle, arc.len, arc.segs, arc.jitter, lifeAlpha, arc.width, 0);
+        ctx.restore();
+
+        // ── Impact flash at bolt origin ──
+        if (arc.bright && lifeAlpha > 0.6) {
+          const flashGrd = ctx.createRadialGradient(sx, sy, 0, sx, sy, 12);
+          flashGrd.addColorStop(0, `rgba(220,240,255,${lifeAlpha * 0.8})`);
+          flashGrd.addColorStop(1, 'rgba(100,180,255,0)');
+          ctx.beginPath(); ctx.arc(sx, sy, 12, 0, Math.PI * 2);
+          ctx.fillStyle = flashGrd; ctx.fill();
         }
       });
-      inner.style.filter = `brightness(${1+Math.random()*0.3}) hue-rotate(${Math.sin(t*0.1)*30}deg)`;
-      if (plaLabel) plaLabel.style.textShadow = `0 0 20px #4af, 0 0 40px #4af`;
+
+      // ── Random spark micro-discharges across sphere surface ──
+      if (Math.random() > 0.55) {
+        const sa = Math.random() * Math.PI * 2;
+        const sx = CX + Math.cos(sa + autoRotate) * 68;
+        const sy = CY + Math.sin(sa + autoRotate) * 68;
+        ctx.save();
+        drawLightningBolt(sx, sy, sa + (Math.random() - 0.5) * 0.8, 20 + Math.random() * 25, 4, 8, 0.6 + Math.random() * 0.3, 0.5, 1);
+        ctx.restore();
+      }
+
+      // ── Sphere flash on strike ──
+      const maxArcLife = Math.max(...electricArcs.map(a => Math.sin(a.life * Math.PI)));
+      const flashIntensity = maxArcLife * 0.5;
+      inner.style.filter = `brightness(${1 + flashIntensity}) saturate(${1 + flashIntensity * 0.5}) hue-rotate(${Math.sin(t * 0.12) * 20}deg)`;
+      inner.style.boxShadow = `0 0 ${40 + flashIntensity * 60}px rgba(100,200,255,${0.6 + flashIntensity * 0.4}), 0 0 90px rgba(60,120,255,0.3), inset 0 0 20px rgba(0,0,0,0.5)`;
+      if (plaLabel) plaLabel.style.textShadow = `0 0 20px #4af, 0 0 ${40 + flashIntensity * 40}px #8ef`;
     }
 
     function renderFace() {
@@ -889,30 +1275,125 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderMagnet() {
-      drawHalo('229,62,62');
-      rings.forEach(ring => drawOrbitRing(ring, 0));
-      dots.forEach(d => drawOrbitDot(d));
-      drawBaseReflection();
-      // Field lines emanating from sphere
-      for (let i = 0; i < 16; i++) {
-        const baseAngle = (i/16)*Math.PI*2 + t*0.02;
+      magnetFieldPhase += 0.018;
+      magnetPulse += 0.04;
+      const repel = magnetRepel;
+      // Color palette: attraction = cyan-blue, repulsion = magenta-orange
+      const hA = repel ? [255, 80, 180] : [60, 160, 255];
+      const hB = repel ? [255, 160, 50] : [120, 220, 255];
+
+      // ── Deep ambient glow background ──
+      const bgGrd = ctx.createRadialGradient(CX, CY, 30, CX, CY, 155);
+      bgGrd.addColorStop(0, `rgba(${hA[0]},${hA[1]},${hA[2]},0.07)`);
+      bgGrd.addColorStop(0.5, `rgba(${hB[0]},${hB[1]},${hB[2]},0.04)`);
+      bgGrd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(CX, CY, 155, 0, Math.PI * 2);
+      ctx.fillStyle = bgGrd; ctx.fill();
+
+      // ── Dipole field lines (smooth bezier curves) ──
+      const numLines = 20;
+      for (let i = 0; i < numLines; i++) {
+        const theta = (i / numLines) * Math.PI * 2;
+        const animTheta = theta + magnetFieldPhase * (repel ? -0.6 : 0.6);
+        const pulseFactor = 1 + Math.sin(magnetPulse + i * 0.4) * 0.06;
+
+        // Dipole field line parametric: r = r0 * sin²(θ)
         ctx.beginPath();
-        let fx = CX + Math.cos(baseAngle)*72, fy = CY + Math.sin(baseAngle)*72;
-        ctx.moveTo(fx,fy);
-        for (let s=0;s<12;s++) {
-          const fieldAngle = baseAngle + (magnetRepel ? -1 : 1) * s * 0.15;
-          const r = 72 + s * 12;
-          fx = CX + Math.cos(fieldAngle)*r;
-          fy = CY + Math.sin(fieldAngle)*r;
-          ctx.lineTo(fx,fy);
+        const steps = 36;
+        let firstPt = true;
+        for (let s = 0; s <= steps; s++) {
+          const param = s / steps; // 0→1
+          const lineAngle = animTheta + (repel ? 1 : -1) * param * 0.9;
+          // Expansion: starts near sphere, fans out, comes back
+          const envelope = Math.sin(param * Math.PI);
+          const r = 72 + envelope * (60 + 28 * Math.sin(magnetPulse * 0.7 + i * 0.25)) * pulseFactor;
+          const px = CX + Math.cos(lineAngle) * r;
+          const py = CY + Math.sin(lineAngle) * r;
+          if (firstPt) { ctx.moveTo(px, py); firstPt = false; }
+          else ctx.lineTo(px, py);
         }
-        const alpha = 0.3+Math.sin(t*0.05+i)*0.2;
-        ctx.strokeStyle = magnetRepel ? `rgba(255,120,50,${alpha})` : `rgba(100,180,255,${alpha})`;
-        ctx.lineWidth = 0.8; ctx.stroke();
+        const lineAlpha = 0.18 + 0.18 * Math.sin(magnetPulse * 0.5 + i * 0.31);
+        const t1 = i / numLines;
+        const r = Math.round(hA[0] + (hB[0]-hA[0]) * t1);
+        const g = Math.round(hA[1] + (hB[1]-hA[1]) * t1);
+        const b = Math.round(hA[2] + (hB[2]-hA[2]) * t1);
+        ctx.strokeStyle = `rgba(${r},${g},${b},${lineAlpha})`;
+        ctx.lineWidth = 1 + 0.5 * Math.sin(magnetPulse + i);
+        ctx.shadowColor = `rgba(${r},${g},${b},0.5)`;
+        ctx.shadowBlur = 6;
+        ctx.stroke();
       }
-      const poleCol = magnetRepel ? `rgba(255,100,50,0.8)` : `rgba(50,150,255,0.8)`;
-      inner.style.boxShadow = `0 0 60px ${poleCol}, inset 0 0 30px rgba(0,0,0,0.7)`;
-      inner.style.transform = magnetRepel ? `scale(${1+Math.sin(t*0.1)*0.04})` : `scale(${1+Math.sin(t*0.06)*0.02})`;
+      ctx.shadowBlur = 0;
+
+      // ── Orbiting plasma particles ──
+      magnetParticles.forEach((p, idx) => {
+        p.angle += p.orbitSpeed * (1 + 0.3 * Math.sin(magnetPulse * 0.3 + idx));
+        p.life += 0.012;
+        if (p.life > 1) {
+          p.life = 0;
+          p.orbitR = 82 + Math.random() * 60;
+          p.size = 1.5 + Math.random() * 2.5;
+        }
+        const lifeAlpha = Math.sin(p.life * Math.PI) * p.alpha;
+        if (lifeAlpha < 0.05) return;
+
+        // Polar warp: particles drift toward poles (top/bottom) in attract mode
+        const latBias = repel ? 0 : Math.sin(p.angle * 2) * 0.25;
+        const px = CX + Math.cos(p.angle + magnetFieldPhase * 0.2) * p.orbitR;
+        const py = CY + Math.sin(p.angle + magnetFieldPhase * 0.2 + latBias) * p.orbitR * 0.72;
+
+        const t2 = (Math.sin(p.phase + magnetFieldPhase) + 1) * 0.5;
+        const pr = Math.round(hA[0] + (hB[0]-hA[0]) * t2);
+        const pg = Math.round(hA[1] + (hB[1]-hA[1]) * t2);
+        const pb = Math.round(hA[2] + (hB[2]-hA[2]) * t2);
+
+        ctx.beginPath();
+        ctx.arc(px, py, p.size * (0.8 + 0.2 * Math.sin(magnetPulse + idx)), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${pr},${pg},${pb},${lifeAlpha})`;
+        ctx.shadowColor = `rgba(${pr},${pg},${pb},0.9)`;
+        ctx.shadowBlur = p.size * 5;
+        ctx.fill();
+      });
+      ctx.shadowBlur = 0;
+
+      // ── Pole glow spots (N/S poles) ──
+      const poleAngle = magnetFieldPhase * 0.4;
+      [0, Math.PI].forEach((poleOff, pi) => {
+        const angle = poleAngle + poleOff;
+        const px = CX + Math.cos(angle) * 68;
+        const py = CY + Math.sin(angle) * 45;
+        const poleGrd = ctx.createRadialGradient(px, py, 0, px, py, 22);
+        const col = pi === 0 ? hA : hB;
+        const poleAlpha = 0.55 + 0.2 * Math.sin(magnetPulse + pi * Math.PI);
+        poleGrd.addColorStop(0, `rgba(${col[0]},${col[1]},${col[2]},${poleAlpha})`);
+        poleGrd.addColorStop(0.4, `rgba(${col[0]},${col[1]},${col[2]},0.2)`);
+        poleGrd.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.beginPath(); ctx.arc(px, py, 22, 0, Math.PI * 2);
+        ctx.fillStyle = poleGrd; ctx.fill();
+        // label N/S
+        ctx.font = 'bold 9px monospace';
+        ctx.fillStyle = `rgba(255,255,255,0.55)`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(pi === 0 ? 'N' : 'S', px, py);
+      });
+
+      // ── Sphere glow ──
+      const sphereGrd = ctx.createRadialGradient(CX, CY, 20, CX, CY, 78);
+      sphereGrd.addColorStop(0, `rgba(${hB[0]},${hB[1]},${hB[2]},0.12)`);
+      sphereGrd.addColorStop(1, `rgba(${hA[0]},${hA[1]},${hA[2]},0)`);
+      ctx.beginPath(); ctx.arc(CX, CY, 78, 0, Math.PI * 2);
+      ctx.fillStyle = sphereGrd; ctx.fill();
+
+      drawHalo(repel ? '255,80,180' : '60,160,255', 1.5);
+      rings.forEach((ring, i) => drawOrbitRing(ring, magnetFieldPhase * 0.3, `rgba(${hA[0]},${hA[1]},${hA[2]},${0.2 + i*0.06})`));
+      dots.forEach(d => drawOrbitDot(d, `rgba(${hB[0]},${hB[1]},${hB[2]},0.85)`));
+      drawBaseReflection();
+
+      const pulse = 1 + Math.sin(magnetPulse * 0.8) * 0.025;
+      const colStr = `rgba(${hA[0]},${hA[1]},${hA[2]},0.9)`;
+      inner.style.boxShadow = `0 0 50px ${colStr}, 0 0 90px rgba(${hB[0]},${hB[1]},${hB[2]},0.3), inset 0 0 25px rgba(0,0,0,0.6)`;
+      inner.style.transform = `scale(${pulse})`;
+      if (plaLabel) plaLabel.style.textShadow = `0 0 16px rgba(${hA[0]},${hA[1]},${hA[2]},1), 0 0 32px rgba(${hB[0]},${hB[1]},${hB[2]},0.6)`;
     }
 
     function renderRainbow() {
@@ -1235,6 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       requestAnimationFrame(animate);
     }
+    setMode('BLACKHOLE');
     animate();
 
     // ---- DRAG ----
@@ -1319,26 +1801,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- TOUCH ----
     let lastTouchX=0, lastTouchY=0, pinchStartDist=0, isTap=false;
+    let touchStartX=0, touchStartY=0, touchScrollLocked=false;
     wrap.addEventListener('touchstart', e => {
-      e.preventDefault();
       if (e.touches.length===1) {
         const t0=e.touches[0];
-        lastTouchX=t0.clientX; lastTouchY=t0.clientY; isTap=true;
+        touchStartX=t0.clientX; touchStartY=t0.clientY;
+        lastTouchX=t0.clientX; lastTouchY=t0.clientY;
+        isTap=true; touchScrollLocked=false;
         onStart(t0.clientX,t0.clientY);
       } else if (e.touches.length===2) {
         const dx=e.touches[0].clientX-e.touches[1].clientX;
         const dy=e.touches[0].clientY-e.touches[1].clientY;
         pinchStartDist=Math.hypot(dx,dy); isDragging=false;
       }
-    },{passive:false});
+    },{passive:true});
 
     window.addEventListener('touchmove', e => {
       if (e.touches.length===1) {
         const t0=e.touches[0];
-        const dx=t0.clientX-lastTouchX, dy=t0.clientY-lastTouchY;
+        const dx=t0.clientX-touchStartX, dy=t0.clientY-touchStartY;
+        // Determine scroll intent on first significant move
+        if (!touchScrollLocked && (Math.abs(dx)>6||Math.abs(dy)>6)) {
+          touchScrollLocked = Math.abs(dy) > Math.abs(dx); // vertical = scroll
+        }
         if (Math.abs(dx)>3||Math.abs(dy)>3) isTap=false;
+        if (!touchScrollLocked) {
+          // Horizontal drag on sphere — block scroll
+          if (e.cancelable) e.preventDefault();
+          onMove(t0.clientX,t0.clientY);
+        }
         lastTouchX=t0.clientX; lastTouchY=t0.clientY;
-        onMove(t0.clientX,t0.clientY);
       } else if (e.touches.length===2) {
         const dx=e.touches[0].clientX-e.touches[1].clientX;
         const dy=e.touches[0].clientY-e.touches[1].clientY;
@@ -1346,7 +1838,7 @@ document.addEventListener('DOMContentLoaded', () => {
         autoRotate += (dist-pinchStartDist)*0.004;
         pinchStartDist=dist;
       }
-    },{passive:true});
+    },{passive:false});
 
     window.addEventListener('touchend', e => {
       if (isTap && e.changedTouches.length===1) {
