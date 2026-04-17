@@ -38,7 +38,7 @@ function hashPassword(p) {
   return crypto.createHash('sha256').update(String(p)).digest('hex');
 }
 
-const DEFAULT_PWD_PLAIN = 'print3d2025';
+const DEFAULT_PWD_PLAIN = 'GuazzoPrint3D';
 
 const DEFAULT_DATA = {
   settings: {
