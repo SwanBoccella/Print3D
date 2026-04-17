@@ -710,6 +710,48 @@
   100% { transform: translate(-50%,-50%) translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
 }
 
+/* ---- CRAZY MODE BADGE ---- */
+.pla-mode-badge {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  padding: 5px 14px;
+  border: 1px solid rgba(229,62,62,0.5);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 30;
+  white-space: nowrap;
+  animation: modeBadgeAnim 1.2s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+
+@keyframes modeBadgeAnim {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.85); }
+  20%  { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.05); }
+  70%  { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(4px); }
+}
+
+/* ---- CONFETTI ---- */
+.pla-confetti {
+  animation: confettiFly var(--dur, 1s) cubic-bezier(0,0.8,0.5,1) both;
+}
+
+@keyframes confettiFly {
+  0%   { transform: translate(-50%,-50%) translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(-50%,-50%) translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(0.3); opacity: 0; }
+}
+
+/* hint update animation */
+.pla-hint {
+  transition: color 0.3s, opacity 0.3s;
+}
+
 .mat-hl-info h2 {
   font-family: var(--font-display);
   font-size: 52px;
