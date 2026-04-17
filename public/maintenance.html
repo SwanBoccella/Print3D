@@ -99,6 +99,26 @@
       gap: 0;
     }
 
+    /* ─── LOGO ──────────────────────────────────────────────── */
+    .maint-logo-wrap {
+      margin-bottom: 32px;
+      opacity: 0; transform: translateY(20px) scale(0.96);
+      animation: up .9s var(--ease) .1s forwards;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .maint-logo {
+      max-width: min(340px, 72vw);
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 0 18px rgba(229,62,62,0.35)) drop-shadow(0 0 48px rgba(229,62,62,0.15));
+      animation: logoPulse 4s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%,100% { filter: drop-shadow(0 0 18px rgba(229,62,62,0.35)) drop-shadow(0 0 48px rgba(229,62,62,0.15)); }
+      50%      { filter: drop-shadow(0 0 28px rgba(229,62,62,0.60)) drop-shadow(0 0 72px rgba(229,62,62,0.28)); }
+    }
+
     /* ─── TITLE ─────────────────────────────────────────────── */
     .title-wrap {
       text-align: center; margin-bottom: 36px;
@@ -345,11 +365,14 @@
       .cd-colon { font-size:34px; }
       .corner { width:18px; height:18px; }
       .bot-left .bot-item:nth-child(n+2) { display:none; }
+      .maint-logo { max-width: 72vw; }
+      .maint-logo-wrap { margin-bottom: 20px; }
     }
     @media (max-width:400px) {
       .cd-box { width:54px; height:54px; }
       .cd-flip { font-size:34px; }
       .cd-colon { font-size:28px; margin-bottom:14px; }
+      .maint-logo { max-width: 80vw; }
     }
   </style>
 </head>
@@ -380,6 +403,13 @@
 
 <!-- Main -->
 <main class="stage">
+
+  <!-- Logo -->
+  <div class="maint-logo-wrap">
+    <img class="maint-logo"
+         src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png"
+         alt="Print3D Studio">
+  </div>
 
   <!-- Title -->
   <div class="title-wrap">
@@ -638,7 +668,7 @@ function startCountdown(iso) {
 
 // ── Progress bar ────────────────────────────────────────────
 function animateProg(target) {
-  const fill = document.getElementById('prog-fill'); 
+  const fill = document.getElementById('prog-fill');
   const pct  = document.getElementById('prog-pct');
   let cur = 0;
   const go = () => {

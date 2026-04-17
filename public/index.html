@@ -7,10 +7,197 @@
   <meta name="description" content="Realizziamo oggetti unici su prenotazione con stampa 3D. Qualità artigianale, materiali selezionati, consegna personalizzata.">
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/index.css">
+  <style>
+    @media (max-width: 768px) {
+      .hero-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 40px 24px !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      .hero-title {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        width: 100% !important;
+      }
+      .hero-line {
+        display: block !important;
+        text-align: center !important;
+        width: 100% !important;
+      }
+      .hero-sub {
+        text-align: center !important;
+      }
+      .hero-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        width: 100% !important;
+      }
+      .hero-badge {
+        align-self: center !important;
+      }
+      .hero-scroll-hint {
+        display: none !important;
+      }
+      .section-title {
+        text-align: center !important;
+      }
+      .section-label {
+        justify-content: center !important;
+      }
+    }
+  </style>
+  <!-- Early device detection: hide the wrong loader before first paint -->
+  <script>
+    (function() {
+      var ua = navigator.userAgent;
+      var isMobile = /Android/i.test(ua) || /iPhone|iPod/i.test(ua) || /iPad/i.test(ua)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (!isMobile && window.innerWidth >= 1024) {
+        document.documentElement.classList.add('is-desktop');
+      } else {
+        document.documentElement.classList.add('is-mobile');
+      }
+    })();
+  </script>
 </head>
 <body>
 
-<!-- LOADING SCREEN -->
+<!-- LOADING SCREEN — DESKTOP (hidden if mobile, shown on desktop) -->
+<div id="loading-screen-desktop" aria-hidden="true">
+  <canvas id="ldd-canvas"></canvas>
+
+  <!-- Horizontal scan line -->
+  <div class="ldd-scanline" id="ldd-scanline"></div>
+
+  <!-- Grid overlay -->
+  <div class="ldd-grid"></div>
+
+  <!-- Top-left brand block -->
+  <div class="ldd-brand">
+    <div class="ldd-brand-mark">P3D</div>
+    <div class="ldd-brand-sep"></div>
+    <div class="ldd-brand-sub">ADDITIVE MANUFACTURING</div>
+  </div>
+
+  <!-- Top-right system id -->
+  <div class="ldd-sysid">
+    <span id="ldd-sid-date">2025.01.01</span>
+    <span class="ldd-sysid-sep">|</span>
+    <span id="ldd-sid-ver">FW 3.6.2</span>
+    <span class="ldd-sysid-sep">|</span>
+    <span id="ldd-sid-mode">FDM ENGINE</span>
+  </div>
+
+  <!-- CENTER — Orbital logo + rings -->
+  <div class="ldd-center">
+    <div class="ldd-orbital-wrap" id="ldd-orbital-wrap">
+      <!-- Outer orbit ring -->
+      <svg class="ldd-orbit ldd-orbit--outer" viewBox="0 0 420 420">
+        <circle cx="210" cy="210" r="200" class="ldd-orbit-track"/>
+        <circle cx="210" cy="210" r="200" class="ldd-orbit-fill" id="ldd-orbit-outer"/>
+        <!-- tick marks at 0, 45, 90, 135, 180, 225, 270, 315 deg -->
+        <g class="ldd-ticks" id="ldd-ticks-outer"></g>
+      </svg>
+      <!-- Mid orbit ring -->
+      <svg class="ldd-orbit ldd-orbit--mid" viewBox="0 0 320 320">
+        <circle cx="160" cy="160" r="150" class="ldd-orbit-track"/>
+        <circle cx="160" cy="160" r="150" class="ldd-orbit-fill ldd-orbit-fill--mid" id="ldd-orbit-mid"/>
+      </svg>
+      <!-- Inner orbit ring -->
+      <svg class="ldd-orbit ldd-orbit--inner" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="88" class="ldd-orbit-track" style="opacity:0.15"/>
+        <circle cx="100" cy="100" r="88" class="ldd-orbit-fill ldd-orbit-fill--inner" id="ldd-orbit-inner"/>
+      </svg>
+      <!-- Logo core -->
+      <div class="ldd-logo-core">
+        <div class="ldd-logo-hex">
+          <svg viewBox="0 0 120 120" class="ldd-hex-svg">
+            <polygon points="60,4 112,33 112,87 60,116 8,87 8,33" class="ldd-hex-outline"/>
+            <polygon points="60,18 98,40 98,80 60,102 22,80 22,40" class="ldd-hex-inner" id="ldd-hex-inner"/>
+          </svg>
+          <div class="ldd-logo-img-wrap">
+            <img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="" class="ldd-logo-img"/>
+          </div>
+        </div>
+        <!-- Rotating dot on outer orbit -->
+        <div class="ldd-orbit-dot ldd-orbit-dot--outer" id="ldd-dot-outer"></div>
+        <div class="ldd-orbit-dot ldd-orbit-dot--mid" id="ldd-dot-mid"></div>
+      </div>
+    </div>
+
+    <!-- Title block below orbital -->
+    <div class="ldd-title-block">
+      <div class="ldd-title">PRINT<span>3D</span> STUDIO</div>
+      <div class="ldd-tagline">PRECISION ADDITIVE MANUFACTURING SYSTEM v2.4</div>
+    </div>
+
+    <!-- Segmented progress -->
+    <div class="ldd-progress-outer">
+      <div class="ldd-progress-labels">
+        <span class="ldd-progress-phase" id="ldd-phase">INITIALIZING SYSTEM</span>
+        <span class="ldd-progress-pct" id="ldd-pct">0%</span>
+      </div>
+      <div class="ldd-progress-segs" id="ldd-segs">
+        <!-- 20 segments generated by JS -->
+      </div>
+      <div class="ldd-progress-sub">
+        <span id="ldd-layers-d">LAYERS: 0 / 240</span>
+        <span id="ldd-eta">ETA: --s</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Left panel — specs -->
+  <div class="ldd-panel ldd-panel--left">
+    <div class="ldd-panel-title">MACHINE SPECS</div>
+    <div class="ldd-panel-row"><span>PRINT VOLUME</span><span class="ldd-val">235×235×250mm</span></div>
+    <div class="ldd-panel-row"><span>NOZZLE</span><span class="ldd-val">∅ 0.4mm BRASS</span></div>
+    <div class="ldd-panel-row"><span>LAYER RES.</span><span class="ldd-val">0.05 – 0.35mm</span></div>
+    <div class="ldd-panel-row"><span>MAX TEMP E</span><span class="ldd-val ldd-val--live" id="ldd-temp">--°C</span></div>
+    <div class="ldd-panel-row"><span>MAX TEMP BED</span><span class="ldd-val ldd-val--live" id="ldd-bed">--°C</span></div>
+    <div class="ldd-panel-row"><span>TRAVEL SPEED</span><span class="ldd-val ldd-val--live" id="ldd-speed">-- mm/s</span></div>
+    <div class="ldd-panel-row"><span>MATERIAL</span><span class="ldd-val" style="color:#e53e3e">PLA+</span></div>
+    <div class="ldd-panel-sep"></div>
+    <div class="ldd-panel-row"><span>INFILL</span><span class="ldd-val ldd-val--live" id="ldd-infill">0%</span></div>
+    <div class="ldd-panel-row"><span>SUPPORTS</span><span class="ldd-val">NONE</span></div>
+  </div>
+
+  <!-- Right panel — log stream -->
+  <div class="ldd-panel ldd-panel--right">
+    <div class="ldd-panel-title">SYSTEM LOG <span class="ldd-blink">▌</span></div>
+    <div class="ldd-log" id="ldd-log"></div>
+    <div class="ldd-panel-sep"></div>
+    <div class="ldd-panel-title" style="margin-top:8px">CHECKLIST</div>
+    <div class="ldd-chk" id="ldd-chk-0"><span class="ldd-chk-i">○</span> LOADING ASSETS</div>
+    <div class="ldd-chk" id="ldd-chk-1"><span class="ldd-chk-i">○</span> CALIBRATING AXES</div>
+    <div class="ldd-chk" id="ldd-chk-2"><span class="ldd-chk-i">○</span> SLICING GEOMETRY</div>
+    <div class="ldd-chk" id="ldd-chk-3"><span class="ldd-chk-i">○</span> HEATING EXTRUDER</div>
+    <div class="ldd-chk" id="ldd-chk-4"><span class="ldd-chk-i">○</span> SYSTEM READY</div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="ldd-bottombar">
+    <div class="ldd-bb-left">
+      <span class="ldd-bb-dot"></span>
+      <span id="ldd-status-text">BOOT SEQUENCE INITIATED</span>
+    </div>
+    <div class="ldd-bb-center">
+      <span>■ ■ ■ ■ ■ ■ ■ ■</span>
+    </div>
+    <div class="ldd-bb-right">
+      <span id="ldd-clock-d">00:00:00</span>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING SCREEN — MOBILE (current, untouched) -->
 <div id="loading-screen" aria-hidden="true">
   <!-- Background canvas for wireframe 3D object -->
   <canvas id="loader-canvas"></canvas>
@@ -400,7 +587,7 @@
     </p>
   </div>
   <div class="footer-bottom">
-    <p>2026/2027 Print3D Studio &copy Tutti i diritti riservati</p>
+    <p>2025-2026 &copy Print3D Studio<br>Tutti i diritti riservati</p><br>
     <p>Produzioni artigianali su prenotazione</p>
   </div>
 </footer>
