@@ -1,7 +1,7 @@
 {
   "name": "print3d-studio",
-  "version": "15.0.0",
-  "description": "Vetrina web per stampa 3D su prenotazione",
+  "version": "17.0.0",
+  "description": "Print3D Studio \u2014 v16 con pagina manutenzione",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

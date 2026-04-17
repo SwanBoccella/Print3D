@@ -135,6 +135,7 @@ async function sendEmailJS(templateId, params) {
 // ─── Middleware ────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api')) return next();
@@ -163,25 +164,21 @@ app.get('/maintenance', (req, res) => res.sendFile(path.join(__dirname, 'public'
 const PUBLIC_PAGES = ['/', '/catalogo', '/materiali', '/prenotazione', '/contatti'];
 
 app.use((req, res, next) => {
-  // Salta per admin, api, file statici NON-html, maintenance stessa
+  // Salta per admin, api, file statici, maintenance stessa
   if (
     req.path.startsWith('/api') ||
     req.path.startsWith('/admin') ||
     req.path === '/maintenance' ||
     req.path === '/maintenance.html' ||
-    (req.path.includes('.') && !req.path.endsWith('.html')) // css, js, png… ma non .html
+    req.path.includes('.') // file statici (.css, .js, .png…)
   ) return next();
 
   const data = readData();
   if (data.settings.maintenance_enabled) {
-    return res.redirect('/maintenance');
+    return res.sendFile(path.join(__dirname, 'public', 'maintenance.html'));
   }
   next();
 });
-
-// ─── Static files (dopo il middleware manutenzione) ────────
-// index: false evita che /  venga servita staticamente prima delle route
-app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // ─── Public Routes ─────────────────────────────────────────
 app.get('/',             (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));

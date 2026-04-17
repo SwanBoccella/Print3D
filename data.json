@@ -91,6 +91,12 @@
     "emailjs_template_client": "",
     "emailjs_public_key": "",
     "notifiche_email": false,
-    "notifiche_nuove": true
+    "notifiche_nuove": true,
+    "maintenance_enabled": false,
+    "maintenance_target": "2026-06-17T07:00:00.000Z",
+    "maintenance_progress": 67,
+    "maintenance_message": "",
+    "maintenance_title": "",
+    "maintenance_submsg": ""
   }
 }
