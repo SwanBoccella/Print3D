@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       data_invio:    dataFormatted,
       studio_nome:   siteSettings.site_nome   || 'Print3D Studio',
       studio_email:  siteSettings.site_email  || '',
-      to_email:      siteSettings.site_email  || '',  // destinatario notifica owner
+      to_email:      cfg.owner_email || siteSettings.site_email || '',  // destinatario notifica owner
     };
 
     // Aggiunge to_name per compatibilità con template

@@ -322,283 +322,1075 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   drawParticles();
 
-  // ---- PLA INTERACTIVE SPHERE ----
+  // ============================================================
+  // PLA INTERACTIVE SPHERE — ULTRA CRAZY EDITION
+  // 12 modalità folli che cambiano ad ogni click
+  // ============================================================
   (function initPlaSphere() {
     const wrap  = document.getElementById('pla-sphere-wrap');
     const inner = document.getElementById('pla-inner');
+    const plaLabel = inner ? inner.querySelector('.pla-label') : null;
     const canvas = document.getElementById('pla-canvas');
+    const hint   = document.getElementById('pla-hint');
     if (!wrap || !canvas) return;
 
     const ctx = canvas.getContext('2d');
     const W = 320, H = 320, CX = W / 2, CY = H / 2;
 
-    // Orbit rings: [radius, tiltX, tiltY, speed, phase, color, lineWidth]
+    // ---- BASE STATE ----
     const rings = [
       { r: 88,  rx: 0,    ry: 0,    speed: 0.008,  phase: 0,    col: 'rgba(229,62,62,0.55)', lw: 1.2 },
       { r: 108, rx: 0.6,  ry: 0,    speed: -0.006, phase: 1.1,  col: 'rgba(229,62,62,0.35)', lw: 0.8 },
       { r: 130, rx: -0.4, ry: 0.3,  speed: 0.004,  phase: 2.3,  col: 'rgba(229,62,62,0.2)',  lw: 0.6 },
       { r: 152, rx: 1.0,  ry: -0.5, speed: -0.003, phase: 0.7,  col: 'rgba(229,62,62,0.12)', lw: 0.5 },
     ];
-
-    // Floating dots on orbits
     const dots = rings.map((ring, i) => ({
-      ringIdx: i,
-      angle: Math.random() * Math.PI * 2,
-      size: 2 + Math.random() * 2,
+      ringIdx: i, angle: Math.random() * Math.PI * 2, size: 2 + Math.random() * 2,
     }));
 
-    // Drag / tilt state
-    let tiltX = 0, tiltY = 0; // current tilt applied to rings
-    let targetTiltX = 0, targetTiltY = 0;
-    let isDragging = false;
-    let lastMX = 0, lastMY = 0;
-    let velX = 0, velY = 0;
-    let autoRotate = 0; // extra Y-rotation from drag momentum
+    let tiltX = 0, tiltY = 0, targetTiltX = 0, targetTiltY = 0;
+    let isDragging = false, lastMX = 0, lastMY = 0;
+    let velX = 0, velY = 0, autoRotate = 0;
     let t = 0;
 
-    // Draw a tilted ellipse (orbit ring)
-    function drawOrbitRing(ring, extraRotate) {
+    // ---- CRAZY MODE SYSTEM ----
+    const MODES = [
+      'NORMAL','ELECTRIC','SONAR','MATRIX',
+      'PARTY','BLACKHOLE','VORTEX','MAGNET','RAINBOW',
+      'FORGE','EXPLODE','GLITCH'
+    ];
+    let currentMode = 'NORMAL';
+    let modeT = 0;
+    let clickCount = 0;
+
+    // mode-specific state
+    let gravityY = 0, gravityVY = 0, gravityBounce = 0;
+    let electricArcs = [];
+    let faceEyeX = 0, faceEyeY = 0, faceTargetX = 0, faceTargetY = 0, faceMouthOpen = 0;
+    let matrixChars = [];
+    let partyHue = 0;
+    let blackholeParticles = [];
+    let liquidDrops = [];
+    let vortexParticles = [];
+    let magnetRepel = false;
+    let rainbowPhase = 0;
+    let explodeFrags = [];
+    let glitchOffset = 0;
+    let modeTimeout = null;
+    // SONAR state
+    let sonarWaves = [];
+    let sonarEchos = [];
+    // FORGE state
+    let forgeSparks = [];
+
+    const MODE_HINTS = {
+      NORMAL:    'DRAG · CLICK · EXPLORE',
+      ELECTRIC:  '⚡ ELECTRIC MODE — SCARICA!',
+      SONAR:     '📡 SONAR MODE — PING!',
+      MATRIX:    '⬛ MATRIX MODE — SEGUI IL CONIGLIO',
+      PARTY:     '🎉 PARTY MODE — BALLA!',
+      BLACKHOLE: '🕳 BLACK HOLE — TUTTO VIENE ASSORBITO',
+      VORTEX:    '🌀 VORTEX — RISUCCHIATO!',
+      MAGNET:    '🧲 MAGNET — DRAG PER INVERTIRE IL CAMPO',
+      RAINBOW:   '🌈 RAINBOW — PURA LUCE',
+      FORGE:     '🔥 FORGE — ACCIAIO FUSO',
+      EXPLODE:   '💥 EXPLODE — VA\' IN PEZZI!',
+      GLITCH:    '⛔ GLITCH — ERRORE SISTEMA',
+    };
+
+    function setMode(mode) {
+      currentMode = mode;
+      modeT = 0;
+
+      // Reset ALL visuals — including opacity which EXPLODE sets to 0
+      inner.style.transform = '';
+      inner.style.filter = '';
+      inner.style.background = '';
+      inner.style.boxShadow = '';
+      inner.style.transition = '';
+      inner.style.opacity = '1';
+      if (plaLabel) { plaLabel.style.color = ''; plaLabel.style.textShadow = ''; plaLabel.style.transform = ''; }
+      wrap.style.transform = '';
+      wrap.style.filter = '';
+
+      // Clear mode-specific overlays
+      wrap.querySelectorAll('.pla-mode-overlay').forEach(el => el.remove());
+
+      if (hint) hint.textContent = MODE_HINTS[mode] || 'CLICK PER CAMBIARE MODALITÀ';
+
+      // Initialize mode
+      if (mode === 'ELECTRIC') {
+        electricArcs = Array.from({length:12}, () => ({
+          angle: Math.random() * Math.PI * 2,
+          len: 40 + Math.random() * 60,
+          life: Math.random(),
+          speed: 0.08 + Math.random() * 0.1,
+          segs: Math.floor(4 + Math.random() * 5),
+        }));
+      }
+      if (mode === 'MATRIX') {
+        matrixChars = Array.from({length:30}, () => ({
+          x: Math.random() * W,
+          y: Math.random() * H - H,
+          speed: 2 + Math.random() * 4,
+          char: '',
+          len: Math.floor(5 + Math.random() * 12),
+          chars: Array.from({length:15}, () => String.fromCharCode(0x30A0 + Math.random()*96)),
+        }));
+      }
+      if (mode === 'PARTY') {
+        partyHue = 0;
+        createPartyConfetti();
+      }
+      if (mode === 'BLACKHOLE') {
+        blackholeParticles = Array.from({length:60}, () => ({
+          x: CX + (Math.random()-0.5)*W*1.5,
+          y: CY + (Math.random()-0.5)*H*1.5,
+          vx: (Math.random()-0.5)*2,
+          vy: (Math.random()-0.5)*2,
+          size: 1 + Math.random()*3,
+          col: `hsl(${Math.random()*30+350},90%,${40+Math.random()*40}%)`,
+          trail: [],
+        }));
+      }
+      if (mode === 'VORTEX') {
+        vortexParticles = Array.from({length: 80}, () => {
+          const angle = Math.random() * Math.PI * 2;
+          const r = 80 + Math.random() * 75;
+          return {
+            angle,
+            r,
+            speed: 0.008 + Math.random() * 0.012,
+            drift: -0.15 - Math.random() * 0.2,  // spiral inward
+            size: 1 + Math.random() * 2.5,
+            hue: 260 + Math.random() * 80,        // purple-cyan band
+            alpha: 0.4 + Math.random() * 0.6,
+            trail: [],
+          };
+        });
+      }
+      if (mode === 'EXPLODE') {
+        explodeFrags = Array.from({length:40}, () => {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2 + Math.random() * 5;
+          return {
+            x: CX, y: CY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            rot: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random()-0.5) * 0.2,
+            size: 6 + Math.random() * 18,
+            col: `hsl(${Math.random()*30+340},90%,55%)`,
+            alpha: 1,
+          };
+        });
+        inner.style.opacity = '0';
+        if (navigator.vibrate) navigator.vibrate([20,40,20,40,80]);
+      }
+      if (mode === 'GLITCH') {
+        if (navigator.vibrate) navigator.vibrate([5,10,5,10,5]);
+        startGlitch();
+      }
+      if (mode === 'RAINBOW') {
+        rainbowPhase = 0;
+      }
+      if (mode === 'SONAR') {
+        sonarWaves = [];
+        sonarEchos = [];
+        // Kick first ping immediately
+        sonarWaves.push({ r: 72, maxR: 155, alpha: 1, speed: 1.8 });
+      }
+      if (mode === 'FORGE') {
+        forgeSparks = [];
+        inner.style.transition = 'none';
+      }
+      if (mode === 'MAGNET') {
+        magnetRepel = false;
+        if (hint) hint.textContent = '🧲 DRAG PER INVERTIRE — CLICK PER AVANZARE';
+      }
+    }
+
+    function createPartyConfetti() {
+      for (let i = 0; i < 50; i++) {
+        const c = document.createElement('div');
+        c.className = 'pla-mode-overlay pla-confetti';
+        const hue = Math.random() * 360;
+        c.style.cssText = `
+          position:absolute;
+          width:${4+Math.random()*8}px;
+          height:${4+Math.random()*4}px;
+          background:hsl(${hue},90%,60%);
+          left:50%;top:50%;
+          border-radius:${Math.random()>0.5?'50%':'2px'};
+          pointer-events:none;
+          z-index:20;
+          --tx:${(Math.random()-0.5)*300}px;
+          --ty:${(Math.random()-0.5)*300}px;
+          --rot:${Math.random()*720}deg;
+          animation: confettiFly ${0.8+Math.random()*1.2}s cubic-bezier(0,0.9,0.5,1) ${Math.random()*0.4}s both;
+        `;
+        wrap.appendChild(c);
+        c.addEventListener('animationend', () => c.remove());
+      }
+    }
+
+    let glitchInterval = null;
+    function startGlitch() {
+      if (glitchInterval) clearInterval(glitchInterval);
+      let glitchCount = 0;
+      glitchInterval = setInterval(() => {
+        glitchCount++;
+        const ox = (Math.random()-0.5)*20;
+        const oy = (Math.random()-0.5)*8;
+        inner.style.transform = `translate(${ox}px,${oy}px) skew(${(Math.random()-0.5)*8}deg)`;
+        inner.style.filter = `hue-rotate(${Math.random()*360}deg) saturate(3)`;
+        if (plaLabel) plaLabel.style.textShadow = `${(Math.random()-0.5)*10}px 0 #0ff, ${(Math.random()-0.5)*10}px 0 #f0f`;
+        if (glitchCount > 20) {
+          clearInterval(glitchInterval);
+          glitchInterval = null;
+          inner.style.transform = '';
+          inner.style.filter = '';
+          if (plaLabel) plaLabel.style.textShadow = '';
+        }
+      }, 80);
+    }
+
+    // ---- BASE DRAW FUNCTIONS ----
+    function drawOrbitRing(ring, extraRotate, colorOverride) {
       const rx = ring.ry + tiltY * 0.5;
       const ry = ring.rx + tiltX * 0.5;
       const angle = ring.phase + ring.speed * t * 60 + extraRotate;
-
-      // Project 3D ring to 2D ellipse
       const cosA = Math.cos(angle + autoRotate);
       const sinA = Math.sin(angle + autoRotate);
       const tiltedRy = ring.r * Math.abs(Math.cos(ry)) * 0.4 + ring.r * 0.15;
       const tiltedRx = ring.r;
       const skew = sinA * rx * 0.3;
-
       ctx.save();
       ctx.translate(CX, CY);
       ctx.rotate(Math.atan2(sinA * 0.4, cosA) * 0.3 + rx * 0.1);
       ctx.beginPath();
       ctx.ellipse(0, skew * 6, tiltedRx, tiltedRy, 0, 0, Math.PI * 2);
-      ctx.strokeStyle = ring.col;
+      ctx.strokeStyle = colorOverride || ring.col;
       ctx.lineWidth = ring.lw;
       ctx.stroke();
       ctx.restore();
     }
 
-    // Draw a dot on its orbit
-    function drawOrbitDot(dot) {
+    function drawOrbitDot(dot, colorOverride) {
       const ring = rings[dot.ringIdx];
       const angle = dot.angle + ring.speed * t * 60 + autoRotate;
       const ry = ring.rx + tiltX * 0.5;
       const tiltedRy = ring.r * Math.abs(Math.cos(ry)) * 0.4 + ring.r * 0.15;
-      const tiltedRx = ring.r;
-
-      const x = CX + tiltedRx * Math.cos(angle);
+      const x = CX + ring.r * Math.cos(angle);
       const y = CY + tiltedRy * Math.sin(angle);
-
-      const grd = ctx.createRadialGradient(x, y, 0, x, y, dot.size * 3);
-      grd.addColorStop(0, 'rgba(229,62,62,0.9)');
-      grd.addColorStop(1, 'rgba(229,62,62,0)');
-      ctx.beginPath();
-      ctx.arc(x, y, dot.size, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(229,62,62,0.85)';
-      ctx.fill();
-      // glow
-      ctx.beginPath();
-      ctx.arc(x, y, dot.size * 3, 0, Math.PI * 2);
-      ctx.fillStyle = grd;
-      ctx.fill();
+      const col = colorOverride || 'rgba(229,62,62,0.85)';
+      ctx.beginPath(); ctx.arc(x, y, dot.size, 0, Math.PI*2);
+      ctx.fillStyle = col; ctx.fill();
+      const grd = ctx.createRadialGradient(x,y,0,x,y,dot.size*3);
+      grd.addColorStop(0, col); grd.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(x,y,dot.size*3,0,Math.PI*2);
+      ctx.fillStyle = grd; ctx.fill();
     }
 
-    // Draw outer glow halo
-    function drawHalo() {
-      const strength = 0.3 + Math.sin(t * 0.03) * 0.1;
-      const grd = ctx.createRadialGradient(CX, CY, 55, CX, CY, 160);
-      grd.addColorStop(0, `rgba(229,62,62,0)`);
-      grd.addColorStop(0.5, `rgba(229,62,62,${strength * 0.08})`);
-      grd.addColorStop(1, `rgba(229,62,62,0)`);
-      ctx.beginPath();
-      ctx.arc(CX, CY, 160, 0, Math.PI * 2);
-      ctx.fillStyle = grd;
-      ctx.fill();
+    function drawHalo(colorOverride, alphaMultiplier=1) {
+      const strength = (0.3 + Math.sin(t * 0.03) * 0.1) * alphaMultiplier;
+      const col = colorOverride || '229,62,62';
+      const grd = ctx.createRadialGradient(CX,CY,55,CX,CY,160);
+      grd.addColorStop(0,`rgba(${col},0)`);
+      grd.addColorStop(0.5,`rgba(${col},${strength*0.08})`);
+      grd.addColorStop(1,`rgba(${col},0)`);
+      ctx.beginPath(); ctx.arc(CX,CY,160,0,Math.PI*2);
+      ctx.fillStyle = grd; ctx.fill();
     }
 
-    function animate() {
-      ctx.clearRect(0, 0, W, H);
-      t++;
+    function drawBaseReflection() {
+      const lx = CX - tiltY*8 - 20, ly = CY - tiltX*8 - 20;
+      const refGrd = ctx.createRadialGradient(lx,ly,2,CX,CY,72);
+      refGrd.addColorStop(0,'rgba(255,255,255,0.06)');
+      refGrd.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(CX,CY,72,0,Math.PI*2);
+      ctx.fillStyle = refGrd; ctx.fill();
+    }
 
-      // Ease tilt toward target
-      tiltX += (targetTiltX - tiltX) * 0.08;
-      tiltY += (targetTiltY - tiltY) * 0.08;
+    // ---- MODE RENDERERS ----
+    function renderGravity() {
+      gravityVY += 0.4;
+      gravityY += gravityVY;
+      if (gravityY > 80) { gravityY = 80; gravityVY *= -0.75; if (navigator.vibrate) navigator.vibrate(15); }
+      inner.style.transform = `translateY(${gravityY}px) scaleX(${1+Math.abs(gravityVY)*0.008}) scaleY(${1-Math.abs(gravityVY)*0.01})`;
+      const squish = Math.max(0, 1 - Math.abs(gravityY-80)/20);
+      drawHalo('229,62,62', 0.5 + squish);
+      rings.forEach(ring => drawOrbitRing(ring, 0));
+      dots.forEach(d => drawOrbitDot(d));
+      drawBaseReflection();
+    }
 
-      // Decay momentum
-      if (!isDragging) {
-        autoRotate += velX * 0.012;
-        velX *= 0.94;
-        velY *= 0.94;
-        targetTiltX *= 0.97;
-        targetTiltY *= 0.97;
+    function renderElectric() {
+      drawHalo('100,180,255', 2);
+      rings.forEach((ring,i) => drawOrbitRing(ring, 0, `rgba(100,180,255,${0.4+i*0.1})`));
+      dots.forEach(d => drawOrbitDot(d, 'rgba(100,200,255,0.9)'));
+      drawBaseReflection();
+
+      electricArcs.forEach(arc => {
+        arc.life += arc.speed;
+        if (arc.life > 1) { arc.angle = Math.random()*Math.PI*2; arc.life = 0; arc.len = 40+Math.random()*60; }
+        const alpha = Math.sin(arc.life * Math.PI) * 0.9;
+        if (alpha < 0.05) return;
+        const startR = 75;
+        const sx = CX + Math.cos(arc.angle + autoRotate) * startR;
+        const sy = CY + Math.sin(arc.angle + autoRotate) * startR;
+        ctx.beginPath(); ctx.moveTo(sx, sy);
+        let px = sx, py = sy;
+        for (let s = 0; s < arc.segs; s++) {
+          const progress = (s+1)/arc.segs;
+          const ex = sx + Math.cos(arc.angle+autoRotate)*arc.len*progress;
+          const ey = sy + Math.sin(arc.angle+autoRotate)*arc.len*progress;
+          const ox = (Math.random()-0.5)*18*(1-progress);
+          const oy = (Math.random()-0.5)*18*(1-progress);
+          ctx.lineTo(ex+ox, ey+oy);
+          px=ex+ox; py=ey+oy;
+        }
+        ctx.strokeStyle = `rgba(150,220,255,${alpha})`;
+        ctx.lineWidth = 0.8 + Math.random()*1.5;
+        ctx.shadowColor = '#4af'; ctx.shadowBlur = 8;
+        ctx.stroke(); ctx.shadowBlur = 0;
+        // fork
+        if (Math.random()>0.5) {
+          ctx.beginPath(); ctx.moveTo(px,py);
+          ctx.lineTo(px+(Math.random()-0.5)*30, py+(Math.random()-0.5)*30);
+          ctx.strokeStyle=`rgba(200,240,255,${alpha*0.4})`; ctx.lineWidth=0.4; ctx.stroke();
+        }
+      });
+      inner.style.filter = `brightness(${1+Math.random()*0.3}) hue-rotate(${Math.sin(t*0.1)*30}deg)`;
+      if (plaLabel) plaLabel.style.textShadow = `0 0 20px #4af, 0 0 40px #4af`;
+    }
+
+    function renderFace() {
+      drawHalo('229,62,62');
+      rings.forEach(ring => drawOrbitRing(ring, 0));
+      drawBaseReflection();
+      faceEyeX += (faceTargetX - faceEyeX) * 0.1;
+      faceEyeY += (faceTargetY - faceEyeY) * 0.1;
+      faceMouthOpen = Math.sin(t * 0.05) * 0.5 + 0.5;
+      // Eyes
+      const eyeOffsetX = 20, eyeOffsetY = -10, eyeR = 12;
+      [-1,1].forEach(side => {
+        const ex = CX + side * eyeOffsetX + faceEyeX * 4;
+        const ey = CY + eyeOffsetY + faceEyeY * 4;
+        ctx.beginPath(); ctx.arc(ex, ey, eyeR, 0, Math.PI*2);
+        ctx.fillStyle = '#fff'; ctx.fill();
+        ctx.beginPath(); ctx.arc(ex+faceEyeX*3, ey+faceEyeY*3, eyeR*0.55, 0, Math.PI*2);
+        ctx.fillStyle = '#111'; ctx.fill();
+        ctx.beginPath(); ctx.arc(ex+faceEyeX*3+2, ey+faceEyeY*3-2, eyeR*0.15, 0, Math.PI*2);
+        ctx.fillStyle = '#fff'; ctx.fill();
+        // Eyelid blink
+        if (Math.sin(t*0.04) > 0.96) {
+          ctx.beginPath(); ctx.arc(ex, ey, eyeR, Math.PI, Math.PI*2);
+          ctx.fillStyle = '#1a1a1a'; ctx.fill();
+        }
+      });
+      // Mouth
+      ctx.beginPath();
+      ctx.arc(CX + faceEyeX*2, CY + 22, 18, 0, Math.PI * faceMouthOpen);
+      ctx.strokeStyle = 'rgba(229,62,62,0.9)';
+      ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
+      // Eyebrows
+      if (faceTargetY < -0.3) {
+        [-1,1].forEach(s => {
+          ctx.beginPath();
+          ctx.moveTo(CX+s*(eyeOffsetX-8), CY+eyeOffsetY-eyeR-2);
+          ctx.lineTo(CX+s*(eyeOffsetX+8), CY+eyeOffsetY-eyeR+4);
+          ctx.strokeStyle='rgba(229,62,62,0.7)'; ctx.lineWidth=3; ctx.stroke();
+        });
+      }
+    }
+
+    function renderMatrix() {
+      // Faint dark overlay for trail effect (instead of full clear)
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.fillRect(0,0,W,H);
+
+      ctx.font = 'bold 12px monospace';  // set once, not per char
+      matrixChars.forEach(col => {
+        col.y += col.speed;
+        if (col.y > H + 100) { col.y = -Math.random()*H*0.5; col.x = Math.random()*W; }
+        // Randomly mutate one char per column per frame
+        if (Math.random() > 0.9) {
+          const idx = Math.floor(Math.random() * col.chars.length);
+          col.chars[idx] = String.fromCharCode(0x30A0 + Math.random()*96);
+        }
+        col.chars.forEach((ch, i) => {
+          const cy2 = col.y - i * 14;
+          if (cy2 < -14 || cy2 > H + 14) return;
+          const isHead = i === 0;
+          const distFromCenter = Math.hypot(col.x - CX, cy2 - CY);
+          const fade = 1 - i / col.chars.length;
+          const alpha = distFromCenter < 78 ? 0.08 : fade;
+          if (alpha < 0.02) return;
+          ctx.fillStyle = isHead
+            ? `rgba(200,255,200,${alpha})`
+            : `rgba(0,${140 + Math.floor(fade * 100)},0,${alpha})`;
+          ctx.fillText(ch, col.x, cy2);
+        });
+      });
+
+      // Pulse ring around sphere
+      const pulseR = 72 + Math.sin(t*0.05)*4;
+      ctx.beginPath(); ctx.arc(CX,CY,pulseR,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(0,255,70,${0.25+Math.sin(t*0.05)*0.1})`;
+      ctx.lineWidth=1.5; ctx.stroke();
+
+      inner.style.background = `radial-gradient(circle at 35% 35%, #0a2a0a, #000)`;
+      inner.style.boxShadow = `0 0 40px rgba(0,255,70,0.4), inset 0 0 20px rgba(0,0,0,0.9)`;
+      if (plaLabel) { plaLabel.style.color = '#0f0'; plaLabel.style.textShadow = '0 0 20px #0f0'; }
+    }
+
+    function renderParty() {
+      partyHue = (partyHue + 3) % 360;
+      const col = `hsl(${partyHue},90%,60%)`;
+      const col2 = `hsl(${(partyHue+120)%360},90%,60%)`;
+      drawHalo(`${Math.floor(Math.sin(t*0.05)*128+128)},${Math.floor(Math.cos(t*0.04)*128+128)},255`, 3);
+      rings.forEach((ring,i) => {
+        const h = (partyHue + i*90) % 360;
+        drawOrbitRing(ring, 0, `hsla(${h},90%,60%,0.7)`);
+      });
+      dots.forEach((d,i) => drawOrbitDot(d, `hsla(${(partyHue+i*60)%360},90%,60%,0.9)`));
+      drawBaseReflection();
+      inner.style.background = `radial-gradient(circle at 35% 35%, hsl(${partyHue},70%,40%), hsl(${(partyHue+180)%360},70%,15%))`;
+      inner.style.boxShadow = `0 0 60px hsla(${partyHue},90%,60%,0.6), inset 0 0 30px rgba(0,0,0,0.5)`;
+      inner.style.transform = `rotate(${Math.sin(t*0.08)*8}deg) scale(${1+Math.sin(t*0.12)*0.05})`;
+      if (plaLabel) { plaLabel.style.color = col; plaLabel.style.textShadow = `0 0 20px ${col2}`; }
+      // stroboscopic ring bursts
+      if (t % 15 === 0) createPartyConfetti();
+    }
+
+    function renderBlackhole() {
+      const strength = 0.5 + Math.sin(t*0.03)*0.2;
+      const grd = ctx.createRadialGradient(CX,CY,0,CX,CY,160);
+      grd.addColorStop(0,'rgba(0,0,0,0.95)');
+      grd.addColorStop(0.3,`rgba(80,0,0,${strength*0.3})`);
+      grd.addColorStop(0.7,`rgba(229,0,0,${strength*0.08})`);
+      grd.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(CX,CY,160,0,Math.PI*2);
+      ctx.fillStyle = grd; ctx.fill();
+
+      blackholeParticles.forEach(p => {
+        p.trail.push({x:p.x,y:p.y});
+        if (p.trail.length>10) p.trail.shift();
+        const dx = CX-p.x, dy = CY-p.y;
+        const dist = Math.hypot(dx,dy)+1;
+        const pull = 60/dist;
+        p.vx += dx/dist*pull; p.vy += dy/dist*pull;
+        p.vx *= 0.97; p.vy *= 0.97;
+        p.x += p.vx; p.y += p.vy;
+        if (dist < 20) { p.x=CX+(Math.random()-0.5)*W*1.2; p.y=CY+(Math.random()-0.5)*H*1.2; p.vx=0; p.vy=0; }
+        // draw trail
+        if (p.trail.length > 1) {
+          ctx.beginPath(); ctx.moveTo(p.trail[0].x,p.trail[0].y);
+          p.trail.forEach(pt=>ctx.lineTo(pt.x,pt.y));
+          ctx.strokeStyle=p.col; ctx.lineWidth=p.size*0.5; ctx.globalAlpha=0.5; ctx.stroke(); ctx.globalAlpha=1;
+        }
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+        ctx.fillStyle=p.col; ctx.fill();
+      });
+      // Accretion disk
+      rings.forEach((ring,i) => {
+        const h = t*2 + i*45;
+        drawOrbitRing(ring, t*0.02, `hsla(${h%360},90%,55%,0.5)`);
+      });
+      inner.style.background = 'radial-gradient(circle at 50% 50%, #000, #000)';
+      inner.style.boxShadow = `0 0 80px rgba(229,62,62,0.8), 0 0 0 3px rgba(229,62,62,0.3), inset 0 0 60px #000`;
+      inner.style.transform = `scale(${1+Math.sin(t*0.04)*0.03})`;
+    }
+
+    function renderVortex() {
+      // Dark purple radial bg
+      const bgGrd = ctx.createRadialGradient(CX,CY,0,CX,CY,160);
+      bgGrd.addColorStop(0,'rgba(10,0,25,0.9)');
+      bgGrd.addColorStop(0.6,'rgba(40,0,60,0.4)');
+      bgGrd.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(CX,CY,160,0,Math.PI*2);
+      ctx.fillStyle = bgGrd; ctx.fill();
+
+      // Spiral arm lines (static decoration)
+      for (let arm = 0; arm < 3; arm++) {
+        const armOff = (arm / 3) * Math.PI * 2 + t * 0.008;
+        ctx.beginPath();
+        for (let s = 0; s <= 60; s++) {
+          const progress = s / 60;
+          const spiralAngle = armOff + progress * Math.PI * 4;
+          const spiralR = 155 * (1 - progress * 0.7);
+          const sx = CX + Math.cos(spiralAngle) * spiralR;
+          const sy = CY + Math.sin(spiralAngle) * spiralR;
+          if (s === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+        }
+        const armHue = 270 + arm * 40;
+        ctx.strokeStyle = `hsla(${armHue},80%,60%,0.07)`;
+        ctx.lineWidth = 1; ctx.stroke();
       }
 
-      drawHalo();
+      // Vortex particles — spiral inward
+      vortexParticles.forEach(p => {
+        // Save last position for trail
+        const px = CX + Math.cos(p.angle) * p.r;
+        const py = CY + Math.sin(p.angle) * p.r;
+        p.trail.push({x: px, y: py});
+        if (p.trail.length > 10) p.trail.shift();
+
+        // Accelerate rotation as r decreases
+        const spinBoost = 1 + (1 - Math.min(p.r, 155) / 155) * 3;
+        p.angle += p.speed * spinBoost;
+        p.r += p.drift * spinBoost;
+
+        // Respawn when sucked in
+        if (p.r < 30) {
+          p.r = 100 + Math.random() * 55;
+          p.angle = Math.random() * Math.PI * 2;
+          p.trail = [];
+          p.hue = 260 + Math.random() * 80;
+        }
+
+        const x = CX + Math.cos(p.angle) * p.r;
+        const y = CY + Math.sin(p.angle) * p.r;
+        const lifeAlpha = Math.min(1, (p.r - 30) / 40);  // fade near center
+
+        // Trail
+        if (p.trail.length > 2) {
+          ctx.beginPath();
+          ctx.moveTo(p.trail[0].x, p.trail[0].y);
+          p.trail.forEach(pt => ctx.lineTo(pt.x, pt.y));
+          ctx.strokeStyle = `hsla(${p.hue},85%,65%,${p.alpha * lifeAlpha * 0.4})`;
+          ctx.lineWidth = p.size * 0.5;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+
+        // Particle dot
+        ctx.beginPath(); ctx.arc(x, y, p.size * lifeAlpha, 0, Math.PI*2);
+        ctx.fillStyle = `hsla(${p.hue},90%,70%,${p.alpha * lifeAlpha})`;
+        ctx.shadowColor = `hsl(${p.hue},90%,60%)`;
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // Orbit rings with vortex tint
+      rings.forEach((ring,i) => {
+        const h = 270 + i * 25 + t * 0.5;
+        drawOrbitRing(ring, t * 0.005 * (i+1), `hsla(${h%360},80%,60%,${0.25+i*0.06})`);
+      });
+      dots.forEach((d,i) => drawOrbitDot(d, `hsla(${(280+i*30)%360},85%,65%,0.9)`));
+      drawBaseReflection();
+
+      inner.style.background = `radial-gradient(circle at 40% 35%, #1a0033, #060010)`;
+      inner.style.boxShadow = `0 0 60px rgba(140,0,255,0.4), 0 0 120px rgba(80,0,180,0.2), inset 0 0 30px rgba(0,0,0,0.9)`;
+      inner.style.transform = `rotate(${t * 0.15}deg)`;
+      if (plaLabel) { plaLabel.style.color = '#c080ff'; plaLabel.style.textShadow = '0 0 20px rgba(160,80,255,1), 0 0 40px rgba(100,0,255,0.6)'; }
+    }
+
+    function renderMagnet() {
+      drawHalo('229,62,62');
       rings.forEach(ring => drawOrbitRing(ring, 0));
-      dots.forEach(dot => drawOrbitDot(dot));
+      dots.forEach(d => drawOrbitDot(d));
+      drawBaseReflection();
+      // Field lines emanating from sphere
+      for (let i = 0; i < 16; i++) {
+        const baseAngle = (i/16)*Math.PI*2 + t*0.02;
+        ctx.beginPath();
+        let fx = CX + Math.cos(baseAngle)*72, fy = CY + Math.sin(baseAngle)*72;
+        ctx.moveTo(fx,fy);
+        for (let s=0;s<12;s++) {
+          const fieldAngle = baseAngle + (magnetRepel ? -1 : 1) * s * 0.15;
+          const r = 72 + s * 12;
+          fx = CX + Math.cos(fieldAngle)*r;
+          fy = CY + Math.sin(fieldAngle)*r;
+          ctx.lineTo(fx,fy);
+        }
+        const alpha = 0.3+Math.sin(t*0.05+i)*0.2;
+        ctx.strokeStyle = magnetRepel ? `rgba(255,120,50,${alpha})` : `rgba(100,180,255,${alpha})`;
+        ctx.lineWidth = 0.8; ctx.stroke();
+      }
+      const poleCol = magnetRepel ? `rgba(255,100,50,0.8)` : `rgba(50,150,255,0.8)`;
+      inner.style.boxShadow = `0 0 60px ${poleCol}, inset 0 0 30px rgba(0,0,0,0.7)`;
+      inner.style.transform = magnetRepel ? `scale(${1+Math.sin(t*0.1)*0.04})` : `scale(${1+Math.sin(t*0.06)*0.02})`;
+    }
 
-      // 3D light reflection on inner sphere — moves with tilt
-      const lx = CX - tiltY * 8 - 20;
-      const ly = CY - tiltX * 8 - 20;
-      const refGrd = ctx.createRadialGradient(lx, ly, 2, CX, CY, 72);
-      refGrd.addColorStop(0, 'rgba(255,255,255,0.06)');
-      refGrd.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.beginPath();
-      ctx.arc(CX, CY, 72, 0, Math.PI * 2);
-      ctx.fillStyle = refGrd;
-      ctx.fill();
+    function renderRainbow() {
+      rainbowPhase += 0.02;
+      // Starburst rings
+      for (let i = 0; i < 8; i++) {
+        const h = ((i/8)*360 + rainbowPhase*60) % 360;
+        const pulse = 0.5 + Math.sin(rainbowPhase*3 + i)*0.5;
+        rings.forEach((ring,ri) => {
+          const rmod = { ...ring, r: ring.r * (0.9 + i*0.03) };
+          drawOrbitRing(rmod, i*0.4+rainbowPhase, `hsla(${h},90%,60%,${0.1*pulse})`);
+        });
+      }
+      dots.forEach((d,i) => drawOrbitDot(d, `hsla(${(rainbowPhase*100+i*80)%360},90%,65%,0.9)`));
+      // Rainbow halo
+      for (let i = 7; i >= 0; i--) {
+        const h = (i/8)*360 + rainbowPhase*60;
+        const grd = ctx.createRadialGradient(CX,CY,60+i*10,CX,CY,80+i*10);
+        grd.addColorStop(0,`hsla(${h},90%,60%,0)`);
+        grd.addColorStop(0.5,`hsla(${h},90%,60%,0.06)`);
+        grd.addColorStop(1,`hsla(${h},90%,60%,0)`);
+        ctx.beginPath(); ctx.arc(CX,CY,80+i*10,0,Math.PI*2);
+        ctx.fillStyle=grd; ctx.fill();
+      }
+      const h0 = (rainbowPhase*60)%360;
+      inner.style.background = `radial-gradient(circle at 35% 35%, hsl(${h0},70%,50%), hsl(${(h0+120)%360},70%,20%))`;
+      inner.style.boxShadow = `0 0 60px hsla(${h0},90%,60%,0.6), 0 0 120px hsla(${(h0+120)%360},90%,60%,0.3)`;
+      if (plaLabel) { plaLabel.style.color = `hsl(${h0},90%,70%)`; plaLabel.style.textShadow = `0 0 30px hsl(${h0},90%,60%)`; }
+    }
 
+    function renderSonar() {
+      // Background — deep dark teal
+      const bgGrd = ctx.createRadialGradient(CX,CY,0,CX,CY,160);
+      bgGrd.addColorStop(0,'rgba(0,18,22,0.85)');
+      bgGrd.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(CX,CY,160,0,Math.PI*2);
+      ctx.fillStyle = bgGrd; ctx.fill();
+
+      // Grid lines (polar — concentric faint circles)
+      for (let gr = 40; gr <= 150; gr += 35) {
+        ctx.beginPath(); ctx.arc(CX,CY,gr,0,Math.PI*2);
+        ctx.strokeStyle = 'rgba(0,220,180,0.07)'; ctx.lineWidth = 0.8; ctx.stroke();
+      }
+      // Crosshair
+      ['rgba(0,220,180,0.08)','rgba(0,220,180,0.08)'].forEach((_,i) => {
+        ctx.beginPath();
+        if (i===0) { ctx.moveTo(CX,CY-155); ctx.lineTo(CX,CY+155); }
+        else       { ctx.moveTo(CX-155,CY); ctx.lineTo(CX+155,CY); }
+        ctx.strokeStyle='rgba(0,220,180,0.07)'; ctx.lineWidth=0.8; ctx.stroke();
+      });
+
+      // Emit new ping every ~80 frames
+      if (modeT % 80 === 0) {
+        sonarWaves.push({ r: 72, maxR: 155, alpha: 0.9, speed: 1.8 });
+        if (navigator.vibrate) navigator.vibrate(8);
+      }
+
+      // Update & draw waves
+      sonarWaves = sonarWaves.filter(w => w.alpha > 0.01);
+      sonarWaves.forEach(w => {
+        w.r += w.speed;
+        w.alpha = Math.max(0, w.alpha - 0.012);
+        // Main ring
+        ctx.beginPath(); ctx.arc(CX,CY,w.r,0,Math.PI*2);
+        ctx.strokeStyle = `rgba(0,220,180,${w.alpha * 0.9})`;
+        ctx.lineWidth = 1.5; ctx.shadowColor = 'rgba(0,220,180,0.6)'; ctx.shadowBlur = 6;
+        ctx.stroke(); ctx.shadowBlur = 0;
+        // Inner echo glow
+        if (w.r > 90) {
+          ctx.beginPath(); ctx.arc(CX,CY,w.r-3,0,Math.PI*2);
+          ctx.strokeStyle = `rgba(0,255,200,${w.alpha * 0.3})`;
+          ctx.lineWidth = 0.5; ctx.stroke();
+        }
+      });
+
+      // Echo dots — appear when a wave passes through them
+      if (modeT % 80 === 40) {
+        // spawn 3–5 random echo dots around the sphere edge
+        for (let i = 0; i < 4; i++) {
+          const ang = Math.random() * Math.PI * 2;
+          const dist = 90 + Math.random() * 55;
+          sonarEchos.push({
+            x: CX + Math.cos(ang) * dist,
+            y: CY + Math.sin(ang) * dist,
+            alpha: 0.9,
+            size: 2 + Math.random() * 3,
+          });
+        }
+      }
+      sonarEchos = sonarEchos.filter(e => e.alpha > 0.01);
+      sonarEchos.forEach(e => {
+        e.alpha -= 0.015;
+        ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(0,255,200,${e.alpha})`;
+        ctx.shadowColor = 'rgba(0,255,180,0.8)'; ctx.shadowBlur = 10;
+        ctx.fill(); ctx.shadowBlur = 0;
+      });
+
+      // Orbit rings tinted teal
+      rings.forEach(ring => drawOrbitRing(ring, 0, `rgba(0,180,140,${ring.lw * 0.5})`));
+      dots.forEach(d => drawOrbitDot(d, 'rgba(0,230,180,0.85)'));
+      drawBaseReflection();
+
+      inner.style.background = 'radial-gradient(circle at 38% 32%, #0a2e2a, #001a16)';
+      inner.style.boxShadow = `0 0 50px rgba(0,200,160,0.4), inset 0 0 25px rgba(0,0,0,0.8)`;
+      if (plaLabel) { plaLabel.style.color = '#00e6b8'; plaLabel.style.textShadow = '0 0 18px rgba(0,230,180,0.9)'; }
+    }
+
+    function renderForge() {
+      // Heat glow from center
+      const heatGrd = ctx.createRadialGradient(CX,CY,30,CX,CY,160);
+      const heatPulse = 0.5 + Math.sin(t * 0.04) * 0.2;
+      heatGrd.addColorStop(0, `rgba(255,140,0,${heatPulse * 0.35})`);
+      heatGrd.addColorStop(0.4, `rgba(200,40,0,${heatPulse * 0.15})`);
+      heatGrd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(CX,CY,160,0,Math.PI*2);
+      ctx.fillStyle = heatGrd; ctx.fill();
+
+      // Emit sparks each frame
+      const emitCount = Math.random() > 0.5 ? 2 : 1;
+      for (let i = 0; i < emitCount; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const spd = 1.5 + Math.random() * 3.5;
+        const hue = 15 + Math.random() * 35; // orange-red band
+        forgeSparks.push({
+          x: CX + Math.cos(ang) * 72,
+          y: CY + Math.sin(ang) * 72,
+          vx: Math.cos(ang) * spd + (Math.random()-0.5) * 1.5,
+          vy: Math.sin(ang) * spd + (Math.random()-0.5) * 1.5 - 0.5,
+          life: 1,
+          decay: 0.02 + Math.random() * 0.025,
+          size: 1 + Math.random() * 2.5,
+          hue,
+          trail: [],
+        });
+      }
+
+      // Update & draw sparks
+      forgeSparks = forgeSparks.filter(s => s.life > 0);
+      forgeSparks.forEach(s => {
+        s.trail.push({x: s.x, y: s.y});
+        if (s.trail.length > 7) s.trail.shift();
+        s.x += s.vx; s.y += s.vy;
+        s.vy += 0.08; // gravity
+        s.vx *= 0.98;
+        s.life -= s.decay;
+
+        // Trail
+        if (s.trail.length > 1) {
+          ctx.beginPath(); ctx.moveTo(s.trail[0].x, s.trail[0].y);
+          s.trail.forEach(pt => ctx.lineTo(pt.x, pt.y));
+          ctx.strokeStyle = `hsla(${s.hue},100%,65%,${s.life * 0.5})`;
+          ctx.lineWidth = s.size * 0.4; ctx.lineCap = 'round'; ctx.stroke();
+        }
+        // Spark head
+        ctx.beginPath(); ctx.arc(s.x, s.y, Math.max(0.1, s.size * s.life), 0, Math.PI*2);
+        ctx.fillStyle = `hsla(${s.hue + 20},100%,75%,${s.life})`;
+        ctx.shadowColor = `hsl(${s.hue},100%,55%)`; ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;  // reset immediately
+
+        // Occasional bright pop
+        if (s.life > 0.85 && Math.random() > 0.7) {
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.size * 2.5, 0, Math.PI*2);
+          ctx.fillStyle = `hsla(40,100%,90%,${s.life * 0.6})`;
+          ctx.fill();
+        }
+      });
+
+      // Orbit rings with heat tint
+      rings.forEach((ring,i) => drawOrbitRing(ring, 0, `rgba(255,${80+i*30},0,${0.3+i*0.08})`));
+      dots.forEach(d => drawOrbitDot(d, `hsl(${20+Math.sin(t*0.05)*20},100%,60%)`));
+      drawBaseReflection();
+
+      const bright = 1.1 + Math.sin(t * 0.06) * 0.15;
+      inner.style.background = `radial-gradient(circle at 35% 30%, #7a2800, #2a0800)`;
+      inner.style.boxShadow = `0 0 70px rgba(255,80,0,${0.5+Math.sin(t*0.04)*0.2}), inset 0 0 30px rgba(0,0,0,0.8)`;
+      inner.style.filter = `brightness(${bright})`;
+      if (plaLabel) { plaLabel.style.color = '#ff9020'; plaLabel.style.textShadow = '0 0 20px rgba(255,120,0,1), 0 0 40px rgba(255,60,0,0.6)'; }
+    }
+
+    function renderExplode() {
+      // Phase 1 (0-80): fragments fly out, sphere hidden
+      // Phase 2 (80-160): sphere reassembles, fragments fade
+      // Phase 3 (160+): repeat
+      const phase = modeT % 200;
+
+      if (phase === 0 || (phase === 0 && modeT > 0)) {
+        // Re-init fragments at each cycle start
+        explodeFrags = Array.from({length:40}, () => {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2 + Math.random() * 5;
+          return {
+            x: CX, y: CY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1,
+            rot: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random()-0.5) * 0.25,
+            size: 5 + Math.random() * 16,
+            col: `hsl(${Math.random()*30+340},90%,55%)`,
+            alpha: 1,
+          };
+        });
+        inner.style.opacity = '0';
+        if (navigator.vibrate) navigator.vibrate([10,20,10]);
+      }
+
+      // Draw fragments
+      explodeFrags.forEach(f => {
+        if (phase < 160) {
+          f.x += f.vx; f.y += f.vy;
+          f.vy += 0.12;
+          f.vx *= 0.985; f.vy *= 0.985;
+          f.rot += f.rotSpeed;
+          f.alpha = Math.max(0, f.alpha - 0.006);
+        }
+        if (f.alpha <= 0.01) return;
+        ctx.save();
+        ctx.translate(f.x, f.y);
+        ctx.rotate(f.rot);
+        ctx.globalAlpha = Math.max(0, f.alpha);
+        ctx.beginPath();
+        ctx.moveTo(-f.size/2, -f.size/3);
+        ctx.lineTo(f.size/2, -f.size/4);
+        ctx.lineTo(f.size/3, f.size/2);
+        ctx.lineTo(-f.size/3, f.size/3);
+        ctx.closePath();
+        ctx.fillStyle = f.col;
+        ctx.shadowColor = f.col;
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.shadowBlur = 0;  // ← reset immediately inside save/restore
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      });
+
+      // Phase 2: sphere fades back in
+      if (phase >= 80) {
+        const progress = Math.min(1, (phase - 80) / 80);
+        inner.style.opacity = `${progress}`;
+        drawHalo('229,62,62', progress);
+        rings.forEach(ring => drawOrbitRing(ring, 0));
+        dots.forEach(d => drawOrbitDot(d));
+        drawBaseReflection();
+      }
+    }
+
+    function renderGlitch() {
+      // Draw base first
+      drawHalo('229,62,62');
+      rings.forEach((ring,i) => {
+        const glitch = Math.random() > 0.8;
+        drawOrbitRing(ring, glitch ? Math.random()*2 : 0, glitch ? `rgba(0,255,255,0.5)` : ring.col);
+      });
+      dots.forEach(d => drawOrbitDot(d));
+
+      // Color channel split — offset copy of current canvas content
+      const glitchX = (Math.random()-0.5)*16;
+      const glitchY = (Math.random()-0.5)*4;
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.globalAlpha = 0.18;
+      ctx.drawImage(canvas, glitchX, glitchY, W, H, 0, 0, W, H);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+      ctx.restore();
+
+      // Scan lines
+      for (let y = 0; y < H; y += 4) {
+        if (Math.random() > 0.97) {
+          ctx.fillStyle = `rgba(229,62,62,0.12)`;
+          ctx.fillRect(0, y, W, 2);
+        }
+      }
+      // Random noise blocks
+      if (Math.random() > 0.7) {
+        const bx = Math.random()*W, by = Math.random()*H;
+        const bw = 20+Math.random()*80, bh = 3+Math.random()*10;
+        ctx.fillStyle = `rgba(${Math.random()>0.5?'0,255,255':'255,0,255'},0.25)`;
+        ctx.fillRect(bx-bw/2, by, bw, bh);
+      }
+    }
+
+    // ---- MAIN ANIMATE LOOP ----
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+      t++; modeT++;
+
+      tiltX += (targetTiltX - tiltX) * 0.08;
+      tiltY += (targetTiltY - tiltY) * 0.08;
+      if (!isDragging) {
+        autoRotate += velX * 0.012;
+        velX *= 0.94; velY *= 0.94;
+        targetTiltX *= 0.97; targetTiltY *= 0.97;
+      }
+
+      switch (currentMode) {
+        case 'ELECTRIC':  renderElectric();  break;
+        case 'SONAR':     renderSonar();     break;
+        case 'MATRIX':    renderMatrix();    break;
+        case 'PARTY':     renderParty();     break;
+        case 'BLACKHOLE': renderBlackhole(); break;
+        case 'VORTEX':    renderVortex();    break;
+        case 'MAGNET':    renderMagnet();    break;
+        case 'RAINBOW':   renderRainbow();   break;
+        case 'FORGE':     renderForge();     break;
+        case 'EXPLODE':   renderExplode();   break;
+        case 'GLITCH':    renderGlitch();    break;
+        default: // NORMAL
+          drawHalo();
+          rings.forEach(ring => drawOrbitRing(ring, 0));
+          dots.forEach(dot => drawOrbitDot(dot));
+          drawBaseReflection();
+          inner.style.transform = '';
+          inner.style.filter = '';
+          inner.style.background = '';
+          inner.style.boxShadow = '';
+          if (plaLabel) { plaLabel.style.color = ''; plaLabel.style.textShadow = ''; }
+          break;
+      }
       requestAnimationFrame(animate);
     }
     animate();
 
-    // ---- DRAG INTERACTION ----
+    // ---- DRAG ----
     function onStart(mx, my) {
-      isDragging = true;
-      lastMX = mx; lastMY = my;
-      velX = 0; velY = 0;
+      isDragging = true; lastMX = mx; lastMY = my; velX = 0; velY = 0;
       wrap.style.cursor = 'grabbing';
     }
     function onMove(mx, my) {
       if (!isDragging) return;
-      const dx = mx - lastMX;
-      const dy = my - lastMY;
-      velX = dx;
-      velY = dy;
-      autoRotate += dx * 0.012;
-      targetTiltX += dy * 0.04;
-      targetTiltY += dx * 0.04;
-      targetTiltX = Math.max(-1.2, Math.min(1.2, targetTiltX));
-      targetTiltY = Math.max(-1.2, Math.min(1.2, targetTiltY));
+      const dx = mx-lastMX, dy = my-lastMY;
+      velX = dx; velY = dy;
+      autoRotate += dx*0.012;
+      targetTiltX = Math.max(-1.2,Math.min(1.2, targetTiltX+dy*0.04));
+      targetTiltY = Math.max(-1.2,Math.min(1.2, targetTiltY+dx*0.04));
       lastMX = mx; lastMY = my;
+      // Magnet drag: shake + toggle repel on significant drag
+      if (currentMode === 'MAGNET') {
+        inner.style.transform = `translate(${dx*0.3}px,${dy*0.3}px)`;
+        setTimeout(()=>inner.style.transform='',100);
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+          magnetRepel = !magnetRepel;
+          if (hint) hint.textContent = magnetRepel ? '🧲 REPULSIONE ATTIVA' : '🧲 ATTRAZIONE ATTIVA';
+        }
+      }
     }
-    function onEnd() {
-      isDragging = false;
-      wrap.style.cursor = 'grab';
-    }
+    function onEnd() { isDragging = false; wrap.style.cursor = 'grab'; }
 
     wrap.addEventListener('mousedown', e => onStart(e.clientX, e.clientY));
     window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
     window.addEventListener('mouseup', onEnd);
 
-    // ---- TOUCH INTERACTION (enhanced) ----
-    let touchStartX = 0, touchStartY = 0;
-    let lastTouchX = 0, lastTouchY = 0;
-    let pinchStartDist = 0;
-    let isTap = false;
+    // ---- CLICK = CHANGE MODE ----
+    function handleClick(isTouch) {
 
-    wrap.addEventListener('touchstart', e => {
-      e.preventDefault();
-      if (e.touches.length === 1) {
-        const t0 = e.touches[0];
-        touchStartX = t0.clientX; touchStartY = t0.clientY;
-        lastTouchX = t0.clientX; lastTouchY = t0.clientY;
-        isTap = true;
-        onStart(t0.clientX, t0.clientY);
-      } else if (e.touches.length === 2) {
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        pinchStartDist = Math.hypot(dx, dy);
-        isDragging = false;
-      }
-    }, { passive: false });
+      clickCount++;
+      // Cycle through modes in order, skip NORMAL after first time
+      const idx = MODES.indexOf(currentMode);
+      const nextIdx = (idx + 1) % MODES.length;
+      setMode(MODES[nextIdx]);
 
-    window.addEventListener('touchmove', e => {
-      if (e.touches.length === 1) {
-        const t0 = e.touches[0];
-        const dx = t0.clientX - lastTouchX;
-        const dy = t0.clientY - lastTouchY;
-        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isTap = false;
-        lastTouchX = t0.clientX; lastTouchY = t0.clientY;
-        onMove(t0.clientX, t0.clientY);
-      } else if (e.touches.length === 2) {
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        const dist = Math.hypot(dx, dy);
-        autoRotate += (dist - pinchStartDist) * 0.004;
-        pinchStartDist = dist;
-        const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-        const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-        const rect = wrap.getBoundingClientRect();
-        targetTiltX = Math.max(-1, Math.min(1, (my - rect.top - rect.height/2) / (rect.height/2)));
-        targetTiltY = Math.max(-1, Math.min(1, (mx - rect.left - rect.width/2) / (rect.width/2)));
-      }
-    }, { passive: true });
+      if (isTouch && navigator.vibrate) navigator.vibrate([10,20,10]);
 
-    window.addEventListener('touchend', e => {
-      if (isTap && e.changedTouches.length === 1) {
-        fireBurst(e.changedTouches[0].clientX, e.changedTouches[0].clientY, true);
-      }
-      isTap = false;
-      onEnd();
-    });
-
-    // ---- GYROSCOPE ----
-    let gyroEnabled = false;
-    function enableGyro() {
-      window.addEventListener('deviceorientation', e => {
-        if (isDragging) return;
-        const beta  = (e.beta  || 0) - 45;
-        const gamma = e.gamma || 0;
-        targetTiltX = Math.max(-1, Math.min(1, beta  * 0.018));
-        targetTiltY = Math.max(-1, Math.min(1, gamma * 0.022));
-      }, { passive: true });
-    }
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-      wrap.addEventListener('click', () => {
-        if (!gyroEnabled) {
-          DeviceOrientationEvent.requestPermission().then(state => {
-            if (state === 'granted') { enableGyro(); gyroEnabled = true; }
-          }).catch(() => {});
-        }
-      }, { once: true });
-    } else if (window.DeviceOrientationEvent) {
-      enableGyro(); gyroEnabled = true;
-    }
-
-    // ---- BURST (click + tap) ----
-    function fireBurst(clientX, clientY, isMobile) {
-      wrap.classList.remove('burst');
-      void wrap.offsetWidth;
-      wrap.classList.add('burst');
-      wrap.addEventListener('animationend', () => wrap.classList.remove('burst'), { once: true });
-      if (isMobile && navigator.vibrate) navigator.vibrate([10, 30, 10]);
-      const count = isMobile ? 18 : 12;
-      for (let i = 0; i < count; i++) {
-        const dot = document.createElement('div');
-        dot.className = 'pla-burst-dot';
-        const angle = (i / count) * Math.PI * 2 + Math.random() * 0.3;
-        const dist = (isMobile ? 90 : 80) + Math.random() * 70;
-        dot.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
-        dot.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
-        dot.style.setProperty('--dur', (0.45 + Math.random() * 0.4) + 's');
-        dot.style.width = dot.style.height = ((isMobile ? 4 : 3) + Math.random() * 5) + 'px';
-        wrap.appendChild(dot);
-        dot.addEventListener('animationend', () => dot.remove(), { once: true });
-      }
-      velX += (Math.random() - 0.5) * (isMobile ? 14 : 8);
-      velY += (Math.random() - 0.5) * (isMobile ? 14 : 8);
+      // Show mode badge
+      const badge = document.createElement('div');
+      badge.className = 'pla-mode-overlay pla-mode-badge';
+      badge.textContent = MODES[nextIdx];
+      wrap.appendChild(badge);
+      badge.addEventListener('animationend', ()=>badge.remove());
     }
 
     wrap.addEventListener('click', e => {
       if (e.pointerType === 'touch') return;
+      handleClick(false);
       fireBurst(e.clientX, e.clientY, false);
     });
 
-    // ---- HOVER TILT (mouse proximity) ----
+    // ---- BURST ----
+    function fireBurst(clientX, clientY, isMobile) {
+      wrap.classList.remove('burst'); void wrap.offsetWidth; wrap.classList.add('burst');
+      wrap.addEventListener('animationend', ()=>wrap.classList.remove('burst'),{once:true});
+      const count = isMobile ? 18 : 12;
+      const col = currentMode === 'RAINBOW' ? `hsl(${Math.random()*360},90%,60%)` :
+                  currentMode === 'ELECTRIC' ? '#4af' :
+                  currentMode === 'MATRIX' ? '#0f0' :
+                  '#e53e3e';
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'pla-burst-dot';
+        dot.style.background = col;
+        const angle = (i/count)*Math.PI*2+Math.random()*0.3;
+        const dist = (isMobile?90:80)+Math.random()*70;
+        dot.style.setProperty('--tx', Math.cos(angle)*dist+'px');
+        dot.style.setProperty('--ty', Math.sin(angle)*dist+'px');
+        dot.style.setProperty('--dur', (0.45+Math.random()*0.4)+'s');
+        dot.style.width = dot.style.height = ((isMobile?4:3)+Math.random()*5)+'px';
+        wrap.appendChild(dot);
+        dot.addEventListener('animationend',()=>dot.remove(),{once:true});
+      }
+      velX += (Math.random()-0.5)*(isMobile?14:8);
+      velY += (Math.random()-0.5)*(isMobile?14:8);
+    }
+
+    // ---- TOUCH ----
+    let lastTouchX=0, lastTouchY=0, pinchStartDist=0, isTap=false;
+    wrap.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if (e.touches.length===1) {
+        const t0=e.touches[0];
+        lastTouchX=t0.clientX; lastTouchY=t0.clientY; isTap=true;
+        onStart(t0.clientX,t0.clientY);
+      } else if (e.touches.length===2) {
+        const dx=e.touches[0].clientX-e.touches[1].clientX;
+        const dy=e.touches[0].clientY-e.touches[1].clientY;
+        pinchStartDist=Math.hypot(dx,dy); isDragging=false;
+      }
+    },{passive:false});
+
+    window.addEventListener('touchmove', e => {
+      if (e.touches.length===1) {
+        const t0=e.touches[0];
+        const dx=t0.clientX-lastTouchX, dy=t0.clientY-lastTouchY;
+        if (Math.abs(dx)>3||Math.abs(dy)>3) isTap=false;
+        lastTouchX=t0.clientX; lastTouchY=t0.clientY;
+        onMove(t0.clientX,t0.clientY);
+      } else if (e.touches.length===2) {
+        const dx=e.touches[0].clientX-e.touches[1].clientX;
+        const dy=e.touches[0].clientY-e.touches[1].clientY;
+        const dist=Math.hypot(dx,dy);
+        autoRotate += (dist-pinchStartDist)*0.004;
+        pinchStartDist=dist;
+      }
+    },{passive:true});
+
+    window.addEventListener('touchend', e => {
+      if (isTap && e.changedTouches.length===1) {
+        handleClick(true);
+        fireBurst(e.changedTouches[0].clientX,e.changedTouches[0].clientY,true);
+      }
+      isTap=false; onEnd();
+    });
+
+    // ---- HOVER (mouse) ----
     wrap.addEventListener('mousemove', e => {
       if (isDragging) return;
-      const rect = wrap.getBoundingClientRect();
-      const nx = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
-      const ny = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
-      targetTiltX = ny * 0.8;
-      targetTiltY = nx * 0.8;
+      const rect=wrap.getBoundingClientRect();
+      const nx=(e.clientX-rect.left-rect.width/2)/(rect.width/2);
+      const ny=(e.clientY-rect.top-rect.height/2)/(rect.height/2);
+      targetTiltX=ny*0.8; targetTiltY=nx*0.8;
+      if (currentMode==='FACE') { faceTargetX=nx; faceTargetY=ny; }
     });
-    wrap.addEventListener('mouseleave', () => {
-      if (!isDragging) { targetTiltX = 0; targetTiltY = 0; }
+    wrap.addEventListener('mouseleave', ()=>{
+      if (!isDragging) { targetTiltX=0; targetTiltY=0; }
     });
+
+    // ---- GYROSCOPE ----
+    let gyroEnabled=false;
+    function enableGyro() {
+      window.addEventListener('deviceorientation', e => {
+        if (isDragging) return;
+        const beta=(e.beta||0)-45, gamma=e.gamma||0;
+        targetTiltX=Math.max(-1,Math.min(1,beta*0.018));
+        targetTiltY=Math.max(-1,Math.min(1,gamma*0.022));
+      },{passive:true});
+    }
+    if (typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function') {
+      wrap.addEventListener('click',()=>{
+        if (!gyroEnabled) {
+          DeviceOrientationEvent.requestPermission().then(s=>{
+            if(s==='granted'){enableGyro();gyroEnabled=true;}
+          }).catch(()=>{});
+        }
+      },{once:true});
+    } else if (window.DeviceOrientationEvent) { enableGyro(); gyroEnabled=true; }
+
+    // Init hint
+    if (hint) hint.textContent = 'CLICK PER CAMBIARE MODALITÀ';
   })();
 
   // ---- GSAP SCROLL (kept for other elements) ----
