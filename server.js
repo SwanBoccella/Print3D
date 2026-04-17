@@ -133,6 +133,16 @@ async function sendEmailJS(templateId, params) {
   }
 }
 
+// ─── SSE — Admin push notifications ───────────────────────
+const sseClients = new Set();
+
+function pushToAdmins(event, data) {
+  const msg = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const res of sseClients) {
+    try { res.write(msg); } catch (_) { sseClients.delete(res); }
+  }
+}
+
 // ─── Middleware ────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -210,6 +220,8 @@ app.get('/api/emailjs-config', (req, res) => {
     template_client_id:s.emailjs_template_client || '',
     public_key:        s.emailjs_public_key       || '',
     owner_email:       s.emailjs_owner_email      || s.site_email || '',
+    site_nome:         s.site_nome  || 'Print3D Studio',
+    site_email:        s.site_email || '',
   });
 });
 
@@ -255,6 +267,14 @@ app.post('/api/prenota', (req, res) => {
   data.prenotazioni.unshift(nuova);
   writeData(data);
   console.log(`${ts()} ${c.green}✓  Nuova prenotazione${c.reset} ${c.bold}${nuova.id}${c.reset} — ${nome} <${email}>`);
+  pushToAdmins('nuova-prenotazione', {
+    id:        nuova.id,
+    nome:      nuova.nome,
+    email:     nuova.email,
+    oggetto:   nuova.oggetto,
+    materiale: nuova.materiale,
+    data:      nuova.data,
+  });
   res.json({ success: true, id: nuova.id, message: 'Prenotazione registrata!' });
 
   const s = readData().settings;
@@ -278,14 +298,17 @@ app.post('/api/prenota', (req, res) => {
     to_email:      s.emailjs_owner_email || s.site_email || '',
     to_name:       s.site_nome     || 'Print3D Studio',
   };
-  sendEmailJS(s.emailjs_template_owner, emailParams);
+  sendEmailJS(s.emailjs_template_owner, emailParams).catch(() => {});
   if (s.emailjs_template_client) {
     sendEmailJS(s.emailjs_template_client, {
       ...emailParams,
       to_email: nuova.email,
       to_name:  nuova.nome,
-    });
+    }).catch(() => {});
   }
+  // Nota: le email vengono inviate anche lato client (prenotazione.js) via browser SDK.
+  // Il server tenta come fallback ma EmailJS potrebbe bloccare richieste server-side
+  // se il dominio non è in whitelist su emailjs.com.
 });
 
 // ─── Admin: Login ──────────────────────────────────────────
@@ -306,6 +329,26 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // ─── Admin API: Prenotazioni ───────────────────────────────
+
+// ─── SSE stream (admin notifications) ─────────────────────
+app.get('/api/admin/events', adminAuth, (req, res) => {
+  res.set({
+    'Content-Type':  'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection':    'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.flushHeaders();
+  res.write(': connected\n\n');
+  sseClients.add(res);
+  const keepalive = setInterval(() => {
+    try { res.write(': ping\n\n'); } catch (_) {}
+  }, 25000);
+  req.on('close', () => {
+    clearInterval(keepalive);
+    sseClients.delete(res);
+  });
+});
 
 app.get('/api/admin/prenotazioni', adminAuth, (req, res) => {
   res.json(readData().prenotazioni);
@@ -424,7 +467,7 @@ app.patch('/api/admin/settings', adminAuth, (req, res) => {
     'materiali_disponibili', 'colori_disponibili',
     'meta_descrizione', 'meta_keywords',
     'notifiche_email', 'notifiche_nuove',
-    'emailjs_service_id', 'emailjs_template_owner', 'emailjs_template_client', 'emailjs_public_key',
+    'emailjs_service_id', 'emailjs_template_owner', 'emailjs_template_client', 'emailjs_public_key', 'emailjs_owner_email',
     // Manutenzione
     'maintenance_enabled', 'maintenance_target', 'maintenance_progress',
     'maintenance_message', 'maintenance_title', 'maintenance_submsg',
