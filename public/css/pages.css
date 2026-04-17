@@ -660,6 +660,9 @@
   .contact-card { padding: 20px; gap: 16px; }
   .contact-card-icon { width: 36px; height: 36px; }
   .contact-card-val { font-size: 15px; word-break: break-all; }
+  .map-section-header { text-align: center; }
+  .map-section-title { text-align: center; }
+  .map-section-sub { text-align: center; }
 }
 
 /* ============================================================
