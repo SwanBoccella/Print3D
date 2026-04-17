@@ -316,6 +316,11 @@
         <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.5 3.5l1 1M11.5 11.5l1 1M12.5 3.5l-1 1M4.5 11.5l-1 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         Impostazioni
       </div>
+      <div class="nav-item" data-panel="maintenance" id="nav-maint">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M13.5 2.5L10 6l-1.5-1.5L12 1l-2-1-3 3a3 3 0 004 4l4.5 4.5a1.4 1.4 0 002-2L13 5l1-2.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M1 14l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Manutenzione
+        <span class="nav-badge" id="badge-maint" style="display:none;background:#ecc94b;color:#000;">ON</span>
+      </div>
     </nav>
     <div class="sidebar-footer">
       <button class="logout-btn" id="logout-btn">LOGOUT</button>
@@ -650,6 +655,139 @@
         </div>
 
       </div><!-- /panel-settings -->
+
+      <!-- ═══════════════════════════════════════════════════
+           PANNELLO MANUTENZIONE
+           ═══════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-maintenance">
+
+        <!-- Status banner -->
+        <div class="settings-card" style="margin-bottom:20px;">
+          <div class="settings-card-head">
+            <span class="settings-card-title">STATO MANUTENZIONE</span>
+            <span id="maint-live-badge" style="font-size:10px;letter-spacing:2px;padding:3px 12px;border-radius:10px;background:rgba(72,187,120,.1);color:#48bb78;border:1px solid rgba(72,187,120,.3);">● SITO ONLINE</span>
+          </div>
+          <div class="settings-card-body">
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <strong>Attiva modalità manutenzione</strong>
+                <span>I visitatori vedranno la pagina di manutenzione. L'admin rimane sempre accessibile.</span>
+              </div>
+              <div class="toggle-wrap" id="maint-tog-wrap">
+                <div class="toggle" id="maint-tog"></div>
+              </div>
+            </div>
+          </div>
+          <div class="settings-footer" style="padding-top:0;gap:10px;">
+            <button class="btn btn-primary" id="btn-maint-apply">APPLICA STATO</button>
+            <a class="btn btn-ghost" href="/maintenance" target="_blank">⬡ ANTEPRIMA</a>
+          </div>
+        </div>
+
+        <!-- Countdown -->
+        <div class="settings-card" style="margin-bottom:20px;">
+          <div class="settings-card-head">
+            <span class="settings-card-title">COUNTDOWN — DATA DI RITORNO</span>
+            <span style="font-size:14px;">⏱</span>
+          </div>
+          <div class="settings-card-body">
+            <div class="info-box" style="margin-bottom:20px;">
+              Imposta la data e ora prevista di riapertura. Il countdown viene mostrato nella pagina di manutenzione in tempo reale.
+            </div>
+
+            <!-- Mini countdown preview -->
+            <div id="maint-preview" style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:24px;font-family:var(--font);">
+              <div style="text-align:center;">
+                <div style="font-size:36px;color:var(--red);line-height:1;font-family:var(--font);" id="mp-d">--</div>
+                <div style="font-size:8px;letter-spacing:2px;color:var(--text3);">GG</div>
+              </div>
+              <div style="font-size:30px;color:var(--border2);margin-bottom:12px;animation:blink2 1s step-end infinite;">:</div>
+              <div style="text-align:center;">
+                <div style="font-size:36px;color:var(--red);line-height:1;font-family:var(--font);" id="mp-h">--</div>
+                <div style="font-size:8px;letter-spacing:2px;color:var(--text3);">ORE</div>
+              </div>
+              <div style="font-size:30px;color:var(--border2);margin-bottom:12px;animation:blink2 1s step-end infinite;">:</div>
+              <div style="text-align:center;">
+                <div style="font-size:36px;color:var(--red);line-height:1;font-family:var(--font);" id="mp-m">--</div>
+                <div style="font-size:8px;letter-spacing:2px;color:var(--text3);">MIN</div>
+              </div>
+              <div style="font-size:30px;color:var(--border2);margin-bottom:12px;animation:blink2 1s step-end infinite;">:</div>
+              <div style="text-align:center;">
+                <div style="font-size:36px;color:var(--red);line-height:1;font-family:var(--font);" id="mp-s">--</div>
+                <div style="font-size:8px;letter-spacing:2px;color:var(--text3);">SEC</div>
+              </div>
+            </div>
+            <style>@keyframes blink2{0%,100%{opacity:1}50%{opacity:.15}}</style>
+
+            <div class="form-grid" style="max-width:500px;margin-bottom:14px;">
+              <div class="form-field">
+                <label>DATA RIAPERTURA</label>
+                <input type="date" id="maint-date">
+              </div>
+              <div class="form-field">
+                <label>ORA RIAPERTURA</label>
+                <input type="time" id="maint-time" value="09:00">
+              </div>
+            </div>
+
+            <!-- Quick set buttons -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+              <button class="btn btn-ghost btn-sm" onclick="maintQuick(1)">+1 ora</button>
+              <button class="btn btn-ghost btn-sm" onclick="maintQuick(6)">+6 ore</button>
+              <button class="btn btn-ghost btn-sm" onclick="maintQuick(24)">+24 ore</button>
+              <button class="btn btn-ghost btn-sm" onclick="maintQuick(72)">+3 giorni</button>
+              <button class="btn btn-ghost btn-sm" onclick="maintQuick(168)">+1 sett.</button>
+            </div>
+          </div>
+          <div class="settings-footer">
+            <button class="btn btn-primary" id="btn-maint-cd">SALVA COUNTDOWN</button>
+          </div>
+        </div>
+
+        <!-- Content card -->
+        <div class="settings-card" style="margin-bottom:20px;">
+          <div class="settings-card-head">
+            <span class="settings-card-title">TESTI & AVANZAMENTO</span>
+            <span style="font-size:14px;">✏️</span>
+          </div>
+          <div class="settings-card-body">
+
+            <!-- Progress slider -->
+            <div class="form-field" style="margin-bottom:20px;">
+              <label>AVANZAMENTO LAVORI</label>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:4px;">
+                <input type="range" id="maint-prog" min="0" max="100" value="0"
+                  style="flex:1;accent-color:var(--red);cursor:pointer;">
+                <span id="maint-prog-val" style="color:var(--red);font-size:16px;font-family:var(--font);min-width:44px;">0%</span>
+              </div>
+            </div>
+
+            <div class="form-grid" style="margin-bottom:0;">
+              <div class="form-field">
+                <label>TITOLO PRINCIPALE</label>
+                <input type="text" id="maint-title" placeholder="MANUTENZIONE">
+                <span class="form-hint">Default: MANUTENZIONE</span>
+              </div>
+              <div class="form-field">
+                <label>SOTTOTITOLO</label>
+                <input type="text" id="maint-sub" placeholder="IN CORSO">
+                <span class="form-hint">Default: IN CORSO</span>
+              </div>
+              <div class="form-field full">
+                <label>MESSAGGIO PERSONALIZZATO</label>
+                <textarea id="maint-msg" rows="3"
+                  placeholder="Il sito è in **manutenzione programmata**. Torneremo presto con novità!"></textarea>
+                <span class="form-hint">Usa **parola** per il grassetto. Vuoto = testo predefinito.</span>
+              </div>
+            </div>
+          </div>
+          <div class="settings-footer">
+            <button class="btn btn-primary" id="btn-maint-content">SALVA TESTI</button>
+          </div>
+        </div>
+
+      </div><!-- /panel-maintenance -->
+
     </div>
   </main>
 </div>
@@ -1382,6 +1520,179 @@ async function purgeByStato(stato) {
 }
 document.getElementById('btn-purge-complete').addEventListener('click', () => purgeByStato('completata'));
 document.getElementById('btn-purge-annullate').addEventListener('click', () => purgeByStato('annullata'));
+
+// ══════════════════════════════════════════════════════════════
+// PANNELLO MANUTENZIONE — JS
+// ══════════════════════════════════════════════════════════════
+
+// Override showPanel to include 'maintenance'
+const _showPanel = showPanel;
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  const nav = document.querySelector(`.nav-item[data-panel="${name}"]`);
+  if (nav) nav.classList.add('active');
+  const TITLES = {
+    dashboard:'DASHBOARD', prenotazioni:'PRENOTAZIONI',
+    catalogo:'CATALOGO', settings:'IMPOSTAZIONI', maintenance:'MANUTENZIONE'
+  };
+  document.getElementById('topbar-title').textContent = TITLES[name] || name.toUpperCase();
+  closeSidebar();
+  if (name === 'dashboard')    loadDashboard();
+  if (name === 'prenotazioni') loadPrenotazioni();
+  if (name === 'catalogo')     loadCatalogo();
+  if (name === 'settings')     loadSettings();
+  if (name === 'maintenance')  loadMaintenance();
+}
+// Re-bind all nav items (now includes maintenance)
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.onclick = null;
+  el.addEventListener('click', () => showPanel(el.dataset.panel));
+});
+
+// ── State ──────────────────────────────────────────────────
+let maintOn = false;
+let maintPrevTimer = null;
+
+// ── Load ───────────────────────────────────────────────────
+async function loadMaintenance() {
+  try {
+    const s = await api('/api/admin/settings');
+
+    // Toggle state
+    maintOn = !!s.maintenance_enabled;
+    _renderMaintToggle();
+
+    // Countdown inputs
+    if (s.maintenance_target) {
+      const dt  = new Date(s.maintenance_target);
+      const pad = n => String(n).padStart(2,'0');
+      document.getElementById('maint-date').value = dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate());
+      document.getElementById('maint-time').value = pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+      _startPreview(dt);
+    } else {
+      _startPreview(new Date(Date.now() + 24 * 3600000));
+    }
+
+    // Progress
+    const p = Math.min(100, Math.max(0, parseInt(s.maintenance_progress) || 0));
+    document.getElementById('maint-prog').value = p;
+    document.getElementById('maint-prog-val').textContent = p + '%';
+
+    // Texts
+    document.getElementById('maint-title').value = s.maintenance_title  || '';
+    document.getElementById('maint-sub').value   = s.maintenance_submsg || '';
+    document.getElementById('maint-msg').value   = s.maintenance_message || '';
+  } catch(e) {
+    console.error('loadMaintenance:', e);
+  }
+}
+
+// ── Toggle render ──────────────────────────────────────────
+function _renderMaintToggle() {
+  const tog    = document.getElementById('maint-tog');
+  const badge  = document.getElementById('maint-live-badge');
+  const navBdg = document.getElementById('badge-maint');
+  tog.className = 'toggle' + (maintOn ? ' on' : '');
+  if (maintOn) {
+    badge.textContent = '● MANUTENZIONE ATTIVA';
+    badge.style.cssText = 'font-size:10px;letter-spacing:2px;padding:3px 12px;border-radius:10px;background:rgba(236,201,75,.1);color:#ecc94b;border:1px solid rgba(236,201,75,.3);';
+    navBdg.style.display = '';
+  } else {
+    badge.textContent = '● SITO ONLINE';
+    badge.style.cssText = 'font-size:10px;letter-spacing:2px;padding:3px 12px;border-radius:10px;background:rgba(72,187,120,.1);color:#48bb78;border:1px solid rgba(72,187,120,.3);';
+    navBdg.style.display = 'none';
+  }
+}
+
+// Toggle click
+document.getElementById('maint-tog-wrap').addEventListener('click', () => {
+  maintOn = !maintOn;
+  _renderMaintToggle();
+});
+
+// Apply
+document.getElementById('btn-maint-apply').addEventListener('click', async () => {
+  await api('/api/admin/settings', 'PATCH', { maintenance_enabled: maintOn });
+  toast(maintOn ? '⚠ Manutenzione ATTIVATA — sito bloccato' : '✓ Sito ripristinato ONLINE', maintOn ? 'info' : 'success');
+  _renderMaintToggle();
+});
+
+// Save countdown
+document.getElementById('btn-maint-cd').addEventListener('click', async () => {
+  const date = document.getElementById('maint-date').value;
+  const time = document.getElementById('maint-time').value || '09:00';
+  if (!date) { toast('Seleziona una data di riapertura', 'error'); return; }
+  // Interpreta data+ora come orario locale (non UTC) per evitare scarto di fuso orario
+  const [y, mo, d2] = date.split('-').map(Number);
+  const [hh, mm]    = (time || '09:00').split(':').map(Number);
+  const localDate   = new Date(y, mo - 1, d2, hh, mm, 0);
+  const iso         = localDate.toISOString();
+  const btn = document.getElementById('btn-maint-cd');
+  btn.disabled = true; btn.textContent = 'SALVATAGGIO...';
+  try {
+    await api('/api/admin/settings', 'PATCH', { maintenance_target: iso });
+    _startPreview(new Date(iso));
+    toast('Countdown salvato ✓');
+    await loadMaintenance();
+  } finally {
+    btn.disabled = false; btn.textContent = 'SALVA COUNTDOWN';
+  }
+});
+
+// Save content
+document.getElementById('btn-maint-content').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-maint-content');
+  btn.disabled = true; btn.textContent = 'SALVATAGGIO...';
+  try {
+    await api('/api/admin/settings', 'PATCH', {
+      maintenance_progress: parseInt(document.getElementById('maint-prog').value),
+      maintenance_title:    document.getElementById('maint-title').value.trim(),
+      maintenance_submsg:   document.getElementById('maint-sub').value.trim(),
+      maintenance_message:  document.getElementById('maint-msg').value.trim(),
+    });
+    toast('Testi e avanzamento salvati ✓');
+  } finally {
+    btn.disabled = false; btn.textContent = 'SALVA TESTI';
+  }
+});
+
+// Slider live
+document.getElementById('maint-prog').addEventListener('input', e => {
+  document.getElementById('maint-prog-val').textContent = e.target.value + '%';
+});
+
+// Quick time buttons
+function maintQuick(h) {
+  const d = new Date(Date.now() + h * 3600000);
+  // Formatta come data/ora locale (non UTC)
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+  const timeStr = pad(d.getHours()) + ':' + pad(d.getMinutes());
+  document.getElementById('maint-date').value = dateStr;
+  document.getElementById('maint-time').value = timeStr;
+  _startPreview(d);
+}
+
+// Admin mini preview countdown
+function _startPreview(target) {
+  if (maintPrevTimer) clearInterval(maintPrevTimer);
+  const fmt = n => String(n).padStart(2,'0');
+  function tick() {
+    const diff = Math.max(0, target - Date.now());
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000)  / 60000);
+    const s = Math.floor((diff % 60000)    / 1000);
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = fmt(v); };
+    set('mp-d', d); set('mp-h', h); set('mp-m', m); set('mp-s', s);
+    if (diff <= 0) clearInterval(maintPrevTimer);
+  }
+  tick();
+  maintPrevTimer = setInterval(tick, 1000);
+}
 </script>
 </body>
 </html>
