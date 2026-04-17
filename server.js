@@ -182,7 +182,15 @@ app.use((req, res, next) => {
 
 // ─── Static files (dopo il middleware manutenzione) ────────
 // index: false evita che /  venga servita staticamente prima delle route
-app.use(express.static(path.join(__dirname, 'public'), { index: false }));
+app.use(express.static(path.join(__dirname, 'public'), {
+  index: false,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.css') || filePath.endsWith('.js')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+    }
+  }
+}));
 
 // ─── Public Routes ─────────────────────────────────────────
 app.get('/',             (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
