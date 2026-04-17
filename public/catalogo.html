@@ -5,171 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catalogo — Print3D Studio</title>
   <link rel="stylesheet" href="/css/global.css">
-  <style>
-    /* ═══════════════════════════════════════════
-       CATALOGO — CINEMATIC v2
-    ═══════════════════════════════════════════ */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    /* ── CURSOR ── */
-    .c-cursor { position:fixed;top:0;left:0;z-index:99999;pointer-events:none;mix-blend-mode:difference; }
-    .c-cursor-dot { width:8px;height:8px;background:#fff;border-radius:50%;transform:translate(-50%,-50%); }
-    .c-cursor-ring { position:fixed;top:0;left:0;width:44px;height:44px;border:1px solid rgba(229,62,62,.55);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:99998;transition:width .35s cubic-bezier(.16,1,.3,1),height .35s cubic-bezier(.16,1,.3,1),border-color .3s; }
-    .c-cursor-ring.h { width:68px;height:68px;border-color:#e53e3e; }
-
-    /* ── NAV ── */
-    nav { position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 7vw;height:72px;background:rgba(10,10,10,.88);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.04); }
-    .nav-logo { display:flex;align-items:center;gap:12px;text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#fff; }
-    .nav-logo span { color:#e53e3e; }
-    .nav-logo-img { width:32px;height:32px;object-fit:contain;border-radius:4px; }
-    .nav-links { display:flex;list-style:none; }
-    .nav-links a { display:block;padding:0 18px;height:72px;line-height:72px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#666;text-decoration:none;transition:color .2s;position:relative; }
-    .nav-links a::after { content:'';position:absolute;bottom:0;left:18px;right:18px;height:1px;background:#e53e3e;transform:scaleX(0);transform-origin:center;transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
-    .nav-links a:hover,.nav-links a.active { color:#fff; }
-    .nav-links a:hover::after,.nav-links a.active::after { transform:scaleX(1); }
-    .nav-cta { background:#e53e3e!important;color:#fff!important;margin-left:16px;padding:0 22px!important;height:40px!important;line-height:40px!important;align-self:center; }
-    .nav-cta::after { display:none!important; }
-    .nav-toggle { display:none;background:none;border:none;cursor:pointer;padding:8px; }
-    .nav-toggle span { display:block;width:22px;height:1px;background:#fff;margin:5px 0;transition:all .3s; }
-    .nav-mobile { display:none;position:fixed;inset:0;z-index:999;background:#0a0a0a;padding:110px 7vw 40px;flex-direction:column;gap:0; }
-    .nav-mobile.open { display:flex; }
-    .nav-mobile a { font-family:'Bebas Neue',sans-serif;font-size:48px;color:#fff;text-decoration:none;letter-spacing:2px;border-bottom:1px solid #1e1e1e;padding:20px 0;transition:color .2s; }
-    .nav-mobile a:hover { color:#e53e3e; }
-    #page-transition { position:fixed;inset:0;z-index:9990;background:#e53e3e;transform:scaleY(0);transform-origin:bottom;pointer-events:none; }
-
-    /* ── HERO ── */
-    .cat-hero { position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:80px;overflow:hidden; }
-    .cat-hero-bg { position:absolute;inset:0;background:radial-gradient(ellipse 55% 80% at 75% 40%,rgba(229,62,62,.055) 0%,transparent 70%),radial-gradient(ellipse 40% 50% at 20% 80%,rgba(229,62,62,.028) 0%,transparent 60%); }
-    .cat-grid-lines { position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:80px 80px; }
-    .cat-hero-numeral { position:absolute;top:140px;right:6vw;font-family:'Bebas Neue',sans-serif;font-size:clamp(180px,26vw,360px);line-height:1;color:transparent;-webkit-text-stroke:1px rgba(229,62,62,.07);letter-spacing:-8px;pointer-events:none;user-select:none; }
-    .cat-hero-content { position:relative;z-index:2;padding:0 7vw; }
-    .cat-eyebrow { display:flex;align-items:center;gap:14px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#e53e3e;margin-bottom:28px; }
-    .cat-eyebrow::before { content:'';width:36px;height:1px;background:#e53e3e;flex-shrink:0; }
-    .cat-hero-h1 { font-family:'Bebas Neue',sans-serif;font-size:clamp(80px,13vw,190px);line-height:.88;letter-spacing:-3px;overflow:hidden; }
-    .cat-hero-h1 span { display:block;overflow:hidden; }
-    .cat-hero-h1 em { color:#e53e3e;font-style:normal; }
-    .cat-hero-bottom { margin-top:52px;display:grid;grid-template-columns:1fr auto;gap:48px;align-items:end;max-width:1000px; }
-    .cat-hero-desc { font-size:15px;color:#888;line-height:1.8;border-left:1px solid #e53e3e;padding-left:22px;max-width:420px; }
-    .cat-stats { display:flex;gap:48px; }
-    .cat-stat-n { font-family:'Bebas Neue',sans-serif;font-size:60px;line-height:1;letter-spacing:-2px; }
-    .cat-stat-n em { color:#e53e3e;font-style:normal; }
-    .cat-stat-l { font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#444;margin-top:4px; }
-    .cat-scroll-ind { position:absolute;bottom:36px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#444; }
-    .cat-scroll-line { width:1px;height:52px;background:linear-gradient(to bottom,#e53e3e,transparent);animation:scrollBlink 2s ease-in-out infinite; }
-    @keyframes scrollBlink { 0%,100%{opacity:1;transform:scaleY(1)}50%{opacity:.3;transform:scaleY(.5)} }
-
-    /* ── MARQUEE ── */
-    .cat-marquee { border-top:1px solid #1e1e1e;border-bottom:1px solid #1e1e1e;padding:16px 0;overflow:hidden;background:#111; }
-    .cat-mq-track { display:flex;width:max-content;animation:mq 32s linear infinite; }
-    @keyframes mq { to{transform:translateX(-50%)} }
-    .cat-mq-item { display:flex;align-items:center;gap:28px;padding:0 28px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#333;white-space:nowrap; }
-    .cat-mq-dot { width:3px;height:3px;border-radius:50%;background:#e53e3e;flex-shrink:0; }
-
-    /* ── FILTERS ── */
-    .cat-filter-bar { position:sticky;top:0;z-index:100;background:rgba(10,10,10,.93);backdrop-filter:blur(20px);border-bottom:1px solid #1a1a1a;padding:0 7vw; }
-    .cat-filters { display:flex;height:60px;align-items:stretch;overflow-x:auto;scrollbar-width:none;gap:0; }
-    .cat-filters::-webkit-scrollbar { display:none; }
-    .cat-filter-btn { position:relative;background:none;border:none;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#444;cursor:pointer;padding:0 26px;height:100%;transition:color .25s;white-space:nowrap; }
-    .cat-filter-btn::after { content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:#e53e3e;transform:scaleX(0);transform-origin:center;transition:transform .38s cubic-bezier(.34,1.56,.64,1); }
-    .cat-filter-btn:hover { color:#fff; }
-    .cat-filter-btn.active { color:#fff; }
-    .cat-filter-btn.active::after { transform:scaleX(1); }
-
-    /* ── GRID ── */
-    .cat-section { padding:80px 0 160px; }
-    .cat-grid-outer { padding:0 7vw; }
-    #catalog-grid { display:grid;grid-template-columns:repeat(12,1fr);gap:2px;background:#1a1a1a; }
-    .cat-card { grid-column:span 4;background:#0a0a0a;position:relative;overflow:hidden;display:flex;flex-direction:column;will-change:transform; }
-    .cat-card--lg { grid-column:span 6; }
-    .cat-card--xl { grid-column:span 8; }
-    .cat-card.hidden { display:none; }
-    .cat-card-visual { position:relative;aspect-ratio:4/3;overflow:hidden;background:#111; }
-    .cat-card--lg .cat-card-visual { aspect-ratio:16/9; }
-    .cat-card--xl .cat-card-visual { aspect-ratio:21/9; }
-    .cat-card-visual img { width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.06);transition:transform .9s cubic-bezier(.16,1,.3,1); }
-    .cat-card:hover .cat-card-visual img { transform:scale(1.13); }
-    .cat-card-ph { width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#111;transition:transform .9s cubic-bezier(.16,1,.3,1); }
-    .cat-card-ph svg { width:60px;height:60px;opacity:.2; }
-    .cat-card:hover .cat-card-ph { transform:scale(1.05); }
-    .cat-card-ov { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(229,62,62,.92),rgba(100,0,0,.96));clip-path:inset(0 100% 0 0);transition:clip-path .55s cubic-bezier(.16,1,.3,1); }
-    .cat-card:hover .cat-card-ov { clip-path:inset(0 0% 0 0); }
-    .cat-card-ov-btn { font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.5);padding:13px 26px;transition:border-color .2s,background .2s,transform .3s cubic-bezier(.34,1.56,.64,1); }
-    .cat-card-ov-btn:hover { border-color:#fff;background:rgba(255,255,255,.12);transform:scale(1.04); }
-    .cat-zoom-hint { position:absolute;bottom:10px;right:12px;font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,.4);pointer-events:none;opacity:0;transition:opacity .3s; }
-    .cat-card:hover .cat-zoom-hint { opacity:1; }
-    .cat-card-idx { position:absolute;top:14px;left:14px;font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,.2);z-index:2;pointer-events:none; }
-    .cat-card-info { padding:22px 26px;flex:1;border-top:1px solid #1a1a1a;display:flex;flex-direction:column;justify-content:space-between; }
-    .cat-card-tag { font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#e53e3e;margin-bottom:8px;display:block; }
-    .cat-card-name { font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;line-height:1.05;margin-bottom:8px; }
-    .cat-card-desc { font-size:12px;color:#666;line-height:1.65;flex:1; }
-    .cat-card-meta { display:flex;gap:8px;align-items:center;margin-top:14px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#333; }
-    .cat-skel .cat-card-visual { animation:skelPulse 1.5s ease-in-out infinite alternate; }
-    .skel-l { height:9px;border-radius:2px;background:#161616;animation:skelPulse 1.5s ease-in-out infinite alternate;margin-bottom:8px; }
-    @keyframes skelPulse { from{background:#111}to{background:#1a1a1a} }
-
-    /* ── LIGHTBOX ── */
-    #cat-lb { display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.97);align-items:center;justify-content:center;cursor:zoom-out;padding:40px; }
-    #cat-lb.on { display:flex; }
-    #cat-lb img { max-width:100%;max-height:90vh;object-fit:contain;cursor:default;animation:lbIn .45s cubic-bezier(.16,1,.3,1) both; }
-    @keyframes lbIn { from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)} }
-    #cat-lb-x { position:fixed;top:22px;right:26px;background:none;border:none;color:#fff;font-size:26px;cursor:pointer;opacity:.5;transition:opacity .2s,transform .35s cubic-bezier(.34,1.56,.64,1);font-family:'Space Mono',monospace; }
-    #cat-lb-x:hover { opacity:1;transform:rotate(90deg); }
-
-    /* ── CTA ── */
-    .cat-cta { padding:140px 7vw;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;overflow:hidden;border-top:1px solid #1a1a1a; }
-    .cat-cta::before { content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 100% at 80% 50%,rgba(229,62,62,.045) 0%,transparent 70%); }
-    .cat-cta-label { font-family:'Space Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#e53e3e;margin-bottom:22px;display:flex;align-items:center;gap:12px; }
-    .cat-cta-label::before { content:'';width:30px;height:1px;background:#e53e3e; }
-    .cat-cta-h2 { font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,7vw,96px);line-height:.9;letter-spacing:-2px; }
-    .cat-cta-h2 em { color:#e53e3e;font-style:normal; }
-    .cat-cta-right { display:flex;flex-direction:column;gap:36px;align-items:flex-start; }
-    .cat-cta-p { font-size:15px;color:#888;line-height:1.8;border-left:1px solid #333;padding-left:22px; }
-    .cat-btn { display:inline-flex;align-items:center;gap:14px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#fff;text-decoration:none;background:#e53e3e;padding:18px 34px;position:relative;overflow:hidden;transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
-    .cat-btn::before { content:'';position:absolute;inset:0;background:rgba(255,255,255,.1);transform:translateX(-100%);transition:transform .4s ease; }
-    .cat-btn:hover { transform:translateY(-3px); }
-    .cat-btn:hover::before { transform:translateX(0); }
-    .cat-btn svg { transition:transform .3s ease; }
-    .cat-btn:hover svg { transform:translateX(5px); }
-
-    /* ── FOOTER ── */
-    footer { padding:72px 7vw 44px;border-top:1px solid #1a1a1a;display:grid;grid-template-columns:2fr 1fr 1fr;gap:72px; }
-    .footer-brand { font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px; }
-    .footer-brand span { color:#e53e3e; }
-    .footer-brand p { font-family:'Inter',sans-serif;font-size:12px;color:#444;font-weight:300;margin-top:12px;line-height:1.7;letter-spacing:0; }
-    .footer-col h4 { font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#333;margin-bottom:18px; }
-    .footer-col ul { list-style:none;display:flex;flex-direction:column;gap:10px; }
-    .footer-col a { font-size:13px;color:#666;text-decoration:none;transition:color .2s; }
-    .footer-col a:hover { color:#fff; }
-    .footer-bottom { grid-column:1/-1;border-top:1px solid #1a1a1a;padding-top:28px;margin-top:16px;display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#333; }
-
-    /* ── RESPONSIVE ── */
-    @media(max-width:1100px) {
-      .cat-card { grid-column:span 6; }
-      .cat-card--lg,.cat-card--xl { grid-column:span 12; }
-      .cat-hero-bottom { grid-template-columns:1fr; }
-      .cat-cta { grid-template-columns:1fr;gap:40px; }
-      footer { grid-template-columns:1fr 1fr; }
-    }
-    @media(max-width:768px) {
-      .cat-card { grid-column:span 12; }
-      .nav-links { display:none; }
-      .nav-toggle { display:block; }
-      footer { grid-template-columns:1fr;gap:40px; }
-      .cat-hero-numeral { display:none; }
-    }
-  </style>
+  <link rel="stylesheet" href="/css/pages.css">
 </head>
 <body>
 
-<div class="c-cursor"><div class="c-cursor-dot"></div></div>
-<div class="c-cursor-ring" id="cRing"></div>
+
+
 <div id="page-transition"></div>
 
 <nav>
-  <a href="/" class="nav-logo">
-    <img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" onerror="this.style.display='none'">
-    PRINT<span>3D</span>
-  </a>
+  <a href="/" class="nav-logo"><img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" onerror="this.style.display='none'">PRINT<span>3D</span></a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
     <li><a href="/catalogo" class="active">Catalogo</a></li>
@@ -177,76 +22,54 @@
     <li><a href="/contatti">Contatti</a></li>
     <li><a href="/prenotazione" class="nav-cta">Prenota</a></li>
   </ul>
-  <button class="nav-toggle" id="navTog"><span></span><span></span><span></span></button>
+  <button class="nav-toggle"><span></span><span></span><span></span></button>
 </nav>
-<div class="nav-mobile" id="navMob">
+<div class="nav-mobile">
   <a href="/">Home</a><a href="/catalogo">Catalogo</a>
   <a href="/materiali">Materiali</a><a href="/contatti">Contatti</a>
   <a href="/prenotazione">Prenota ora</a>
 </div>
 
-<!-- HERO -->
-<section class="cat-hero" id="hero">
-  <div class="cat-hero-bg"></div>
-  <div class="cat-grid-lines" id="gridLines"></div>
-  <div class="cat-hero-numeral" aria-hidden="true">3D</div>
-  <div class="cat-hero-content">
-    <div class="cat-eyebrow" id="eyebrow">Cosa realizziamo</div>
-    <h1 class="cat-hero-h1">
-      <span id="h1a">CATA</span><span id="h1b"><em>LOGO</em></span>
-    </h1>
-    <div class="cat-hero-bottom">
-      <p class="cat-hero-desc" id="heroDesc">Esempi reali di ciò che puoi richiedere.<br>Ogni oggetto è <strong>completamente personalizzabile</strong> su materiale, colore e dimensioni.</p>
-      <div class="cat-stats" id="heroStats">
-        <div>
-          <div class="cat-stat-n" id="statN">—<em>+</em></div>
-          <div class="cat-stat-l">oggetti</div>
-        </div>
-        <div>
-          <div class="cat-stat-n">4<em>+</em></div>
-          <div class="cat-stat-l">categorie</div>
-        </div>
-      </div>
+<header class="page-header-sm">
+  <div class="page-header-sm-content">
+    <div class="section-label" style="justify-content:center; margin-bottom:16px;">Cosa realizziamo</div>
+    <h1 class="page-header-sm-title">Catalogo<br><span>& Ispirazioni</span></h1>
+    <p class="page-header-sm-sub">Esempi di quello che puoi richiedere. Ogni oggetto è personalizzabile.</p>
+  </div>
+</header>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="container">
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">Tutto</button>
+      <button class="filter-btn" data-filter="decorativo">Decorativi</button>
+      <button class="filter-btn" data-filter="tecnico">Componentistica</button>
+      <button class="filter-btn" data-filter="prototipo">Prototipi</button>
+      <button class="filter-btn" data-filter="gadget">Gadget</button>
     </div>
   </div>
-  <div class="cat-scroll-ind"><div class="cat-scroll-line"></div><span>scroll</span></div>
-</section>
-
-<!-- MARQUEE -->
-<div class="cat-marquee" aria-hidden="true">
-  <div class="cat-mq-track" id="mqTrack"></div>
 </div>
 
-<!-- FILTERS -->
-<div class="cat-filter-bar">
-  <div class="cat-filters" id="filterBar">
-    <button class="cat-filter-btn active" data-filter="all">Tutto</button>
-    <button class="cat-filter-btn" data-filter="decorativo">Decorativi</button>
-    <button class="cat-filter-btn" data-filter="tecnico">Componentistica</button>
-    <button class="cat-filter-btn" data-filter="prototipo">Prototipi</button>
-    <button class="cat-filter-btn" data-filter="gadget">Gadget</button>
-  </div>
-</div>
-
-<!-- CATALOG -->
-<section class="cat-section">
-  <div class="cat-grid-outer">
-    <div id="catalog-grid"></div>
+<!-- CATALOG GRID -->
+<section class="catalog-section">
+  <div class="container">
+    <div class="catalog-grid" id="catalog-grid">
+    </div>
   </div>
 </section>
 
 <!-- CTA -->
-<section class="cat-cta" id="catCta">
-  <div>
-    <div class="cat-cta-label">Personalizzazione</div>
-    <h2 class="cat-cta-h2" id="ctaH2">NON TROVI<br>QUELLO<br><em>CHE CERCHI?</em></h2>
-  </div>
-  <div class="cat-cta-right">
-    <p class="cat-cta-p">Realizziamo qualsiasi forma. Descrivici il tuo progetto in parole, inviaci un disegno, o trovaci un riferimento online.<br><br>Preventivo entro 24 ore, senza impegno.</p>
-    <a href="/prenotazione" class="cat-btn">
-      <span>Inizia la Prenotazione</span>
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/></svg>
-    </a>
+<section class="page-cta">
+  <div class="container">
+    <div class="page-cta-inner" data-reveal>
+      <h2>Non trovi quello<br>che cerchi?</h2>
+      <p>Realizziamo qualsiasi forma. Descrivici il tuo progetto.</p>
+      <a href="/prenotazione" class="btn-primary" data-magnetic>
+        <span>Inizia la Prenotazione</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/></svg>
+      </a>
+    </div>
   </div>
 </section>
 
@@ -255,8 +78,10 @@
   <div class="footer-col">
     <h4>Navigazione</h4>
     <ul>
-      <li><a href="/">Home</a></li><li><a href="/catalogo">Catalogo</a></li>
-      <li><a href="/materiali">Materiali</a></li><li><a href="/prenotazione">Prenotazione</a></li>
+      <li><a href="/">Home</a></li>
+      <li><a href="/catalogo">Catalogo</a></li>
+      <li><a href="/materiali">Materiali</a></li>
+      <li><a href="/prenotazione">Prenotazione</a></li>
       <li><a href="/contatti">Contatti</a></li>
     </ul>
   </div>
@@ -264,218 +89,14 @@
     <h4>Contatti</h4>
     <p><a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br>Risposta entro 24 ore.</p>
   </div>
-  <div class="footer-bottom"><p>2026/2027 Print3D Studio &copy Tutti i diritti riservati</p>
-    <p>Produzioni artigianali su prenotazione</p></div>
+  <div class="footer-bottom">
+    <p>2026/2027 Print3D Studio &copy Tutti i diritti riservati</p>
+    <p>Produzioni artigianali su prenotazione</p>
+  </div>
 </footer>
 
-<div id="cat-lb"><button id="cat-lb-x">✕</button><img id="cat-lb-img" src="" alt=""></div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/SplitText.min.js"></script>
-<script>
-(function(){
-  gsap.registerPlugin(ScrollTrigger);
-
-  /* LENIS */
-  let lenis = null;
-  const ls = document.createElement('script');
-  ls.src = 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js';
-  ls.onload = () => {
-    lenis = new Lenis({ lerp: 0.075, smoothWheel: true, syncTouch: false });
-    gsap.ticker.add(t => lenis.raf(t * 1000));
-    gsap.ticker.lagSmoothing(0);
-    lenis.on('scroll', ScrollTrigger.update);
-  };
-  document.head.appendChild(ls);
-
-  /* CURSOR */
-  const ring = document.getElementById('cRing');
-  const dot = document.querySelector('.c-cursor-dot');
-  let mx=0,my=0,rx=0,ry=0;
-  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
-  (function tick() {
-    rx += (mx-rx)*0.11; ry += (my-ry)*0.11;
-    if(dot) dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
-    if(ring) { ring.style.left=rx+'px'; ring.style.top=ry+'px'; }
-    requestAnimationFrame(tick);
-  })();
-  document.querySelectorAll('a,button,.cat-card').forEach(el => {
-    el.addEventListener('mouseenter', () => ring && ring.classList.add('h'));
-    el.addEventListener('mouseleave', () => ring && ring.classList.remove('h'));
-  });
-
-  /* NAV MOBILE */
-  document.getElementById('navTog').addEventListener('click', () =>
-    document.getElementById('navMob').classList.toggle('open'));
-
-  /* MARQUEE */
-  const words = ['PLA','PETG','ABS','PLA+','RESINA','STL','OBJ','3MF','FDM','PROTOTIPAZIONE RAPIDA','SU MISURA','STAMPA 3D','CALENZANO','SPEDIZIONE ITALIA'];
-  const content = [...words,...words].map(w => `<span class="cat-mq-item"><span class="cat-mq-dot"></span>${w}</span>`).join('');
-  document.getElementById('mqTrack').innerHTML = content + content;
-
-  /* PAGE TRANSITION IN */
-  gsap.fromTo('#page-transition', { scaleY:1, transformOrigin:'top' }, { scaleY:0, duration:.55, ease:'power4.inOut', delay:.05 });
-
-  /* HERO ANIMATIONS */
-  gsap.to('#gridLines', { yPercent:28, ease:'none', scrollTrigger:{ trigger:'#hero', start:'top top', end:'bottom top', scrub:1 } });
-  gsap.to('.cat-hero-numeral', { yPercent:-18, opacity:0, ease:'none', scrollTrigger:{ trigger:'#hero', start:'top top', end:'bottom top', scrub:1 } });
-
-  const tl = gsap.timeline({ defaults:{ ease:'power4.out' }, delay:.15 });
-  tl.from('#eyebrow', { y:24, opacity:0, duration:.9 })
-    .from('#h1a', { y:100, opacity:0, duration:1.1 }, '-=.6')
-    .from('#h1b', { y:100, opacity:0, duration:1.1 }, '-=.85')
-    .from('#heroDesc', { x:-36, opacity:0, duration:.85 }, '-=.6')
-    .from('#heroStats > div', { y:40, opacity:0, duration:.75, stagger:.12 }, '-=.6')
-    .from('.cat-scroll-ind', { opacity:0, duration:.5 }, '-=.3');
-
-  /* DATA */
-  const grid = document.getElementById('catalog-grid');
-  const fbBtns = document.querySelectorAll('.cat-filter-btn');
-  let allItems=[], currentFilter='all';
-
-  function esc(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
-  function cap(s){ return {decorativo:'Decorativo',gadget:'Gadget',tecnico:'Componentistica',prototipo:'Prototipo'}[s]||(s?s[0].toUpperCase()+s.slice(1):''); }
-  function cardCls(i){ const p=i%10; if(p===0||p===5) return 'cat-card--lg'; if(p===3) return 'cat-card--xl'; return ''; }
-
-  function showSkels() {
-    grid.innerHTML='';
-    for(let i=0;i<9;i++){
-      const s=document.createElement('div');
-      s.className=`cat-card cat-skel ${cardCls(i)}`;
-      s.innerHTML=`<div class="cat-card-visual"></div><div class="cat-card-info"><div class="skel-l" style="width:35%"></div><div class="skel-l" style="width:68%;height:18px"></div><div class="skel-l" style="width:90%"></div></div>`;
-      grid.appendChild(s);
-    }
-  }
-
-  function renderItems(items) {
-    grid.innerHTML='';
-    if(!items.length){ grid.innerHTML='<p style="color:#333;text-align:center;padding:80px 0;grid-column:1/-1;font-family:\'Space Mono\',monospace;font-size:10px;letter-spacing:2px;">NESSUN ARTICOLO</p>'; return; }
-    document.getElementById('statN').innerHTML=items.length+'<em>+</em>';
-
-    items.forEach((item,i) => {
-      const el=document.createElement('div');
-      el.className=`cat-card ${cardCls(i)}`;
-      el.dataset.cat=item.categoria;
-      if(currentFilter!=='all'&&item.categoria!==currentFilter) el.classList.add('hidden');
-
-      const hasFoto=!!item.foto;
-      const vis = hasFoto
-        ? `<img src="${item.foto}" alt="${esc(item.nome)}" loading="lazy"><div class="cat-zoom-hint">⊕ ingrandisci</div>`
-        : `<div class="cat-card-ph">${item.svg||''}</div>`;
-
-      el.innerHTML=`<span class="cat-card-idx">${String(i+1).padStart(2,'0')}</span>
-        <div class="cat-card-visual">${vis}
-          <div class="cat-card-ov"><a href="/prenotazione" class="cat-card-ov-btn" onclick="event.stopPropagation()">Richiedi Simile</a></div>
-        </div>
-        <div class="cat-card-info">
-          <div><span class="cat-card-tag">${cap(item.categoria)}</span>
-          <h3 class="cat-card-name">${esc(item.nome)}</h3>
-          <p class="cat-card-desc">${esc(item.descrizione||'')}</p></div>
-          <div class="cat-card-meta"><span>${esc(item.materiale||'')}</span><span>·</span><span>${esc(item.tag||'')}</span></div>
-        </div>`;
-
-      if(hasFoto){
-        el.querySelector('.cat-card-visual').style.cursor='zoom-in';
-        el.querySelector('.cat-card-visual').addEventListener('click', e => {
-          if(e.target.closest('.cat-card-ov-btn')) return;
-          openLb(item.foto);
-        });
-      }
-
-      // 3D tilt
-      el.addEventListener('mousemove', e => {
-        const r=el.getBoundingClientRect();
-        const rx2=((e.clientY-r.top-r.height/2)/r.height)*-5;
-        const ry2=((e.clientX-r.left-r.width/2)/r.width)*5;
-        gsap.to(el,{rotateX:rx2,rotateY:ry2,transformPerspective:900,duration:.35,ease:'power2.out',transformOrigin:'center center'});
-      });
-      el.addEventListener('mouseleave',()=>gsap.to(el,{rotateX:0,rotateY:0,duration:.7,ease:'elastic.out(1,.4)'}));
-
-      grid.appendChild(el);
-    });
-
-    // Staggered reveal
-    gsap.fromTo('.cat-card:not(.hidden)',
-      { y:70, opacity:0, scale:.96 },
-      { y:0, opacity:1, scale:1, duration:.75, stagger:{ each:.07, from:'start' }, ease:'power3.out',
-        scrollTrigger:{ trigger:'#catalog-grid', start:'top 88%', once:true } }
-    );
-  }
-
-  async function loadCatalogo() {
-    showSkels();
-    try {
-      const res=await fetch('/api/catalogo');
-      allItems=await res.json();
-      if(!Array.isArray(allItems)) throw new Error();
-      renderItems(allItems);
-    } catch(e) {
-      grid.innerHTML='<p style="color:#333;text-align:center;padding:80px 0;grid-column:1/-1;">Errore caricamento catalogo.</p>';
-    }
-  }
-
-  /* FILTERS */
-  fbBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      fbBtns.forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      currentFilter=btn.dataset.filter;
-      let vi=0;
-      grid.querySelectorAll('.cat-card:not(.cat-skel)').forEach(card => {
-        const show=currentFilter==='all'||card.dataset.cat===currentFilter;
-        if(show){
-          card.classList.remove('hidden');
-          gsap.fromTo(card,{opacity:0,y:28},{opacity:1,y:0,duration:.45,delay:vi*.055,ease:'power3.out'});
-          vi++;
-        } else {
-          gsap.to(card,{opacity:0,y:-8,duration:.22,ease:'power2.in',onComplete:()=>card.classList.add('hidden')});
-        }
-      });
-    });
-  });
-
-  /* LIGHTBOX */
-  function openLb(src){
-    document.getElementById('cat-lb-img').src=src;
-    document.getElementById('cat-lb').classList.add('on');
-    document.body.style.overflow='hidden';
-    if(lenis) lenis.stop();
-  }
-  function closeLb(){
-    document.getElementById('cat-lb').classList.remove('on');
-    document.getElementById('cat-lb-img').src='';
-    document.body.style.overflow='';
-    if(lenis) lenis.start();
-  }
-  document.getElementById('cat-lb').addEventListener('click',e=>{ if(e.target===document.getElementById('cat-lb'))closeLb(); });
-  document.getElementById('cat-lb-x').addEventListener('click',closeLb);
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeLb(); });
-
-  /* CTA REVEAL */
-  gsap.from('#ctaH2',{ x:-70, opacity:0, duration:1.1, ease:'power4.out', scrollTrigger:{ trigger:'#catCta', start:'top 78%' } });
-  gsap.from('.cat-cta-right > *',{ x:70, opacity:0, duration:.9, ease:'power3.out', stagger:.14, scrollTrigger:{ trigger:'#catCta', start:'top 78%' } });
-
-  /* PAGE EXIT TRANSITIONS */
-  document.querySelectorAll('a[href]').forEach(link => {
-    const href=link.getAttribute('href');
-    if(!href||href.startsWith('http')||href.startsWith('#')||href.startsWith('mailto')) return;
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      gsap.fromTo('#page-transition',{scaleY:0,transformOrigin:'bottom'},{scaleY:1,duration:.42,ease:'power4.inOut',onComplete:()=>{window.location.href=href;}});
-    });
-  });
-
-  /* RIPPLE */
-  document.addEventListener('click',e=>{
-    const r=document.createElement('div'); r.className='click-ripple';
-    r.style.cssText=`left:${e.clientX}px;top:${e.clientY}px`;
-    document.body.appendChild(r); r.addEventListener('animationend',()=>r.remove());
-  });
-
-  loadCatalogo();
-})();
-</script>
 <script src="/js/global.js"></script>
+<script src="/js/catalogo.js"></script>
 </body>
 </html>
