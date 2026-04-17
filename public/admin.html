@@ -563,6 +563,13 @@
                 <input type="text" id="set-ejs-pubkey" placeholder="xxxxxxxxxxxxxxxxxxxxxx">
               </div>
               <div class="form-field">
+                <label>EMAIL DESTINATARIO NOTIFICHE <span style="color:var(--accent);font-weight:600;">(obbligatorio)</span></label>
+                <input type="email" id="set-ejs-owner-email" placeholder="tua@email.com">
+                <small style="color:var(--text3);font-size:11px;margin-top:4px;display:block;">
+                  L'email a cui arrivano le notifiche di nuove prenotazioni. Corrisponde a <code>{{to_email}}</code> nel template.
+                </small>
+              </div>
+              <div class="form-field">
                 <label>TEMPLATE ID — Notifica a te <span style="color:var(--text3);font-weight:400;">(obbligatorio)</span></label>
                 <input type="text" id="set-ejs-tpl-owner" placeholder="template_xxxxxxx">
                 <small style="color:var(--text3);font-size:11px;margin-top:4px;display:block;">
@@ -1362,10 +1369,11 @@ async function loadSettings() {
   document.getElementById('metadesc-count').textContent = md.value.length;
   document.getElementById('set-keywords').value = s.meta_keywords || '';
   // EmailJS
-  document.getElementById('set-ejs-service').value    = s.emailjs_service_id      || '';
-  document.getElementById('set-ejs-pubkey').value     = s.emailjs_public_key       || '';
-  document.getElementById('set-ejs-tpl-owner').value  = s.emailjs_template_owner  || '';
-  document.getElementById('set-ejs-tpl-client').value = s.emailjs_template_client || '';
+  document.getElementById('set-ejs-service').value      = s.emailjs_service_id      || '';
+  document.getElementById('set-ejs-pubkey').value       = s.emailjs_public_key       || '';
+  document.getElementById('set-ejs-owner-email').value  = s.emailjs_owner_email      || '';
+  document.getElementById('set-ejs-tpl-owner').value    = s.emailjs_template_owner  || '';
+  document.getElementById('set-ejs-tpl-client').value   = s.emailjs_template_client || '';
   // Sicurezza sessione
   document.getElementById('session-token-display').textContent = TOKEN ? TOKEN.slice(0,24) + '…' : '—';
   document.getElementById('session-login-time').textContent    = LOGIN_TIME ? formatDate(LOGIN_TIME.toISOString()) : '—';
@@ -1389,7 +1397,8 @@ document.getElementById('btn-save-notifiche').addEventListener('click', async ()
   try {
     await api('/api/admin/settings', 'PATCH', {
       emailjs_service_id:      document.getElementById('set-ejs-service').value.trim(),
-      emailjs_public_key:       document.getElementById('set-ejs-pubkey').value.trim(),
+      emailjs_public_key:      document.getElementById('set-ejs-pubkey').value.trim(),
+      emailjs_owner_email:     document.getElementById('set-ejs-owner-email').value.trim(),
       emailjs_template_owner:  document.getElementById('set-ejs-tpl-owner').value.trim(),
       emailjs_template_client: document.getElementById('set-ejs-tpl-client').value.trim(),
     });
@@ -1399,11 +1408,16 @@ document.getElementById('btn-save-notifiche').addEventListener('click', async ()
 
 document.getElementById('btn-test-emailjs').addEventListener('click', async () => {
   const resultEl = document.getElementById('test-emailjs-result');
-  const serviceId   = document.getElementById('set-ejs-service').value.trim();
-  const pubKey      = document.getElementById('set-ejs-pubkey').value.trim();
-  const templateId  = document.getElementById('set-ejs-tpl-owner').value.trim();
+  const serviceId  = document.getElementById('set-ejs-service').value.trim();
+  const pubKey     = document.getElementById('set-ejs-pubkey').value.trim();
+  const templateId = document.getElementById('set-ejs-tpl-owner').value.trim();
+  const ownerEmail = document.getElementById('set-ejs-owner-email').value.trim();
   if (!serviceId || !pubKey || !templateId) {
     resultEl.textContent = '⚠ Compila Service ID, Public Key e Template ID prima di testare';
+    resultEl.style.color = '#ed8936'; return;
+  }
+  if (!ownerEmail) {
+    resultEl.textContent = '⚠ Compila il campo "Email Destinatario Notifiche" e salva prima di testare';
     resultEl.style.color = '#ed8936'; return;
   }
   resultEl.textContent = '⏳ Invio in corso…'; resultEl.style.color = 'var(--text2)';
@@ -1416,13 +1430,6 @@ document.getElementById('btn-test-emailjs').addEventListener('click', async () =
       });
     }
     emailjs.init({ publicKey: pubKey });
-    // Recupera l'email via API (il campo DOM potrebbe non essere ancora caricato)
-    const settingsData = await api('/api/admin/settings');
-    const toEmail = settingsData?.site_email?.trim() || '';
-    if (!toEmail) {
-      resultEl.textContent = '⚠ Imposta la tua email in Impostazioni → Studio e salva prima di testare';
-      resultEl.style.color = '#ed8936'; return;
-    }
     await emailjs.send(serviceId, templateId, {
       booking_id:    'TEST-' + Date.now(),
       cliente_nome:  'Cliente Test',
@@ -1431,15 +1438,16 @@ document.getElementById('btn-test-emailjs').addEventListener('click', async () =
       oggetto:       'Test configurazione EmailJS',
       materiale:     'PLA',
       colore:        'Bianco',
-      quantita:      1,
+      quantita:      '1',
       deadline:      'Non specificata',
       note:          'Questo è un messaggio di test automatico.',
       data_invio:    new Date().toLocaleString('it-IT'),
       studio_nome:   'Print3D Studio',
-      to_email:      toEmail,
+      studio_email:  ownerEmail,
+      to_email:      ownerEmail,
       to_name:       'Admin Print3D',
     });
-    resultEl.textContent = '✓ Email di test inviata!';
+    resultEl.textContent = '✓ Email di test inviata a ' + ownerEmail;
     resultEl.style.color = '#48bb78';
   } catch (e) {
     resultEl.textContent = '✗ Errore: ' + (e.text || e.message || JSON.stringify(e));
