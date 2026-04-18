@@ -76,6 +76,7 @@ const DEFAULT_DATA = {
   },
   prenotazioni: [],
   catalogo: [],
+  recensioni: [],
 };
 
 function readData() {
@@ -99,6 +100,7 @@ function readData() {
     fs.writeFileSync(DATA_FILE, JSON.stringify(raw, null, 2));
     console.log(`${ts()} ${c.yellow}⚙  Settings migrati con nuovi campi${c.reset}`);
   }
+  if (!raw.recensioni) { raw.recensioni = []; fs.writeFileSync(DATA_FILE, JSON.stringify(raw, null, 2)); }
   return raw;
 }
 
@@ -165,13 +167,30 @@ function adminAuth(req, res, next) {
   res.status(401).json({ success: false, message: 'Non autorizzato' });
 }
 
-// ─── /maintenance sempre accessibile (prima del middleware) ─
-app.get('/maintenance', (req, res) => res.sendFile(path.join(__dirname, 'public', 'maintenance.html')));
+// ─── /maintenance: accessibile solo se manutenzione attiva ──
+app.get('/maintenance', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  const data = readData();
+  // Disattiva automaticamente se il countdown è scaduto
+  if (data.settings.maintenance_enabled && data.settings.maintenance_target) {
+    const target = new Date(data.settings.maintenance_target);
+    if (!isNaN(target.getTime()) && Date.now() >= target.getTime()) {
+      data.settings.maintenance_enabled = false;
+      writeData(data);
+      console.log(`${ts()} ${c.green}✓  Manutenzione disattivata automaticamente (GET /maintenance)${c.reset}`);
+    }
+  }
+  if (!data.settings.maintenance_enabled) {
+    return res.redirect('/');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'maintenance.html'));
+});
 
 // ─── Maintenance middleware ────────────────────────────────
 // Blocca le pagine pubbliche se manutenzione attiva
 // (admin, api, assets statici sempre accessibili)
-const PUBLIC_PAGES = ['/', '/catalogo', '/materiali', '/prenotazione', '/contatti'];
+const PUBLIC_PAGES = ['/', '/catalogo', '/materiali', '/prenotazione', '/contatti', '/tos', '/recensioni'];
 
 app.use((req, res, next) => {
   // Salta per admin, api, file statici NON-html, maintenance stessa
@@ -183,8 +202,24 @@ app.use((req, res, next) => {
     (req.path.includes('.') && !req.path.endsWith('.html')) // css, js, png… ma non .html
   ) return next();
 
+  // Forza il browser a non cachare le pagine HTML:
+  // evita che un redirect 302 verso /maintenance rimanga in cache
+  // dopo che l'admin riattiva il sito.
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+
   const data = readData();
   if (data.settings.maintenance_enabled) {
+    // Se il countdown è già scaduto, disattiva subito senza redirect
+    if (data.settings.maintenance_target) {
+      const target = new Date(data.settings.maintenance_target);
+      if (!isNaN(target.getTime()) && Date.now() >= target.getTime()) {
+        data.settings.maintenance_enabled = false;
+        writeData(data);
+        console.log(`${ts()} ${c.green}✓  Manutenzione disattivata automaticamente (richiesta in arrivo)${c.reset}`);
+        return next();
+      }
+    }
     return res.redirect('/maintenance');
   }
   next();
@@ -203,12 +238,19 @@ app.use(express.static(path.join(__dirname, 'public'), {
 }));
 
 // ─── Public Routes ─────────────────────────────────────────
-app.get('/',             (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/catalogo',     (req, res) => res.sendFile(path.join(__dirname, 'public', 'catalogo.html')));
-app.get('/materiali',    (req, res) => res.sendFile(path.join(__dirname, 'public', 'materiali.html')));
-app.get('/prenotazione', (req, res) => res.sendFile(path.join(__dirname, 'public', 'prenotazione.html')));
-app.get('/contatti',     (req, res) => res.sendFile(path.join(__dirname, 'public', 'contatti.html')));
+const noCache = (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  next();
+};
+app.get('/',             noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/catalogo',     noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'catalogo.html')));
+app.get('/materiali',    noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'materiali.html')));
+app.get('/prenotazione', noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'prenotazione.html')));
+app.get('/contatti',     noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'contatti.html')));
+app.get('/tos',          noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'tos.html')));
 app.get('/admin',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/recensioni',   noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'recensioni.html')));
 
 // ─── Public API ────────────────────────────────────────────
 
@@ -546,6 +588,83 @@ app.get('/api/admin/export/backup', adminAuth, (req, res) => {
   res.setHeader('Content-Disposition', `attachment; filename="backup-${new Date().toISOString().slice(0,10)}.json"`);
   res.json(data);
 });
+
+// ─── Recensioni API (public) ───────────────────────────────
+
+app.get('/api/recensioni', (req, res) => {
+  const data = readData();
+  res.json({ recensioni: data.recensioni || [] });
+});
+
+app.post('/api/recensioni', (req, res) => {
+  const { stelle, categoria, nome, email, titolo, testo } = req.body;
+  if (!stelle || !nome || !titolo || !testo) return res.status(400).json({ error: 'Campi obbligatori mancanti' });
+  if (stelle < 1 || stelle > 5) return res.status(400).json({ error: 'Valutazione non valida' });
+  if (testo.length < 10) return res.status(400).json({ error: 'Testo troppo corto' });
+  const data = readData();
+  const nuova = {
+    id:        Date.now().toString(),
+    stelle:    parseInt(stelle),
+    categoria: categoria || 'Altro',
+    nome:      nome.substring(0, 50),
+    email:     email || '',
+    titolo:    titolo.substring(0, 80),
+    testo:     testo.substring(0, 800),
+    stato:     'in_attesa',
+    verificata: false,
+    data:      new Date().toISOString(),
+  };
+  if (!data.recensioni) data.recensioni = [];
+  data.recensioni.unshift(nuova);
+  writeData(data);
+  console.log(`${ts()} ⭐ Nuova recensione da ${nome} (${stelle}★) — in attesa`);
+  res.json({ success: true });
+});
+
+// ─── Recensioni API (admin) ────────────────────────────────
+
+app.get('/api/admin/recensioni', adminAuth, (req, res) => {
+  const data = readData();
+  res.json(data.recensioni || []);
+});
+
+app.patch('/api/admin/recensioni/:id', adminAuth, (req, res) => {
+  const data = readData();
+  if (!data.recensioni) return res.status(404).json({ error: 'Non trovata' });
+  const idx = data.recensioni.findIndex(r => r.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Non trovata' });
+  const allowed = ['stato', 'verificata', 'titolo', 'testo', 'nome', 'stelle', 'categoria'];
+  allowed.forEach(k => { if (req.body[k] !== undefined) data.recensioni[idx][k] = req.body[k]; });
+  writeData(data);
+  res.json({ success: true, recensione: data.recensioni[idx] });
+});
+
+app.delete('/api/admin/recensioni/:id', adminAuth, (req, res) => {
+  const data = readData();
+  if (!data.recensioni) return res.status(404).json({ error: 'Non trovata' });
+  const before = data.recensioni.length;
+  data.recensioni = data.recensioni.filter(r => r.id !== req.params.id);
+  if (data.recensioni.length === before) return res.status(404).json({ error: 'Non trovata' });
+  writeData(data);
+  res.json({ success: true });
+});
+
+
+// ─── Auto-disattiva manutenzione al termine del countdown ──
+// Controlla ogni 30s: se maintenance_enabled è true e maintenance_target
+// è nel passato, disattiva automaticamente la manutenzione.
+setInterval(() => {
+  const data = readData();
+  const s = data.settings;
+  if (!s.maintenance_enabled || !s.maintenance_target) return;
+  const target = new Date(s.maintenance_target);
+  if (isNaN(target.getTime())) return;
+  if (Date.now() >= target.getTime()) {
+    data.settings.maintenance_enabled = false;
+    writeData(data);
+    console.log(`${ts()} ${c.green}✓  Manutenzione disattivata automaticamente (countdown scaduto)${c.reset}`);
+  }
+}, 30_000);
 
 // ─── Start ─────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
