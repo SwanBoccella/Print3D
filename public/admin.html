@@ -120,6 +120,52 @@
     .panel { display: none; }
     .panel.active { display: block; }
 
+    /* RECENSIONI ADMIN */
+    .rec-admin-filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; align-items:center; }
+    .rec-filter-btn { background:none; border:1px solid var(--border); color:var(--text2); font-family:var(--font); font-size:10px; letter-spacing:1px; padding:6px 14px; cursor:pointer; transition:all .18s; border-radius:var(--radius); text-transform:uppercase; }
+    .rec-filter-btn:hover { border-color:var(--red); color:var(--text); }
+    .rec-filter-btn.active { border-color:var(--red); color:var(--red); background:var(--red-dim); }
+    .rec-admin-grid { display:flex; flex-direction:column; gap:10px; }
+    .rec-admin-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; transition:border-color .2s; }
+    .rec-admin-card:hover { border-color:var(--border2); }
+    .rec-admin-card.stato-in_attesa { border-left:3px solid var(--yellow); }
+    .rec-admin-card.stato-approvata { border-left:3px solid var(--green); }
+    .rec-admin-card.stato-rifiutata { border-left:3px solid var(--red); }
+    .rec-admin-top { display:flex; align-items:flex-start; gap:14px; margin-bottom:10px; flex-wrap:wrap; }
+    .rec-admin-stars { color:var(--red); letter-spacing:2px; font-size:13px; flex-shrink:0; }
+    .rec-admin-meta { flex:1; min-width:0; }
+    .rec-admin-name { font-size:12px; letter-spacing:1px; color:var(--text); font-weight:bold; }
+    .rec-admin-info { font-size:10px; color:var(--text3); letter-spacing:1px; margin-top:2px; }
+    .rec-admin-status { padding:3px 10px; border-radius:10px; font-size:9px; letter-spacing:2px; text-transform:uppercase; flex-shrink:0; }
+    .status-in_attesa { background:rgba(236,201,75,.1); color:var(--yellow); border:1px solid rgba(236,201,75,.3); }
+    .status-approvata { background:rgba(72,187,120,.1); color:var(--green); border:1px solid rgba(72,187,120,.3); }
+    .status-rifiutata { background:var(--red-dim); color:var(--red); border:1px solid rgba(229,62,62,.3); }
+    .rec-admin-title { font-size:12px; color:var(--text); margin-bottom:4px; font-weight:bold; }
+    .rec-admin-body { font-size:11px; color:var(--text2); line-height:1.6; margin-bottom:12px; }
+    .rec-admin-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .rec-action-btn { background:none; border:1px solid var(--border); color:var(--text2); font-family:var(--font); font-size:10px; letter-spacing:1px; padding:5px 12px; cursor:pointer; border-radius:var(--radius); transition:all .18s; text-transform:uppercase; }
+    .rec-action-btn:hover { color:var(--text); border-color:var(--border2); }
+    .rec-action-btn.approve { border-color:rgba(72,187,120,.4); color:var(--green); }
+    .rec-action-btn.approve:hover { background:rgba(72,187,120,.08); }
+    .rec-action-btn.reject { border-color:rgba(229,62,62,.4); color:var(--red); }
+    .rec-action-btn.reject:hover { background:var(--red-dim); }
+    .rec-action-btn.delete { border-color:rgba(229,62,62,.2); color:var(--text3); }
+    .rec-action-btn.delete:hover { color:var(--red); border-color:var(--red); }
+    .rec-verified-toggle { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--text3); letter-spacing:1px; cursor:pointer; margin-left:auto; }
+    .rec-verified-toggle input { accent-color:var(--green); cursor:pointer; }
+    .rec-edit-form { display:none; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-top:10px; }
+    .rec-edit-form.open { display:block; }
+    .rec-edit-form input, .rec-edit-form textarea, .rec-edit-form select {
+      width:100%; background:var(--bg4); border:1px solid var(--border2); color:var(--text);
+      font-family:var(--font); font-size:12px; padding:8px 10px; border-radius:var(--radius);
+      outline:none; margin-bottom:8px; transition:border-color .18s;
+    }
+    .rec-edit-form input:focus, .rec-edit-form textarea:focus, .rec-edit-form select:focus { border-color:var(--red); }
+    .rec-edit-form textarea { height:80px; resize:none; line-height:1.5; }
+    .rec-edit-label { font-size:10px; letter-spacing:1px; color:var(--text3); margin-bottom:4px; }
+    .rec-edit-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .rec-admin-empty { text-align:center; padding:48px; color:var(--text3); font-size:11px; letter-spacing:2px; }
+
     /* STATS */
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
     .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
@@ -316,6 +362,11 @@
         <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.5 3.5l1 1M11.5 11.5l1 1M12.5 3.5l-1 1M4.5 11.5l-1 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         Impostazioni
       </div>
+      <div class="nav-item" data-panel="recensioni">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4 4.5.7-3.2 3.1.75 4.4L8 11l-4.05 2.2.75-4.4L1.5 5.7 6 5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Recensioni
+        <span class="nav-badge" id="badge-recensioni" style="display:none;">0</span>
+      </div>
       <div class="nav-item" data-panel="maintenance" id="nav-maint">
         <svg viewBox="0 0 16 16" fill="none"><path d="M13.5 2.5L10 6l-1.5-1.5L12 1l-2-1-3 3a3 3 0 004 4l4.5 4.5a1.4 1.4 0 002-2L13 5l1-2.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M1 14l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
         Manutenzione
@@ -378,10 +429,10 @@
             <div class="stat-val" style="color:var(--text3)" id="stat-annullate">—</div>
             <div class="stat-sub">Cancellate</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">CATALOGO</div>
-            <div class="stat-val" id="stat-catalogo">—</div>
-            <div class="stat-sub" id="stat-sub-visibili">—</div>
+          <div class="stat-card" style="cursor:pointer;" onclick="showPanel('recensioni')">
+            <div class="stat-label">RECENSIONI IN ATTESA</div>
+            <div class="stat-val yellow" id="dash-rec-attesa">—</div>
+            <div class="stat-sub">Da moderare →</div>
           </div>
         </div>
         <div class="table-wrap" style="margin-top:24px">
@@ -795,6 +846,56 @@
 
       </div><!-- /panel-maintenance -->
 
+      <!-- ═══════════════════════════════════════════════════
+           PANNELLO RECENSIONI
+           ═══════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-recensioni">
+
+        <!-- Stats row -->
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-label">TOTALI</div>
+            <div class="stat-val" id="rec-stat-totale">—</div>
+            <div class="stat-sub">recensioni</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">IN ATTESA</div>
+            <div class="stat-val yellow" id="rec-stat-attesa">—</div>
+            <div class="stat-sub">da moderare</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">APPROVATE</div>
+            <div class="stat-val green" id="rec-stat-approvate">—</div>
+            <div class="stat-sub">pubblicate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">MEDIA STELLE</div>
+            <div class="stat-val red" id="rec-stat-media">—</div>
+            <div class="stat-sub">su 5</div>
+          </div>
+        </div>
+
+        <!-- Filters & Sort -->
+        <div class="rec-admin-filters">
+          <button class="rec-filter-btn active" data-rf="all">Tutte</button>
+          <button class="rec-filter-btn" data-rf="in_attesa">In Attesa</button>
+          <button class="rec-filter-btn" data-rf="approvata">Approvate</button>
+          <button class="rec-filter-btn" data-rf="rifiutata">Rifiutate</button>
+          <span style="flex:1;"></span>
+          <select id="rec-sort" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-family:var(--font);font-size:10px;padding:6px 10px;border-radius:var(--radius);outline:none;cursor:pointer;">
+            <option value="recenti">Più recenti</option>
+            <option value="stelle_desc">Stelle ↓</option>
+            <option value="stelle_asc">Stelle ↑</option>
+          </select>
+        </div>
+
+        <!-- List -->
+        <div class="rec-admin-grid" id="rec-admin-grid">
+          <div class="rec-admin-empty" id="rec-admin-loading">CARICAMENTO...</div>
+        </div>
+
+      </div><!-- /panel-recensioni -->
+
     </div>
   </main>
 </div>
@@ -1062,10 +1163,10 @@ async function loadDashboard() {
     document.getElementById('stat-completate').textContent  = s.completate;
     document.getElementById('stat-oggi').textContent        = s.oggi;
     document.getElementById('stat-annullate').textContent   = s.annullate;
-    document.getElementById('stat-catalogo').textContent    = s.catalogo;
-    document.getElementById('stat-sub-mese').textContent    = s.mese + ' questo mese';
-    document.getElementById('stat-sub-settimana').textContent = s.settimana + ' questa settimana';
-    document.getElementById('stat-sub-visibili').textContent  = s.catalogo_visibili + ' visibili';
+    const elCat = document.getElementById('stat-catalogo'); if (elCat) elCat.textContent = s.catalogo;
+    const elMese = document.getElementById('stat-sub-mese'); if (elMese) elMese.textContent = s.mese + ' questo mese';
+    const elSett = document.getElementById('stat-sub-settimana'); if (elSett) elSett.textContent = s.settimana + ' questa settimana';
+    const elVis = document.getElementById('stat-sub-visibili'); if (elVis) elVis.textContent = s.catalogo_visibili + ' visibili';
     document.getElementById('badge-nuove').textContent      = s.nuove;
 
     const pre = await api('/api/admin/prenotazioni');
@@ -1081,6 +1182,16 @@ async function loadDashboard() {
           <td>${badgeHTML(p.stato)}</td>
         </tr>`).join('')
       : '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:32px">Nessuna prenotazione</td></tr>';
+
+    // Recensioni in attesa widget
+    try {
+      const recs = await api('/api/admin/recensioni');
+      const attesa = recs.filter(r => r.stato === 'in_attesa').length;
+      const dashRec = document.getElementById('dash-rec-attesa');
+      if (dashRec) dashRec.textContent = attesa;
+      const badge = document.getElementById('badge-recensioni');
+      if (badge) { badge.textContent = attesa; badge.style.display = attesa > 0 ? 'inline-block' : 'none'; }
+    } catch(e) { /* silently ignore */ }
   } catch(e) { console.error(e); }
 }
 
@@ -1544,7 +1655,8 @@ function showPanel(name) {
   if (nav) nav.classList.add('active');
   const TITLES = {
     dashboard:'DASHBOARD', prenotazioni:'PRENOTAZIONI',
-    catalogo:'CATALOGO', settings:'IMPOSTAZIONI', maintenance:'MANUTENZIONE'
+    catalogo:'CATALOGO', settings:'IMPOSTAZIONI', maintenance:'MANUTENZIONE',
+    recensioni:'RECENSIONI'
   };
   document.getElementById('topbar-title').textContent = TITLES[name] || name.toUpperCase();
   closeSidebar();
@@ -1553,6 +1665,7 @@ function showPanel(name) {
   if (name === 'catalogo')     loadCatalogo();
   if (name === 'settings')     loadSettings();
   if (name === 'maintenance')  loadMaintenance();
+  if (name === 'recensioni')   loadRecensioni();
 }
 // Re-bind all nav items (now includes maintenance)
 document.querySelectorAll('.nav-item').forEach(el => {
@@ -1700,6 +1813,236 @@ function _startPreview(target) {
   }
   tick();
   maintPrevTimer = setInterval(tick, 1000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// RECENSIONI ADMIN MODULE
+// ═══════════════════════════════════════════════════════════
+
+let allRecensioni    = [];
+let recAdminFilter   = 'all';
+let recAdminSort     = 'recenti';
+
+// ── Filter buttons ─────────────────────────────────────────
+document.querySelectorAll('.rec-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.rec-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    recAdminFilter = btn.dataset.rf;
+    renderRecensioni();
+  });
+});
+
+document.getElementById('rec-sort').addEventListener('change', e => {
+  recAdminSort = e.target.value;
+  renderRecensioni();
+});
+
+// ── Helpers ────────────────────────────────────────────────
+function recStars(n) {
+  return '★'.repeat(n) + '☆'.repeat(5 - n);
+}
+function recDate(d) {
+  try { return new Date(d).toLocaleDateString('it-IT', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+  catch { return ''; }
+}
+
+// ── Load ───────────────────────────────────────────────────
+async function loadRecensioni() {
+  document.getElementById('rec-admin-loading').style.display = 'block';
+  document.getElementById('rec-admin-loading').textContent = 'CARICAMENTO...';
+  try {
+    allRecensioni = await api('/api/admin/recensioni');
+    updateRecStats();
+    updateRecBadge();
+    renderRecensioni();
+  } catch(e) {
+    document.getElementById('rec-admin-loading').textContent = 'ERRORE CARICAMENTO';
+  }
+}
+
+function updateRecStats() {
+  const tot  = allRecensioni.length;
+  const att  = allRecensioni.filter(r => r.stato === 'in_attesa').length;
+  const app  = allRecensioni.filter(r => r.stato === 'approvata').length;
+  const sum  = allRecensioni.filter(r => r.stato === 'approvata').reduce((s,r) => s + r.stelle, 0);
+  const avg  = app ? (sum / app).toFixed(1) : '—';
+  const setV = (id,v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setV('rec-stat-totale', tot);
+  setV('rec-stat-attesa', att);
+  setV('rec-stat-approvate', app);
+  setV('rec-stat-media', avg);
+}
+
+function updateRecBadge() {
+  const att = allRecensioni.filter(r => r.stato === 'in_attesa').length;
+  const badge = document.getElementById('badge-recensioni');
+  if (badge) {
+    badge.textContent = att;
+    badge.style.display = att > 0 ? 'inline-block' : 'none';
+  }
+}
+
+// ── Render ─────────────────────────────────────────────────
+function renderRecensioni() {
+  const grid = document.getElementById('rec-admin-grid');
+  let list = [...allRecensioni];
+
+  if (recAdminFilter !== 'all') list = list.filter(r => r.stato === recAdminFilter);
+  if (recAdminSort === 'stelle_desc') list.sort((a,b) => b.stelle - a.stelle);
+  else if (recAdminSort === 'stelle_asc') list.sort((a,b) => a.stelle - b.stelle);
+  else list.sort((a,b) => new Date(b.data) - new Date(a.data));
+
+  if (!list.length) {
+    grid.innerHTML = '<div class="rec-admin-empty">NESSUNA RECENSIONE</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  list.forEach(r => grid.appendChild(buildRecCard(r)));
+}
+
+function buildRecCard(r) {
+  const card = document.createElement('div');
+  card.className = `rec-admin-card stato-${r.stato}`;
+  card.id = `rec-card-${r.id}`;
+
+  const emailRow = r.email ? `<span>${r.email}</span> · ` : '';
+
+  card.innerHTML = `
+    <div class="rec-admin-top">
+      <div class="rec-admin-stars">${recStars(r.stelle)}</div>
+      <div class="rec-admin-meta">
+        <div class="rec-admin-name">${r.nome}</div>
+        <div class="rec-admin-info">${emailRow}<span>${r.categoria || 'N/D'}</span> · <span>${recDate(r.data)}</span></div>
+      </div>
+      <span class="rec-admin-status status-${r.stato}">${r.stato.replace('_',' ')}</span>
+    </div>
+    <div class="rec-admin-title">"${r.titolo}"</div>
+    <div class="rec-admin-body">${r.testo}</div>
+    <div class="rec-admin-actions">
+      ${r.stato !== 'approvata' ? `<button class="rec-action-btn approve" onclick="setRecStato('${r.id}','approvata')">✓ Approva</button>` : ''}
+      ${r.stato !== 'rifiutata' ? `<button class="rec-action-btn reject"  onclick="setRecStato('${r.id}','rifiutata')">✗ Rifiuta</button>` : ''}
+      <button class="rec-action-btn" onclick="toggleRecEdit('${r.id}')">✎ Modifica</button>
+      <button class="rec-action-btn delete" onclick="deleteRec('${r.id}')">🗑 Elimina</button>
+      <label class="rec-verified-toggle">
+        <input type="checkbox" ${r.verificata ? 'checked' : ''} onchange="setRecVerified('${r.id}', this.checked)"> Verificata
+      </label>
+    </div>
+    <div class="rec-edit-form" id="rec-edit-${r.id}">
+      <div class="rec-edit-row">
+        <div>
+          <div class="rec-edit-label">NOME</div>
+          <input type="text" id="re-nome-${r.id}" value="${r.nome}" maxlength="50">
+        </div>
+        <div>
+          <div class="rec-edit-label">STELLE</div>
+          <select id="re-stelle-${r.id}">
+            ${[1,2,3,4,5].map(n => `<option value="${n}" ${r.stelle===n?'selected':''}>${n} stella${n>1?'e':''}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="rec-edit-label">TITOLO</div>
+        <input type="text" id="re-titolo-${r.id}" value="${r.titolo}" maxlength="80">
+      </div>
+      <div>
+        <div class="rec-edit-label">TESTO</div>
+        <textarea id="re-testo-${r.id}" maxlength="800">${r.testo}</textarea>
+      </div>
+      <div class="rec-edit-row">
+        <div>
+          <div class="rec-edit-label">CATEGORIA</div>
+          <select id="re-cat-${r.id}">
+            ${['Oggetto Decorativo','Componentistica','Prototipo','Personalizzato','Altro'].map(c => `<option value="${c}" ${r.categoria===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <div class="rec-edit-label">STATO</div>
+          <select id="re-stato-${r.id}">
+            <option value="in_attesa" ${r.stato==='in_attesa'?'selected':''}>In Attesa</option>
+            <option value="approvata" ${r.stato==='approvata'?'selected':''}>Approvata</option>
+            <option value="rifiutata" ${r.stato==='rifiutata'?'selected':''}>Rifiutata</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-sm" style="background:var(--red);color:#fff;border:none;" onclick="saveRecEdit('${r.id}')">SALVA MODIFICHE</button>
+        <button class="rec-action-btn" onclick="toggleRecEdit('${r.id}')">Annulla</button>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+// ── Actions ────────────────────────────────────────────────
+async function setRecStato(id, stato) {
+  try {
+    await api(`/api/admin/recensioni/${id}`, 'PATCH', { stato });
+    const rec = allRecensioni.find(r => r.id === id);
+    if (rec) rec.stato = stato;
+    updateRecStats();
+    updateRecBadge();
+    renderRecensioni();
+    showNotif(`Recensione ${stato === 'approvata' ? 'approvata' : 'rifiutata'}`);
+  } catch(e) { showNotif('Errore aggiornamento', 'error'); }
+}
+
+async function setRecVerified(id, verificata) {
+  try {
+    await api(`/api/admin/recensioni/${id}`, 'PATCH', { verificata });
+    const rec = allRecensioni.find(r => r.id === id);
+    if (rec) rec.verificata = verificata;
+    showNotif(verificata ? 'Marcata come verificata' : 'Verifica rimossa');
+  } catch(e) { showNotif('Errore aggiornamento', 'error'); }
+}
+
+async function deleteRec(id) {
+  if (!confirm('Eliminare definitivamente questa recensione?')) return;
+  try {
+    await api(`/api/admin/recensioni/${id}`, 'DELETE');
+    allRecensioni = allRecensioni.filter(r => r.id !== id);
+    updateRecStats();
+    updateRecBadge();
+    renderRecensioni();
+    showNotif('Recensione eliminata');
+  } catch(e) { showNotif('Errore eliminazione', 'error'); }
+}
+
+function toggleRecEdit(id) {
+  const form = document.getElementById(`rec-edit-${id}`);
+  if (form) form.classList.toggle('open');
+}
+
+async function saveRecEdit(id) {
+  const get = sel => document.getElementById(sel)?.value;
+  const payload = {
+    nome:      get(`re-nome-${id}`),
+    stelle:    parseInt(get(`re-stelle-${id}`)),
+    titolo:    get(`re-titolo-${id}`),
+    testo:     get(`re-testo-${id}`),
+    categoria: get(`re-cat-${id}`),
+    stato:     get(`re-stato-${id}`),
+  };
+  try {
+    await api(`/api/admin/recensioni/${id}`, 'PATCH', payload);
+    const idx = allRecensioni.findIndex(r => r.id === id);
+    if (idx !== -1) allRecensioni[idx] = { ...allRecensioni[idx], ...payload };
+    updateRecStats();
+    updateRecBadge();
+    renderRecensioni();
+    showNotif('Recensione aggiornata');
+  } catch(e) { showNotif('Errore salvataggio', 'error'); }
+}
+
+// ── Notification helper (reuse existing or create fallback) ──
+function showNotif(msg, type) {
+  // try existing admin notification if available
+  if (typeof window._adminToast === 'function') { window._adminToast(msg, type); return; }
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--font);font-size:11px;letter-spacing:1px;padding:12px 24px;z-index:99999;transition:opacity .3s;`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(() => t.remove(), 350); }, 2500);
 }
 </script>
 </body>

@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termini & Privacy — Print3D Studio</title>
+  <meta name="description" content="Termini di Servizio, Privacy Policy e Cookie Policy di Print3D Studio.">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/pages.css">
+  <style>
+    /* ---- TOS PAGE ---- */
+    .tos-hero {
+      padding: 140px 48px 60px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .tos-hero::before {
+      content: 'LEGAL';
+      position: absolute;
+      right: 48px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-display);
+      font-size: clamp(100px, 18vw, 260px);
+      letter-spacing: -4px;
+      color: rgba(255,255,255,0.025);
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .tos-hero-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .tos-hero-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--red);
+    }
+    .tos-hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 8vw, 100px);
+      letter-spacing: 3px;
+      line-height: 0.92;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+    .tos-hero h1 span { color: var(--red); }
+    .tos-hero-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--subtle);
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .tos-hero-meta span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tos-hero-meta span::before {
+      content: '▸';
+      color: var(--red);
+      font-size: 9px;
+    }
+
+    /* ---- TOC NAV ---- */
+    .tos-toc {
+      position: sticky;
+      top: 70px;
+      z-index: 100;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tos-toc::-webkit-scrollbar { display: none; }
+    .tos-toc-item {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 18px 24px;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color 0.25s ease, border-color 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tos-toc-item .toc-num {
+      color: var(--subtle);
+      font-size: 9px;
+    }
+    .tos-toc-item:hover,
+    .tos-toc-item.active {
+      color: var(--text);
+      border-bottom-color: var(--red);
+    }
+
+    /* ---- MAIN LAYOUT ---- */
+    .tos-main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 80px 48px 120px;
+    }
+
+    /* ---- SECTION ---- */
+    .tos-section {
+      margin-bottom: 80px;
+      scroll-margin-top: 130px;
+    }
+    .tos-section-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tos-section-num {
+      font-family: var(--font-display);
+      font-size: 56px;
+      letter-spacing: 2px;
+      color: var(--border);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .tos-section-title-wrap {}
+    .tos-section-tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 6px;
+    }
+    .tos-section-title {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 42px);
+      letter-spacing: 2px;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    /* ---- ARTICLE BLOCK ---- */
+    .tos-article {
+      margin-bottom: 36px;
+    }
+    .tos-article h3 {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tos-article h3::before {
+      content: '';
+      width: 16px;
+      height: 1px;
+      background: var(--red);
+      flex-shrink: 0;
+    }
+    .tos-article p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+    .tos-article p:last-child { margin-bottom: 0; }
+    .tos-article ul {
+      list-style: none;
+      margin: 12px 0;
+    }
+    .tos-article ul li {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.8;
+      padding-left: 20px;
+      position: relative;
+      margin-bottom: 6px;
+    }
+    .tos-article ul li::before {
+      content: '⬡';
+      position: absolute;
+      left: 0;
+      color: var(--red);
+      font-size: 8px;
+      top: 6px;
+    }
+
+    /* ---- HIGHLIGHT BOX ---- */
+    .tos-box {
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--red);
+      padding: 20px 24px;
+      margin: 24px 0;
+      background: rgba(229,62,62,0.03);
+    }
+    .tos-box p {
+      font-size: 13px;
+      color: var(--gray);
+      line-height: 1.7;
+      margin: 0;
+    }
+    .tos-box strong {
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ---- TABLE ---- */
+    .tos-table-wrap {
+      overflow-x: auto;
+      margin: 24px 0;
+    }
+    .tos-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .tos-table th {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .tos-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--gray);
+      line-height: 1.6;
+      vertical-align: top;
+    }
+    .tos-table tr:last-child td { border-bottom: none; }
+    .tos-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .tos-table td:first-child {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .cookie-type-essential { color: #48bb78; }
+    .cookie-type-analytics { color: #ed8936; }
+    .cookie-type-pref { color: #63b3ed; }
+
+    /* ---- DIVIDER ---- */
+    .tos-divider {
+      height: 1px;
+      background: linear-gradient(90deg, var(--red) 0%, var(--border) 40%, transparent 100%);
+      margin: 80px 0;
+    }
+
+    /* ---- CONTACT STRIP ---- */
+    .tos-contact {
+      border: 1px solid var(--border);
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      background: var(--surface);
+    }
+    .tos-contact-info .label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .tos-contact-info .email {
+      font-family: var(--font-display);
+      font-size: 24px;
+      letter-spacing: 2px;
+      color: var(--text);
+    }
+    .tos-contact-info .email span { color: var(--red); }
+    .tos-contact-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text);
+      background: var(--red);
+      padding: 12px 24px;
+      text-decoration: none;
+      transition: background 0.25s ease, transform 0.2s ease;
+      white-space: nowrap;
+    }
+    .tos-contact-link:hover {
+      background: #c53030;
+      transform: translateY(-2px);
+    }
+
+    /* ---- SCROLL INDICATOR ---- */
+    .tos-progress {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      height: 2px;
+      background: var(--red);
+      z-index: 999;
+      width: 0%;
+      transition: width 0.1s linear;
+      box-shadow: 0 0 8px rgba(229,62,62,0.5);
+    }
+
+    /* ---- ENHANCED MICRO-INTERACTIONS ---- */
+
+    /* Section header line-reveal */
+    .tos-section-header {
+      clip-path: inset(0 0 0 0);
+    }
+
+    /* Article items — hover state */
+    .tos-article {
+      transition: transform 0.3s var(--ease-out-expo);
+      will-change: transform;
+    }
+    .tos-article:hover {
+      transform: translateX(6px);
+    }
+
+    /* List items stagger entrance base */
+    .tos-article ul li {
+      transition: color 0.2s ease;
+    }
+    .tos-article ul li:hover {
+      color: var(--gray);
+    }
+    .tos-article ul li:hover::before {
+      color: var(--text);
+    }
+
+    /* Box enhanced */
+    .tos-box {
+      transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s var(--ease-out-expo);
+      will-change: transform;
+    }
+    .tos-box:hover {
+      background: rgba(229,62,62,0.06);
+      box-shadow: inset 0 0 0 1px rgba(229,62,62,0.15);
+      transform: translateX(4px);
+    }
+
+    /* Section number hover glow */
+    .tos-section-num {
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+    .tos-section-header:hover .tos-section-num {
+      color: rgba(229,62,62,0.2);
+      text-shadow: 0 0 40px rgba(229,62,62,0.15);
+    }
+
+    /* Table rows */
+    .tos-table td {
+      transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+      will-change: transform;
+    }
+    .tos-table tr:hover td:first-child {
+      color: var(--red);
+    }
+
+    /* TOC item active indicator */
+    .tos-toc-item {
+      will-change: transform;
+    }
+    .tos-toc-item.active .toc-num {
+      color: var(--red);
+    }
+
+    /* Link glow pulse */
+    a[href^="mailto"] {
+      transition: color 0.25s ease, text-shadow 0.25s ease;
+    }
+    a[href^="mailto"]:hover {
+      text-shadow: 0 0 20px rgba(229,62,62,0.4);
+    }
+
+    /* Page transition overlay */
+    #page-transition {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    /* Reveal base state for GSAP */
+    .tos-section,
+    .tos-contact {
+      will-change: transform, opacity;
+    }
+    .tos-divider {
+      transform-origin: left center;
+    }
+
+  
+    @media (max-width: 768px) {
+      .tos-hero { padding: 120px 24px 48px; }
+      .tos-hero::before { display: none; }
+      .tos-toc { padding: 0 16px; }
+      .tos-toc-item { padding: 16px 14px; font-size: 9px; }
+      .tos-main { padding: 48px 24px 80px; }
+      .tos-section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .tos-section-num { font-size: 40px; }
+      .tos-contact { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="page-transition"></div>
+
+<!-- READING PROGRESS BAR -->
+<div class="tos-progress" id="tos-progress"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" />
+    PRINT<span>3D</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/catalogo">Catalogo</a></li>
+    <li><a href="/materiali">Materiali</a></li>
+    <li><a href="/recensioni">Recensioni</a></li>
+    <li><a href="/tos" class="active">T&amp;C</a></li>
+    <li><a href="/contatti">Contatti</a></li>
+    <li><a href="/prenotazione" class="nav-cta">Prenota</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile">
+  <a href="/">Home</a>
+  <a href="/catalogo">Catalogo</a>
+  <a href="/materiali">Materiali</a>
+  <a href="/recensioni">Recensioni</a>
+  <a href="/tos">Termini &amp; Privacy</a>
+  <a href="/contatti">Contatti</a>
+  <a href="/prenotazione">Prenota ora</a>
+</div>
+
+<!-- HERO -->
+<div class="tos-hero" data-reveal>
+  <div class="tos-hero-label">Documentazione Legale</div>
+  <h1>TERMINI &<br><span>PRIVACY</span></h1>
+  <div class="tos-hero-meta">
+    <span>Versione 1.0</span>
+    <span>Ultimo aggiornamento: Aprile 2025</span>
+    <span>Lingua: Italiano</span>
+  </div>
+</div>
+
+<!-- TOC NAV -->
+<nav class="tos-toc" id="tos-toc">
+  <a href="#tos" class="tos-toc-item active">
+    <span class="toc-num">01</span> Termini di Servizio
+  </a>
+  <a href="#privacy" class="tos-toc-item">
+    <span class="toc-num">02</span> Privacy Policy
+  </a>
+  <a href="#cookie" class="tos-toc-item">
+    <span class="toc-num">03</span> Cookie Policy
+  </a>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="tos-main">
+
+  <!-- ==================== SECTION 01: TOS ==================== -->
+  <section class="tos-section" id="tos" data-reveal>
+    <div class="tos-section-header">
+      <div class="tos-section-num">01</div>
+      <div class="tos-section-title-wrap">
+        <div class="tos-section-tag">Legal</div>
+        <h2 class="tos-section-title">TERMINI DI SERVIZIO</h2>
+      </div>
+    </div>
+
+    <div class="tos-box">
+      <p><strong>Importante</strong> — Leggendo e utilizzando questo sito o richiedendo un preventivo/ordine, l'utente accetta integralmente i presenti Termini di Servizio. In caso di mancata accettazione, si prega di non procedere con l'utilizzo del servizio.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>1.1 — Definizioni</h3>
+      <p><strong style="color:var(--text)">«Servizio»</strong> si intende l'attività di stampa 3D artigianale su prenotazione offerta da Print3D Studio, accessibile tramite il sito web <strong style="color:var(--text)">print3dstudio.it</strong> e via contatto diretto.</p>
+      <p><strong style="color:var(--text)">«Cliente»</strong> indica qualsiasi persona fisica o giuridica che richiede un preventivo o effettua un ordine presso Print3D Studio.</p>
+      <p><strong style="color:var(--text)">«Oggetto»</strong> indica il manufatto fisico prodotto mediante tecnologia FDM (Fused Deposition Modeling) su richiesta specifica del Cliente.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>1.2 — Modalità di Ordine</h3>
+      <p>Il servizio è erogato esclusivamente <strong style="color:var(--text)">su prenotazione</strong>. Per avviare un ordine è necessario:</p>
+      <ul>
+        <li>Compilare il modulo di prenotazione sul sito o contattare via email</li>
+        <li>Fornire un file 3D (STL, OBJ, STEP) o una descrizione dettagliata dell'oggetto desiderato</li>
+        <li>Attendere il preventivo personalizzato entro 24 ore lavorative</li>
+        <li>Confermare l'ordine tramite accettazione esplicita del preventivo</li>
+      </ul>
+      <p>L'ordine si considera concluso solo a seguito di conferma scritta (email) da parte di Print3D Studio.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>1.3 — Preventivi e Prezzi</h3>
+      <p>I preventivi hanno validità di <strong style="color:var(--text)">7 giorni solari</strong> dalla data di emissione. Il prezzo è determinato da: volume di stampa, materiale scelto, complessità geometrica, finiture richieste e tempi di consegna.</p>
+      <p>Print3D Studio si riserva il diritto di modificare i prezzi in qualsiasi momento. Ogni variazione non avrà effetto sugli ordini già confermati. I prezzi esposti sul sito sono indicativi e non vincolanti.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>1.4 — Pagamento</h3>
+      <p>Il pagamento avviene secondo le modalità concordate al momento della conferma ordine (bonifico bancario, contanti al ritiro o altri metodi comunicati di volta in volta). È richiesto il pagamento integrale <strong style="color:var(--text)">prima dell'avvio della stampa</strong>, salvo diverso accordo scritto.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>1.5 — Consegna e Ritiro</h3>
+      <p>Print3D Studio offre due modalità di consegna:</p>
+      <ul>
+        <li><strong style="color:var(--text)">Ritiro diretto</strong> — il Cliente ritira l'oggetto presso il luogo concordato</li>
+        <li><strong style="color:var(--text)">Spedizione tracciata</strong> — a carico del Cliente, tramite corriere selezionato da Print3D Studio</li>
+      </ul>
+      <p>I tempi di consegna indicati sono stimati e non garantiti contrattualmente. Ritardi dovuti a problemi tecnici, rotture del filamento o cause di forza maggiore non costituiscono inadempimento.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>1.6 — Garanzia e Difetti</h3>
+      <p>Print3D Studio garantisce che gli oggetti prodotti rispettino le specifiche concordate in fase di preventivo. In caso di difetti imputabili alla produzione, il Cliente ha diritto a:</p>
+      <ul>
+        <li>Ristampa gratuita dell'oggetto difettoso entro 14 giorni dalla ricezione</li>
+        <li>Rimborso parziale o totale, a discrezione di Print3D Studio</li>
+      </ul>
+      <p>La garanzia non copre: danni da uso improprio, difetti derivanti da file 3D forniti dal Cliente con geometrie problematiche, variazioni cromatiche fisiologiche dei materiali PLA.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>1.7 — Limitazione di Responsabilità</h3>
+      <p>Print3D Studio non è responsabile per danni indiretti, consequenziali o speciali derivanti dall'uso degli oggetti prodotti. La responsabilità massima di Print3D Studio è limitata al valore dell'ordine specifico.</p>
+      <p>Il Cliente è responsabile della legalità dei file 3D forniti e garantisce di detenere i diritti necessari per la riproduzione degli stessi. Print3D Studio si riserva il diritto di rifiutare ordini che violino diritti di terzi o normative vigenti.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>1.8 — Legge Applicabile</h3>
+      <p>I presenti Termini sono disciplinati dal diritto italiano. Per qualsiasi controversia è competente il Foro di residenza del consumatore, ai sensi del Codice del Consumo (D.Lgs. 206/2005).</p>
+    </div>
+  </section>
+
+  <div class="tos-divider"></div>
+
+  <!-- ==================== SECTION 02: PRIVACY ==================== -->
+  <section class="tos-section" id="privacy" data-reveal>
+    <div class="tos-section-header">
+      <div class="tos-section-num">02</div>
+      <div class="tos-section-title-wrap">
+        <div class="tos-section-tag">GDPR Compliant</div>
+        <h2 class="tos-section-title">PRIVACY POLICY</h2>
+      </div>
+    </div>
+
+    <div class="tos-box">
+      <p><strong>Ai sensi del GDPR</strong> — Il presente documento costituisce l'informativa sul trattamento dei dati personali ai sensi dell'art. 13 del Regolamento UE 2016/679 (GDPR) e del D.Lgs. 196/2003 come modificato dal D.Lgs. 101/2018.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>2.1 — Titolare del Trattamento</h3>
+      <p>Il Titolare del trattamento dei dati personali è <strong style="color:var(--text)">Print3D Studio</strong>, raggiungibile all'indirizzo email <a href="mailto:swanboccella@gmail.com" style="color:var(--red)">swanboccella@gmail.com</a>. Per esercitare i propri diritti o per qualsiasi richiesta relativa al trattamento dei dati, l'utente può contattare direttamente il Titolare.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>2.2 — Dati Raccolti</h3>
+      <p>Print3D Studio raccoglie le seguenti categorie di dati personali:</p>
+      <ul>
+        <li><strong style="color:var(--text)">Dati identificativi</strong> — nome, cognome, indirizzo email, numero di telefono (forniti dal Cliente tramite moduli di contatto o prenotazione)</li>
+        <li><strong style="color:var(--text)">Dati di navigazione</strong> — indirizzo IP, browser, sistema operativo, pagine visitate, timestamp (raccolti automaticamente dai server)</li>
+        <li><strong style="color:var(--text)">Dati di comunicazione</strong> — contenuto delle email e messaggi inviati a Print3D Studio</li>
+        <li><strong style="color:var(--text)">File di progetto</strong> — file 3D e descrizioni tecniche forniti dal Cliente per la produzione</li>
+      </ul>
+      <p>Non vengono raccolti dati sensibili (salute, opinioni politiche, dati biometrici) né dati di minori di 16 anni. In caso di dubbio sull'età dell'utente, Print3D Studio si riserva di richiedere conferma.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>2.3 — Finalità e Base Giuridica</h3>
+      <div class="tos-table-wrap">
+        <table class="tos-table">
+          <thead>
+            <tr>
+              <th>Finalità</th>
+              <th>Base Giuridica</th>
+              <th>Conservazione</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Gestione ordini e preventivi</td>
+              <td>Esecuzione contratto (art. 6.1.b GDPR)</td>
+              <td>5 anni</td>
+            </tr>
+            <tr>
+              <td>Assistenza e comunicazioni</td>
+              <td>Interesse legittimo (art. 6.1.f GDPR)</td>
+              <td>2 anni</td>
+            </tr>
+            <tr>
+              <td>Adempimenti fiscali e contabili</td>
+              <td>Obbligo legale (art. 6.1.c GDPR)</td>
+              <td>10 anni</td>
+            </tr>
+            <tr>
+              <td>Marketing e newsletter</td>
+              <td>Consenso (art. 6.1.a GDPR)</td>
+              <td>Fino a revoca</td>
+            </tr>
+            <tr>
+              <td>Analisi del sito (statistiche)</td>
+              <td>Interesse legittimo (art. 6.1.f GDPR)</td>
+              <td>13 mesi</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tos-article">
+      <h3>2.4 — Comunicazione a Terzi</h3>
+      <p>I dati personali non vengono venduti né ceduti a terzi per finalità commerciali. Possono essere comunicati esclusivamente a:</p>
+      <ul>
+        <li>Corrieri e spedizionieri (per l'evasione degli ordini)</li>
+        <li>Fornitori di servizi IT (hosting, email) operanti come responsabili del trattamento</li>
+        <li>Autorità competenti, nei casi previsti dalla legge</li>
+      </ul>
+      <p>Eventuali trasferimenti di dati verso Paesi extra-UE avvengono solo in presenza di garanzie adeguate (decisione di adeguatezza o clausole contrattuali standard della Commissione Europea).</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>2.5 — Diritti dell'Interessato</h3>
+      <p>Ai sensi degli artt. 15–22 del GDPR, l'utente ha diritto di:</p>
+      <ul>
+        <li><strong style="color:var(--text)">Accesso</strong> — ottenere conferma del trattamento e copia dei dati</li>
+        <li><strong style="color:var(--text)">Rettifica</strong> — correggere dati inesatti o incompleti</li>
+        <li><strong style="color:var(--text)">Cancellazione («diritto all'oblio»)</strong> — richiedere la rimozione dei dati</li>
+        <li><strong style="color:var(--text)">Limitazione</strong> — limitare il trattamento in determinati casi</li>
+        <li><strong style="color:var(--text)">Portabilità</strong> — ricevere i dati in formato strutturato</li>
+        <li><strong style="color:var(--text)">Opposizione</strong> — opporsi al trattamento basato su interesse legittimo</li>
+        <li><strong style="color:var(--text)">Revoca del consenso</strong> — revocare in qualsiasi momento il consenso prestato</li>
+      </ul>
+      <p>Per esercitare i propri diritti, inviare richiesta a <a href="mailto:swanboccella@gmail.com" style="color:var(--red)">swanboccella@gmail.com</a>. Il Titolare risponderà entro 30 giorni. È possibile proporre reclamo al Garante per la Protezione dei Dati Personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener" style="color:var(--red)">garanteprivacy.it</a>).</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>2.6 — Sicurezza dei Dati</h3>
+      <p>Print3D Studio adotta misure tecniche e organizzative adeguate per proteggere i dati personali da accesso non autorizzato, distruzione, perdita o divulgazione. Il sito utilizza connessione HTTPS con crittografia TLS. In caso di violazione dei dati (data breach) che presenti rischi per i diritti degli interessati, verrà notificata all'Autorità competente entro 72 ore e, ove necessario, agli interessati stessi.</p>
+    </div>
+  </section>
+
+  <div class="tos-divider"></div>
+
+  <!-- ==================== SECTION 03: COOKIE ==================== -->
+  <section class="tos-section" id="cookie" data-reveal>
+    <div class="tos-section-header">
+      <div class="tos-section-num">03</div>
+      <div class="tos-section-title-wrap">
+        <div class="tos-section-tag">Tracking</div>
+        <h2 class="tos-section-title">COOKIE POLICY</h2>
+      </div>
+    </div>
+
+    <div class="tos-box">
+      <p><strong>Ai sensi della Direttiva ePrivacy</strong> — Il presente documento descrive le tipologie di cookie utilizzati dal sito print3dstudio.it, in conformità con la normativa vigente (D.Lgs. 69/2012 e Provvedimento del Garante dell'8 gennaio 2015).</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>3.1 — Cosa sono i Cookie</h3>
+      <p>I cookie sono piccoli file di testo memorizzati nel browser dell'utente quando visita un sito web. Vengono utilizzati per migliorare l'esperienza di navigazione, ricordare le preferenze dell'utente e raccogliere informazioni statistiche sull'utilizzo del sito.</p>
+      <p>Il sito Print3D Studio utilizza cookie in modo minimale, privilegiando la privacy dell'utente. Non vengono utilizzati cookie di profilazione per fini pubblicitari.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>3.2 — Tipologie di Cookie Utilizzati</h3>
+      <div class="tos-table-wrap">
+        <table class="tos-table">
+          <thead>
+            <tr>
+              <th>Nome Cookie</th>
+              <th>Tipo</th>
+              <th>Durata</th>
+              <th>Finalità</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>session_id</td>
+              <td><span class="cookie-type-essential">Tecnico</span></td>
+              <td>Sessione</td>
+              <td>Gestione sessione utente per il form di prenotazione</td>
+            </tr>
+            <tr>
+              <td>cookie_consent</td>
+              <td><span class="cookie-type-essential">Tecnico</span></td>
+              <td>12 mesi</td>
+              <td>Memorizza la preferenza di consenso ai cookie</td>
+            </tr>
+            <tr>
+              <td>theme_pref</td>
+              <td><span class="cookie-type-pref">Preferenze</span></td>
+              <td>6 mesi</td>
+              <td>Ricorda le impostazioni di visualizzazione dell'utente</td>
+            </tr>
+            <tr>
+              <td>_ga</td>
+              <td><span class="cookie-type-analytics">Analitico</span></td>
+              <td>13 mesi</td>
+              <td>Google Analytics — statistiche anonime di navigazione</td>
+            </tr>
+            <tr>
+              <td>_ga_*</td>
+              <td><span class="cookie-type-analytics">Analitico</span></td>
+              <td>13 mesi</td>
+              <td>Google Analytics — ID sessione aggregato</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tos-article">
+      <h3>3.3 — Cookie Tecnici (Necessari)</h3>
+      <p>I cookie tecnici sono <strong style="color:var(--text)">strettamente necessari</strong> al funzionamento del sito e non richiedono consenso preventivo. Vengono utilizzati per: gestire le sessioni di navigazione, ricordare le preferenze di consenso e garantire la sicurezza del sito.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>3.4 — Cookie Analitici</h3>
+      <p>I cookie analitici vengono attivati solo previo consenso dell'utente. Se abilitati, raccolgono informazioni aggregate e anonime su: pagine visitate, durata della sessione, dispositivo e browser utilizzati. Queste informazioni vengono elaborate da Google Analytics (Google LLC, USA) nel rispetto delle garanzie previste dal GDPR.</p>
+      <p>L'utente può disabilitare il tracciamento di Google Analytics installando il componente aggiuntivo del browser disponibile su <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener" style="color:var(--red)">tools.google.com/dlpage/gaoptout</a>.</p>
+    </div>
+
+    <div class="tos-article">
+      <h3>3.5 — Gestione e Disabilitazione</h3>
+      <p>L'utente può gestire le preferenze sui cookie in qualsiasi momento attraverso:</p>
+      <ul>
+        <li><strong style="color:var(--text)">Banner cookie</strong> — al primo accesso al sito è presente un banner che consente di accettare o rifiutare i cookie non necessari</li>
+        <li><strong style="color:var(--text)">Impostazioni del browser</strong> — ogni browser consente di bloccare o eliminare i cookie. Si noti che la disabilitazione dei cookie tecnici potrebbe compromettere il corretto funzionamento del sito</li>
+        <li><strong style="color:var(--text)">Email</strong> — è possibile richiedere informazioni o la cancellazione dei dati raccolti via cookie a <a href="mailto:swanboccella@gmail.com" style="color:var(--red)">swanboccella@gmail.com</a></li>
+      </ul>
+      <p>Di seguito i link alle guide per la gestione dei cookie nei principali browser: <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener" style="color:var(--red)">Chrome</a> · <a href="https://support.mozilla.org/it/kb/Gestione%20dei%20cookie" target="_blank" rel="noopener" style="color:var(--red)">Firefox</a> · <a href="https://support.apple.com/it-it/guide/safari/sfri11471/mac" target="_blank" rel="noopener" style="color:var(--red)">Safari</a> · <a href="https://support.microsoft.com/it-it/microsoft-edge/eliminare-i-cookie-in-microsoft-edge-63947406" target="_blank" rel="noopener" style="color:var(--red)">Edge</a></p>
+    </div>
+
+    <div class="tos-article">
+      <h3>3.6 — Aggiornamenti alla Cookie Policy</h3>
+      <p>La presente Cookie Policy può essere aggiornata periodicamente. Le modifiche significative verranno comunicate tramite un avviso visibile sul sito. Si raccomanda di consultare regolarmente questa pagina per restare aggiornati.</p>
+    </div>
+  </section>
+
+  <div class="tos-divider"></div>
+
+  <!-- CONTACT STRIP -->
+  <div class="tos-contact" data-reveal>
+    <div class="tos-contact-info">
+      <div class="label">Domande o Richieste</div>
+      <div class="email">SWAN<span>BOCCELLA</span>@GMAIL.COM</div>
+    </div>
+    <a href="mailto:swanboccella@gmail.com" class="tos-contact-link">Contatta il Titolare →</a>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    PRINT<span>3D</span>
+    <p>Stampa 3D artigianale<br>su prenotazione</p>
+  </div>
+  <div class="footer-col">
+    <h4>Navigazione</h4>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/catalogo">Catalogo</a></li>
+      <li><a href="/materiali">Materiali</a></li>
+      <li><a href="/prenotazione">Prenotazione</a></li>
+      <li><a href="/recensioni">Recensioni</a></li>
+      <li><a href="/contatti">Contatti</a></li>
+      <li><a href="/tos">Termini &amp; Privacy</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Contatti</h4>
+    <p>
+      <a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br>
+      Risposta entro 24 ore.<br>
+      Disponibile Lun–Sab.
+    </p>
+  </div>
+  <div class="footer-bottom">
+    <p>2025-2026 &copy; Print3D Studio — Tutti i diritti riservati</p>
+    <a href="/tos" style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--subtle);text-decoration:none;transition:color 0.25s ease;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--subtle)'">Termini &amp; Privacy</a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="/js/global.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// ── Page transition in ────────────────────────────────────
+const ptEl = document.getElementById('page-transition');
+if (ptEl) {
+  ptEl.style.cssText = 'position:fixed;inset:0;background:var(--bg);z-index:9999;pointer-events:none;';
+  gsap.to(ptEl, { opacity: 0, duration: 0.55, ease: 'power2.out', onComplete: () => ptEl.remove() });
+}
+
+// ── Reading progress bar ──────────────────────────────────
+const progressBar = document.getElementById('tos-progress');
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
+}, { passive: true });
+
+// ── Hero entrance — staggered word split ──────────────────
+(function heroAnimate() {
+  const tl = gsap.timeline({ delay: 0.1 });
+
+  tl.fromTo('.tos-hero-label',
+    { opacity: 0, x: -30, skewX: -6 },
+    { opacity: 1, x: 0, skewX: 0, duration: 0.7, ease: 'power3.out' }
+  )
+  .fromTo('.tos-hero h1',
+    { opacity: 0, y: 60, skewY: 2 },
+    { opacity: 1, y: 0, skewY: 0, duration: 0.9, ease: 'power4.out' }, '-=0.4'
+  )
+  .fromTo('.tos-hero-meta span',
+    { opacity: 0, y: 20 },
+    { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out', stagger: 0.1 }, '-=0.5'
+  )
+  .fromTo('.tos-toc',
+    { opacity: 0, y: -10 },
+    { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.3'
+  );
+
+  // Ghost text parallax
+  gsap.to('.tos-hero::before', {
+    scrollTrigger: { trigger: '.tos-hero', scrub: 1.2 },
+    yPercent: 18,
+    ease: 'none'
+  });
+})();
+
+// ── Section reveals with GSAP ScrollTrigger ──────────────
+gsap.utils.toArray('.tos-section').forEach((section, i) => {
+  const header = section.querySelector('.tos-section-header');
+  const num    = section.querySelector('.tos-section-num');
+  const title  = section.querySelector('.tos-section-title');
+  const tag    = section.querySelector('.tos-section-tag');
+  const box    = section.querySelector('.tos-box');
+  const articles = section.querySelectorAll('.tos-article');
+  const tables   = section.querySelectorAll('.tos-table-wrap');
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: section,
+      start: 'top 82%',
+      once: true,
+    }
+  });
+
+  // Section number counter animation
+  if (num) {
+    const target = parseInt(num.textContent);
+    tl.fromTo(num,
+      { opacity: 0, x: -40, color: 'var(--red)' },
+      { opacity: 1, x: 0, color: 'var(--border)', duration: 0.8, ease: 'power3.out' }
+    );
+  }
+
+  if (tag)   tl.fromTo(tag,   { opacity:0, y:10 }, { opacity:1, y:0, duration:0.4, ease:'power2.out' }, '-=0.6');
+  if (title) tl.fromTo(title, { opacity:0, y:30, skewY:1 }, { opacity:1, y:0, skewY:0, duration:0.7, ease:'power3.out' }, '-=0.5');
+  if (box)   tl.fromTo(box,   { opacity:0, x:-20 }, { opacity:1, x:0, duration:0.6, ease:'power3.out' }, '-=0.3');
+
+  articles.forEach((art, j) => {
+    tl.fromTo(art,
+      { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' },
+      j === 0 ? '-=0.2' : `-=${0.35}`
+    );
+  });
+
+  tables.forEach(t => {
+    tl.fromTo(t.querySelectorAll('tr'),
+      { opacity: 0, x: -12 },
+      { opacity: 1, x: 0, duration: 0.35, ease: 'power2.out', stagger: 0.06 },
+      '-=0.2'
+    );
+  });
+});
+
+// ── Dividers animate in ───────────────────────────────────
+gsap.utils.toArray('.tos-divider').forEach(el => {
+  gsap.fromTo(el,
+    { scaleX: 0, transformOrigin: 'left center' },
+    {
+      scaleX: 1, duration: 1.1, ease: 'power4.out',
+      scrollTrigger: { trigger: el, start: 'top 90%', once: true }
+    }
+  );
+});
+
+// ── Contact strip ─────────────────────────────────────────
+gsap.fromTo('.tos-contact',
+  { opacity: 0, y: 40 },
+  {
+    opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
+    scrollTrigger: { trigger: '.tos-contact', start: 'top 88%', once: true }
+  }
+);
+gsap.fromTo('.tos-contact-link',
+  { opacity: 0, x: 30 },
+  {
+    opacity: 1, x: 0, duration: 0.7, ease: 'power3.out', delay: 0.2,
+    scrollTrigger: { trigger: '.tos-contact', start: 'top 88%', once: true }
+  }
+);
+
+// ── TOC hover micro-transitions ───────────────────────────
+document.querySelectorAll('.tos-toc-item').forEach(item => {
+  item.addEventListener('mouseenter', () => {
+    gsap.to(item, { x: 4, duration: 0.22, ease: 'power2.out' });
+  });
+  item.addEventListener('mouseleave', () => {
+    gsap.to(item, { x: 0, duration: 0.22, ease: 'power2.out' });
+  });
+});
+
+// ── TOC active state via IntersectionObserver ─────────────
+const sections = document.querySelectorAll('.tos-section');
+const tocItems = document.querySelectorAll('.tos-toc-item');
+
+const tocObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      tocItems.forEach(item => {
+        const wasActive = item.classList.contains('active');
+        const isActive  = item.getAttribute('href') === '#' + id;
+        item.classList.toggle('active', isActive);
+        if (isActive && !wasActive) {
+          gsap.fromTo(item, { borderBottomColor: 'transparent' }, { borderBottomColor: 'var(--red)', duration: 0.3, ease: 'power2.out' });
+        }
+      });
+    }
+  });
+}, { rootMargin: '-120px 0px -60% 0px', threshold: 0 });
+
+sections.forEach(s => tocObserver.observe(s));
+
+// ── Article h3 line-draw on hover ────────────────────────
+document.querySelectorAll('.tos-article h3').forEach(h => {
+  const line = h.querySelector('::before') || h;
+  h.addEventListener('mouseenter', () => gsap.to(h, { color: 'var(--text)', duration: 0.25, ease: 'power2.out' }));
+  h.addEventListener('mouseleave', () => gsap.to(h, { color: 'var(--gray)',  duration: 0.25, ease: 'power2.out' }));
+});
+
+// ── Table row hover ───────────────────────────────────────
+document.querySelectorAll('.tos-table tr').forEach(row => {
+  row.addEventListener('mouseenter', () => {
+    gsap.to(row.querySelectorAll('td'), { x: 4, duration: 0.22, ease: 'power2.out', stagger: 0.03 });
+  });
+  row.addEventListener('mouseleave', () => {
+    gsap.to(row.querySelectorAll('td'), { x: 0, duration: 0.22, ease: 'power2.out' });
+  });
+});
+
+// ── Highlight boxes pulse on enter ────────────────────────
+gsap.utils.toArray('.tos-box').forEach(box => {
+  ScrollTrigger.create({
+    trigger: box,
+    start: 'top 85%',
+    once: true,
+    onEnter: () => {
+      gsap.fromTo(box,
+        { borderLeftColor: 'transparent', paddingLeft: '10px' },
+        { borderLeftColor: 'var(--red)', paddingLeft: '24px', duration: 0.6, ease: 'power3.out' }
+      );
+    }
+  });
+});
+
+// ── Contact link magnetic hover ───────────────────────────
+const contactLink = document.querySelector('.tos-contact-link');
+if (contactLink) {
+  contactLink.addEventListener('mousemove', e => {
+    const rect = contactLink.getBoundingClientRect();
+    const dx = (e.clientX - rect.left - rect.width  / 2) * 0.18;
+    const dy = (e.clientY - rect.top  - rect.height / 2) * 0.18;
+    gsap.to(contactLink, { x: dx, y: dy, duration: 0.35, ease: 'power2.out' });
+  });
+  contactLink.addEventListener('mouseleave', () => {
+    gsap.to(contactLink, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1,0.5)' });
+  });
+}
+</script>
+</body>
+</html>

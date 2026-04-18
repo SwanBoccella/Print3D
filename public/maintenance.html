@@ -454,7 +454,7 @@
         <span class="cd-name">SECONDI</span>
       </div>
     </div>
-    <div class="cd-expired" id="cd-expired">● RIAPERTURA IMMINENTE — RICARICA LA PAGINA</div>
+    <div class="cd-expired" id="cd-expired">● RIAPERTURA IMMINENTE — REINDIRIZZAMENTO IN CORSO…</div>
   </div>
 
   <!-- Progress -->
@@ -653,6 +653,10 @@ function startCountdown(iso) {
       setUnit('d','00'); setUnit('h','00'); setUnit('m','00'); setUnit('s','00');
       document.getElementById('cd-row').style.opacity = '.28';
       document.getElementById('cd-expired').style.display = 'block';
+      // Controlla subito se il server è tornato online, poi redirect automatico
+      checkAndRedirect();
+      // Redirect automatico alla home dopo 3 secondi dal termine del countdown
+      setTimeout(() => { window.location.replace('/'); }, 3000);
       return;
     }
     const d = Math.floor(diff / 86400000);
@@ -664,6 +668,26 @@ function startCountdown(iso) {
     setTimeout(tick, 1000);
   }
   tick();
+}
+
+// ── Poll & redirect quando manutenzione è disattivata ───────
+let _pollTimer = null;
+async function checkAndRedirect() {
+  try {
+    const r = await fetch('/api/settings');
+    if (!r.ok) return;
+    const s = await r.json();
+    if (!s.maintenance_enabled) {
+      clearInterval(_pollTimer);
+      window.location.replace('/');
+    }
+  } catch { /* rete non disponibile, riprova */ }
+}
+function startPollRedirect() {
+  if (_pollTimer) return;
+  // Esegui subito il primo check, poi ogni 5s
+  checkAndRedirect();
+  _pollTimer = setInterval(checkAndRedirect, 5000);
 }
 
 // ── Progress bar ────────────────────────────────────────────
@@ -685,6 +709,12 @@ async function boot() {
   try {
     const res = await fetch('/api/settings');
     const s   = res.ok ? await res.json() : {};
+
+    // Se la manutenzione è già disattivata, esci subito
+    if (s.maintenance_enabled === false) {
+      window.location.replace('/');
+      return;
+    }
 
     // Title / subtitle / desc
     if (s.maintenance_title) {
@@ -731,6 +761,10 @@ async function boot() {
 }
 
 boot();
+// Avvia subito il polling: se l'admin disattiva la manutenzione
+// (o il countdown scade e il server è di nuovo online),
+// l'utente viene reindirizzato automaticamente alla homepage.
+startPollRedirect();
 </script>
 </body>
 </html>
