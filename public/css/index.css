@@ -690,19 +690,20 @@
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 3px;
-  color: rgba(229,62,62,0.35);
+  color: #39ff14;
+  text-shadow: 0 0 8px #00ffff, 0 0 16px #39ff14;
   white-space: nowrap;
-  transition: opacity 0.4s, color 0.4s;
-  animation: hintPulse 3s ease-in-out infinite;
+  transition: opacity 0.4s, color 0.4s, text-shadow 0.4s;
+  animation: hintPulse 2.8s ease-in-out infinite;
 }
 .pla-sphere:hover .pla-hint,
 .pla-sphere:active .pla-hint { opacity: 0; }
 
 @keyframes hintPulse {
-  0%,100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
+  0%,100% { opacity: 0.75; color: #39ff14; text-shadow: 0 0 8px #00ffff, 0 0 14px #39ff14; }
+  50%      { opacity: 1;    color: #00ffff; text-shadow: 0 0 12px #39ff14, 0 0 22px #00ffff, 0 0 4px #fff; }
 }
 
 @keyframes sphereBurst {
@@ -769,7 +770,7 @@
 
 /* hint update animation */
 .pla-hint {
-  transition: color 0.3s, opacity 0.3s;
+  transition: color 0.3s, opacity 0.3s, text-shadow 0.3s;
 }
 
 .mat-hl-info h2 {
