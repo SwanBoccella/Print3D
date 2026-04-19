@@ -1,0 +1,30 @@
+# robots.txt — Print3D Studio
+# https://www.print3dstudio.it
+
+User-agent: *
+Allow: /
+
+# Escludi admin e API
+Disallow: /admin
+Disallow: /api/
+Disallow: /maintenance
+
+# Escludi parametri query inutili
+Disallow: /*?*utm_
+Disallow: /*?*ref=
+Disallow: /*?*fbclid=
+
+# Crawl-delay per bot aggressivi
+Crawl-delay: 1
+
+# Sitemap
+Sitemap: https://www.print3dstudio.it/sitemap.xml
+
+# Google, Bing, Yahoo, DuckDuckGo — nessuna restrizione extra
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
