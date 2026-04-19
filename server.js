@@ -77,6 +77,72 @@ const DEFAULT_DATA = {
   prenotazioni: [],
   catalogo: [],
   recensioni: [],
+  cat_pages: {
+    decorativi: {
+      hero_titolo: 'OGGETTI\nDECORATIVI',
+      hero_sub: 'Statue, vasi, sculture, decorazioni su misura per casa e ufficio. Ogni pezzo è unico — realizzato esattamente come lo immagini tu.',
+      cta_titolo: 'Porta la tua idea\nnella realtà fisica.',
+      features: [
+        { icon: '🎨', titolo: 'Design Personalizzato', desc: 'Partiamo dal tuo file o dalla tua idea. Adattiamo proporzioni, colori e stile al tuo spazio.' },
+        { icon: '✦',  titolo: 'Finiture di Qualità',  desc: 'Strati ultra-fini, superfici lisce, dettagli nitidi. Puoi scegliere finitura grezza, levigata o verniciata.' },
+        { icon: '📦', titolo: 'Imballaggio Sicuro',   desc: 'Ogni oggetto è confezionato con cura per garantire l\'integrità durante il trasporto.' },
+      ],
+      gallery: [
+        { label: 'Sculture Geometriche', foto: '' },
+        { label: 'Vasi & Fioriere',      foto: '' },
+        { label: 'Statue & Busti',       foto: '' },
+        { label: 'Wall Art',             foto: '' },
+      ],
+    },
+    componentistica: {
+      hero_titolo: 'COMPONEN-\nTISTICA',
+      hero_sub: 'Parti di ricambio funzionali, giunti, supporti, bracket e componenti tecnici. Precisione ingegneristica, produzione artigianale.',
+      cta_titolo: 'Hai un progetto\ntecnico in mente?',
+      features: [
+        { icon: '⚙️', titolo: 'Tolleranze Precise',   desc: 'Stampe calibrate per accoppiamenti meccanici. Testato su materiali PLA+, PETG e ABS.' },
+        { icon: '🔩', titolo: 'Materiali Tecnici',    desc: 'Disponibili PETG, ABS, ASA e carbon-filled per applicazioni ad alta resistenza.' },
+        { icon: '📐', titolo: 'File STL o Disegno',   desc: 'Lavoriamo dal tuo file o lo modelliamo noi da un disegno tecnico o foto.' },
+      ],
+      gallery: [
+        { label: 'Supporti & Bracket', foto: '' },
+        { label: 'Giunti & Raccordi',  foto: '' },
+        { label: 'Parti di Ricambio',  foto: '' },
+        { label: 'Enclosure & Cover',  foto: '' },
+      ],
+    },
+    prototipi: {
+      hero_titolo: 'PROTO-\nTIPI',
+      hero_sub: 'Dai vita alla tua invenzione. Dalla concept car al gadget tech, dal pezzo medico al modello architettonico — rapido, preciso, economico.',
+      cta_titolo: 'Dal concept\nal prototipo in giorni.',
+      features: [
+        { icon: '🧪', titolo: 'Iterazione Rapida',    desc: 'Prototipa, testa, correggi. Ogni revisione è veloce e conveniente rispetto alla produzione tradizionale.' },
+        { icon: '📏', titolo: 'Scala 1:1 o in Scala', desc: 'Realizziamo modelli in scala reale o ridotta per presentazioni, test funzionali e pitch.' },
+        { icon: '🚀', titolo: 'Consegna Express',     desc: 'Tempi ridotti grazie a processo ottimizzato. Dal file al prototipo fisico in pochi giorni lavorativi.' },
+      ],
+      gallery: [
+        { label: 'Modelli Architettonici', foto: '' },
+        { label: 'Gadget & Tech',          foto: '' },
+        { label: 'Componenti Medici',      foto: '' },
+        { label: 'Concept Car & Scale',    foto: '' },
+      ],
+    },
+    personalizzati: {
+      hero_titolo: 'PERSONA-\nLIZZATI',
+      hero_sub: 'Regali unici, oggetti su misura, targhe, portachiavi, miniature. Se lo immagini, possiamo stamparlo.',
+      cta_titolo: 'Il tuo oggetto\nunico, su misura.',
+      features: [
+        { icon: '🎁', titolo: 'Regali Originali',     desc: 'Miniature di persone, animali, case o oggetti speciali. Il regalo che non si trova in nessun negozio.' },
+        { icon: '✏️', titolo: 'Il Tuo Testo & Logo',  desc: 'Targhe, porta-nomi, insegne personalizzate con font e colori a tua scelta.' },
+        { icon: '❤️', titolo: 'Edizioni Speciali',    desc: 'Matrimoni, compleanni, nascite: creiamo oggetti commemorativi unici per ogni occasione.' },
+      ],
+      gallery: [
+        { label: 'Miniature Personali', foto: '' },
+        { label: 'Targhe & Insegne',    foto: '' },
+        { label: 'Portachiavi & Pin',   foto: '' },
+        { label: 'Gadget Evento',       foto: '' },
+      ],
+    },
+  },
 };
 
 function readData() {
@@ -101,6 +167,7 @@ function readData() {
     console.log(`${ts()} ${c.yellow}⚙  Settings migrati con nuovi campi${c.reset}`);
   }
   if (!raw.recensioni) { raw.recensioni = []; fs.writeFileSync(DATA_FILE, JSON.stringify(raw, null, 2)); }
+  if (!raw.cat_pages)  { raw.cat_pages  = DEFAULT_DATA.cat_pages; fs.writeFileSync(DATA_FILE, JSON.stringify(raw, null, 2)); }
   return raw;
 }
 
@@ -190,7 +257,7 @@ app.get('/maintenance', (req, res) => {
 // ─── Maintenance middleware ────────────────────────────────
 // Blocca le pagine pubbliche se manutenzione attiva
 // (admin, api, assets statici sempre accessibili)
-const PUBLIC_PAGES = ['/', '/catalogo', '/materiali', '/prenotazione', '/contatti', '/tos', '/recensioni'];
+const PUBLIC_PAGES = ['/', '/catalogo', '/materiali', '/prenotazione', '/contatti', '/tos', '/recensioni', '/decorativi', '/componentistica', '/prototipi', '/personalizzati'];
 
 app.use((req, res, next) => {
   // Salta per admin, api, file statici NON-html, maintenance stessa
@@ -243,14 +310,18 @@ const noCache = (req, res, next) => {
   res.setHeader('Pragma', 'no-cache');
   next();
 };
-app.get('/',             noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/catalogo',     noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'catalogo.html')));
-app.get('/materiali',    noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'materiali.html')));
-app.get('/prenotazione', noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'prenotazione.html')));
-app.get('/contatti',     noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'contatti.html')));
-app.get('/tos',          noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'tos.html')));
-app.get('/admin',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
-app.get('/recensioni',   noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'recensioni.html')));
+app.get('/',                noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/catalogo',        noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'catalogo.html')));
+app.get('/materiali',       noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'materiali.html')));
+app.get('/prenotazione',    noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'prenotazione.html')));
+app.get('/contatti',        noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'contatti.html')));
+app.get('/tos',             noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'tos.html')));
+app.get('/admin',                    (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/recensioni',      noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'recensioni.html')));
+app.get('/decorativi',      noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'decorativi.html')));
+app.get('/componentistica', noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'componentistica.html')));
+app.get('/prototipi',       noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'prototipi.html')));
+app.get('/personalizzati',  noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'personalizzati.html')));
 
 // ─── Public API ────────────────────────────────────────────
 
@@ -650,6 +721,74 @@ app.delete('/api/admin/recensioni/:id', adminAuth, (req, res) => {
 });
 
 
+// ─── API Pagine Categorie (public) ────────────────────────
+app.get('/api/cat-page/:slug', (req, res) => {
+  const { slug } = req.params;
+  const valid = ['decorativi', 'componentistica', 'prototipi', 'personalizzati'];
+  if (!valid.includes(slug)) return res.status(404).json({ error: 'Pagina non trovata' });
+  const data = readData();
+  const page = (data.cat_pages && data.cat_pages[slug]) || DEFAULT_DATA.cat_pages[slug];
+  res.json(page);
+});
+
+// ─── API Pagine Categorie (admin) ──────────────────────────
+app.get('/api/admin/cat-pages', adminAuth, (req, res) => {
+  const data = readData();
+  res.json(data.cat_pages || DEFAULT_DATA.cat_pages);
+});
+
+app.patch('/api/admin/cat-pages/:slug', adminAuth, (req, res) => {
+  const { slug } = req.params;
+  const valid = ['decorativi', 'componentistica', 'prototipi', 'personalizzati'];
+  if (!valid.includes(slug)) return res.status(404).json({ error: 'Slug non valido' });
+  const data = readData();
+  if (!data.cat_pages) data.cat_pages = JSON.parse(JSON.stringify(DEFAULT_DATA.cat_pages));
+  const allowed = ['hero_titolo', 'hero_sub', 'cta_titolo', 'features', 'gallery'];
+  allowed.forEach(k => { if (req.body[k] !== undefined) data.cat_pages[slug][k] = req.body[k]; });
+  writeData(data);
+  console.log(`${ts()} ${c.green}✓  Pagina categoria aggiornata${c.reset} — /${slug}`);
+  res.json({ success: true, page: data.cat_pages[slug] });
+});
+
+// Upload immagine gallery item
+app.post('/api/admin/cat-pages/:slug/gallery/:idx/foto', adminAuth, upload.single('foto'), (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: 'File non valido (max 8MB, JPG/PNG/WEBP/GIF)' });
+  const { slug } = req.params;
+  const idx = parseInt(req.params.idx);
+  const valid = ['decorativi', 'componentistica', 'prototipi', 'personalizzati'];
+  if (!valid.includes(slug)) { fs.unlinkSync(req.file.path); return res.status(404).json({ error: 'Slug non valido' }); }
+  const data = readData();
+  if (!data.cat_pages) data.cat_pages = JSON.parse(JSON.stringify(DEFAULT_DATA.cat_pages));
+  const gallery = data.cat_pages[slug].gallery;
+  if (!gallery || idx < 0 || idx >= gallery.length) { fs.unlinkSync(req.file.path); return res.status(400).json({ error: 'Index non valido' }); }
+  // Elimina vecchia foto
+  if (gallery[idx].foto) {
+    const old = path.join(__dirname, 'public', gallery[idx].foto.replace(/^\//, ''));
+    if (fs.existsSync(old)) try { fs.unlinkSync(old); } catch(e) {}
+  }
+  const fotoUrl = '/uploads/' + req.file.filename;
+  gallery[idx].foto = fotoUrl;
+  writeData(data);
+  console.log(`${ts()} ${c.green}📸  Gallery foto${c.reset} — /${slug}[${idx}]: ${fotoUrl}`);
+  res.json({ success: true, foto: fotoUrl });
+});
+
+app.delete('/api/admin/cat-pages/:slug/gallery/:idx/foto', adminAuth, (req, res) => {
+  const { slug } = req.params;
+  const idx = parseInt(req.params.idx);
+  const data = readData();
+  if (!data.cat_pages || !data.cat_pages[slug]) return res.status(404).json({ error: 'Non trovato' });
+  const gallery = data.cat_pages[slug].gallery;
+  if (!gallery || idx < 0 || idx >= gallery.length) return res.status(400).json({ error: 'Index non valido' });
+  if (gallery[idx].foto) {
+    const fp = path.join(__dirname, 'public', gallery[idx].foto.replace(/^\//, ''));
+    if (fs.existsSync(fp)) try { fs.unlinkSync(fp); } catch(e) {}
+    gallery[idx].foto = '';
+    writeData(data);
+  }
+  res.json({ success: true });
+});
+
 // ─── Auto-disattiva manutenzione al termine del countdown ──
 // Controlla ogni 30s: se maintenance_enabled è true e maintenance_target
 // è nel passato, disattiva automaticamente la manutenzione.
@@ -665,6 +804,16 @@ setInterval(() => {
     console.log(`${ts()} ${c.green}✓  Manutenzione disattivata automaticamente (countdown scaduto)${c.reset}`);
   }
 }, 30_000);
+
+// ─── 404 Handler ───────────────────────────────────────────
+app.use((req, res) => {
+  // API routes restituiscono JSON
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ success: false, message: 'Endpoint non trovato' });
+  }
+  console.log(`${ts()} ${c.yellow}404${c.reset}  ${c.dim}${req.method} ${req.path}${c.reset}`);
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
 
 // ─── Start ─────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;

@@ -23,8 +23,8 @@
     "emailjs_public_key": "",
     "emailjs_owner_email": "",
     "maintenance_enabled": false,
-    "maintenance_target": "2026-04-18T12:03:00.000Z",
-    "maintenance_progress": 64,
+    "maintenance_target": "",
+    "maintenance_progress": 0,
     "maintenance_message": "",
     "maintenance_title": "",
     "maintenance_submsg": "",
@@ -32,5 +32,167 @@
   },
   "prenotazioni": [],
   "catalogo": [],
-  "recensioni": []
+  "recensioni": [],
+  "cat_pages": {
+    "decorativi": {
+      "hero_titolo": "OGGETTI\nDECORATIVI",
+      "hero_sub": "Statue, vasi, sculture, decorazioni su misura per casa e ufficio. Ogni pezzo è unico — realizzato esattamente come lo immagini tu.",
+      "cta_titolo": "Porta la tua idea\nnella realtà fisica.",
+      "features": [
+        {
+          "icon": "🎨",
+          "titolo": "Design Personalizzato",
+          "desc": "Partiamo dal tuo file o dalla tua idea. Adattiamo proporzioni, colori e stile al tuo spazio."
+        },
+        {
+          "icon": "✦",
+          "titolo": "Finiture di Qualità",
+          "desc": "Strati ultra-fini, superfici lisce, dettagli nitidi. Puoi scegliere finitura grezza, levigata o verniciata."
+        },
+        {
+          "icon": "📦",
+          "titolo": "Imballaggio Sicuro",
+          "desc": "Ogni oggetto è confezionato con cura per garantire l'integrità durante il trasporto."
+        }
+      ],
+      "gallery": [
+        {
+          "label": "Sculture Geometriche",
+          "foto": ""
+        },
+        {
+          "label": "Vasi & Fioriere",
+          "foto": ""
+        },
+        {
+          "label": "Statue & Busti",
+          "foto": ""
+        },
+        {
+          "label": "Wall Art",
+          "foto": ""
+        }
+      ]
+    },
+    "componentistica": {
+      "hero_titolo": "COMPONEN-\nTISTICA",
+      "hero_sub": "Parti di ricambio funzionali, giunti, supporti, bracket e componenti tecnici. Precisione ingegneristica, produzione artigianale.",
+      "cta_titolo": "Hai un progetto\ntecnico in mente?",
+      "features": [
+        {
+          "icon": "⚙️",
+          "titolo": "Tolleranze Precise",
+          "desc": "Stampe calibrate per accoppiamenti meccanici. Testato su materiali PLA+, PETG e ABS."
+        },
+        {
+          "icon": "🔩",
+          "titolo": "Materiali Tecnici",
+          "desc": "Disponibili PETG, ABS, ASA e carbon-filled per applicazioni ad alta resistenza."
+        },
+        {
+          "icon": "📐",
+          "titolo": "File STL o Disegno",
+          "desc": "Lavoriamo dal tuo file o lo modelliamo noi da un disegno tecnico o foto."
+        }
+      ],
+      "gallery": [
+        {
+          "label": "Supporti & Bracket",
+          "foto": ""
+        },
+        {
+          "label": "Giunti & Raccordi",
+          "foto": ""
+        },
+        {
+          "label": "Parti di Ricambio",
+          "foto": ""
+        },
+        {
+          "label": "Enclosure & Cover",
+          "foto": ""
+        }
+      ]
+    },
+    "prototipi": {
+      "hero_titolo": "PROTO-\nTIPI",
+      "hero_sub": "Dai vita alla tua invenzione. Dalla concept car al gadget tech, dal pezzo medico al modello architettonico — rapido, preciso, economico.",
+      "cta_titolo": "Dal concept\nal prototipo in giorni.",
+      "features": [
+        {
+          "icon": "🧪",
+          "titolo": "Iterazione Rapida",
+          "desc": "Prototipa, testa, correggi. Ogni revisione è veloce e conveniente rispetto alla produzione tradizionale."
+        },
+        {
+          "icon": "📏",
+          "titolo": "Scala 1:1 o in Scala",
+          "desc": "Realizziamo modelli in scala reale o ridotta per presentazioni, test funzionali e pitch."
+        },
+        {
+          "icon": "🚀",
+          "titolo": "Consegna Express",
+          "desc": "Tempi ridotti grazie a processo ottimizzato. Dal file al prototipo fisico in pochi giorni lavorativi."
+        }
+      ],
+      "gallery": [
+        {
+          "label": "Modelli Architettonici",
+          "foto": ""
+        },
+        {
+          "label": "Gadget & Tech",
+          "foto": ""
+        },
+        {
+          "label": "Componenti Medici",
+          "foto": ""
+        },
+        {
+          "label": "Concept Car & Scale",
+          "foto": ""
+        }
+      ]
+    },
+    "personalizzati": {
+      "hero_titolo": "PERSONA-\nLIZZATI",
+      "hero_sub": "Regali unici, oggetti su misura, targhe, portachiavi, miniature. Se lo immagini, possiamo stamparlo.",
+      "cta_titolo": "Il tuo oggetto\nunico, su misura.",
+      "features": [
+        {
+          "icon": "🎁",
+          "titolo": "Regali Originali",
+          "desc": "Miniature di persone, animali, case o oggetti speciali. Il regalo che non si trova in nessun negozio."
+        },
+        {
+          "icon": "✏️",
+          "titolo": "Il Tuo Testo & Logo",
+          "desc": "Targhe, porta-nomi, insegne personalizzate con font e colori a tua scelta."
+        },
+        {
+          "icon": "❤️",
+          "titolo": "Edizioni Speciali",
+          "desc": "Matrimoni, compleanni, nascite: creiamo oggetti commemorativi unici per ogni occasione."
+        }
+      ],
+      "gallery": [
+        {
+          "label": "Miniature Personali",
+          "foto": ""
+        },
+        {
+          "label": "Targhe & Insegne",
+          "foto": ""
+        },
+        {
+          "label": "Portachiavi & Pin",
+          "foto": ""
+        },
+        {
+          "label": "Gadget Evento",
+          "foto": ""
+        }
+      ]
+    }
+  }
 }
