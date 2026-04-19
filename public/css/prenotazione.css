@@ -335,7 +335,7 @@
   color: var(--gray);
 }
 
-.sidebar-steps li span {
+.sidebar-steps li span:first-child {
   width: 24px; height: 24px;
   background: var(--red);
   display: flex; align-items: center; justify-content: center;
@@ -343,6 +343,16 @@
   font-size: 11px;
   color: #fff;
   flex-shrink: 0;
+}
+
+.sidebar-steps li span:last-child {
+  width: auto; height: auto;
+  background: none;
+  display: inline;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--gray);
+  flex-shrink: 1;
 }
 
 .sidebar-email {
