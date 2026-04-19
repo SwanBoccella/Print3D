@@ -283,9 +283,9 @@
   <div class="gallery-header">
     <div>
       <div class="process-label" data-i18n="catpage.works_label">I Nostri Lavori</div>
-      <h2>Esempi di<br><span id="gallery-h2-accent">produzione</span>.</h2>
+      <h2>Esempi di<br><span id="gallery-h2-accent" data-i18n="catpage.hero_badge2">produzione</span>.</h2>
     </div>
-    <p>Ogni pezzo è stampato su ordinazione. Nessun magazzino, massima qualità.</p>
+    <p data-i18n="catpage.hero_sub2">Ogni pezzo è stampato su ordinazione. Nessun magazzino, massima qualità.</p>
   </div>
   <div class="gallery-grid" id="gallery-grid">
     <div class="gallery-item no-foto"><div class="gallery-item-bg"></div><div class="gallery-item-overlay"></div><div class="gallery-item-inner"><div class="gallery-item-placeholder">◈</div><div class="gallery-item-label skel" style="width:120px;height:10px;"></div></div></div>
@@ -301,10 +301,10 @@
   <div class="process-label" data-i18n="catpage.process_label">Come Funziona</div>
   <h2 class="process-title">Dal concept all'oggetto<br>in 4 passi.</h2>
   <div class="process-steps">
-    <div class="process-step" data-reveal><div class="step-num">01</div><div class="step-title">Descrivi l'idea</div><p class="step-desc">Mandaci il tuo file STL o descrivi l'oggetto che vuoi. Più dettagli hai, meglio è.</p></div>
-    <div class="process-step" data-reveal><div class="step-num">02</div><div class="step-title">Preventivo</div><p class="step-desc">Ricevi un preventivo personalizzato entro 24 ore lavorative, con materiale e tempi.</p></div>
-    <div class="process-step" data-reveal><div class="step-num">03</div><div class="step-title">Stampa</div><p class="step-desc">Avviamo la produzione. Ogni layer è controllato per garantire la qualità finale.</p></div>
-    <div class="process-step" data-reveal><div class="step-num">04</div><div class="step-title">Consegna</div><p class="step-desc">Ritiro diretto o spedizione tracciata. L'oggetto arriva esattamente come l'hai immaginato.</p></div>
+    <div class="process-step" data-reveal><div class="step-num">01</div><div class="step-title" data-i18n="catpage.step1_title2">Descrivi l'idea</div><p data-i18n="catpage.step1_desc2">Mandaci il tuo file STL o descrivi l'oggetto che vuoi. Più dettagli hai, meglio è.</p></div>
+    <div class="process-step" data-reveal><div class="step-num">02</div><div class="step-title" data-i18n="catpage.step2_title2">Preventivo</div><p data-i18n="catpage.step2_desc2">Ricevi un preventivo personalizzato entro 24 ore lavorative, con materiale e tempi.</p></div>
+    <div class="process-step" data-reveal><div class="step-num">03</div><div class="step-title" data-i18n="catpage.step3_title2">Stampa</div><p data-i18n="catpage.step3_desc2">Avviamo la produzione. Ogni layer è controllato per garantire la qualità finale.</p></div>
+    <div class="process-step" data-reveal><div class="step-num">04</div><div class="step-title" data-i18n="catpage.step4_title2">Consegna</div><p data-i18n="catpage.step4_desc2">Ritiro diretto o spedizione tracciata. L'oggetto arriva esattamente come l'hai immaginato.</p></div>
   </div>
 </section>
 
@@ -676,6 +676,8 @@ loadPage();
 
 </script>
 <script src="/js/i18n.js"></script>
+<script src="/js/translate-map.js"></script>
+
 <script>
 // i18n hook per contenuto dinamico caricato via API
 document.addEventListener('p3d:langchange', function(e) {

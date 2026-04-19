@@ -398,7 +398,14 @@
     <div class="tb-dot"></div>
     <span>SISTEMA IN MANUTENZIONE</span>
   </div>
-  <span id="tb-clock">--:--:--</span>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="tb-clock">--:--:--</span>
+    <button id="lang-toggle" class="lang-toggle-btn" aria-label="Switch language" data-lang="it" style="background:none;border:1px solid rgba(255,255,255,.15);color:#f4f4ff;font-family:'Space Mono',monospace;font-size:10px;padding:3px 8px;cursor:pointer;letter-spacing:.05em;border-radius:2px;">
+      <span class="lang-it" style="opacity:1">IT</span>
+      <span style="opacity:.4;margin:0 2px">/</span>
+      <span class="lang-en" style="opacity:.35">EN</span>
+    </button>
+  </div>
 </header>
 
 <!-- Main -->
@@ -413,18 +420,18 @@
 
   <!-- Title -->
   <div class="title-wrap">
-    <div class="eyebrow">SISTEMA TEMPORANEAMENTE OFFLINE</div>
+    <div class="eyebrow" data-i18n="maint.offline">SISTEMA TEMPORANEAMENTE OFFLINE</div>
     <h1 class="main-word" data-t="MANUTENZIONE" id="main-title" data-i18n="maint.badge">MANUTENZIONE</h1>
     <span class="sub-word" id="sub-title" data-i18n="maint.badge2">IN CORSO</span>
     <p class="desc" id="main-desc">
-      Stiamo lavorando per migliorare la vostra esperienza.<br>
-      Torneremo online presto con novità.
+      <span data-i18n="maint.sub1">Stiamo lavorando per migliorare la vostra esperienza.</span><br>
+      <span data-i18n="maint.sub2">Torneremo online presto con novità.</span>
     </p>
   </div>
 
   <!-- Countdown -->
   <div class="cd-wrap">
-    <div class="cd-label">RITORNO STIMATO TRA</div>
+    <div class="cd-label" data-i18n="maint.countdown">RITORNO STIMATO TRA</div>
     <div class="cd-row" id="cd-row">
       <div class="cd-unit">
         <div class="cd-box" id="b-d">
@@ -454,7 +461,7 @@
         <span class="cd-name" data-i18n="maint.secondi">SECONDI</span>
       </div>
     </div>
-    <div class="cd-expired" id="cd-expired">● RIAPERTURA IMMINENTE — REINDIRIZZAMENTO IN CORSO…</div>
+    <div class="cd-expired" id="cd-expired" data-i18n="maint.riapertura">● RIAPERTURA IMMINENTE — REINDIRIZZAMENTO IN CORSO…</div>
   </div>
 
   <!-- Progress -->
@@ -473,8 +480,8 @@
 
   <!-- Message -->
   <div class="msg-wrap">
-    <p class="msg-text" id="msg-text">
-      Il sito è in <strong>manutenzione programmata</strong>. Stiamo aggiornando i sistemi e migliorando le prestazioni. Ci scusiamo per l'inconveniente.
+    <p class="msg-text" id="msg-text" data-i18n="maint.desc">
+      Il sito è in <span>manutenzione programmata</span>. Stiamo aggiornando i sistemi e migliorando le prestazioni. Ci scusiamo per l'inconveniente.
     </p>
   </div>
 
@@ -482,12 +489,12 @@
   <div class="contacts" id="contacts">
     <a class="contact-btn" href="#" id="btn-email">
       <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5l7 5 7-5" stroke="currentColor" stroke-width="1.2"/></svg>
-      <span id="lbl-email">EMAIL</span>
+      <span id="lbl-email" data-i18n="maint.email">EMAIL</span>
     </a>
     <div class="contact-sep"></div>
     <a class="contact-btn" href="#" id="btn-phone">
       <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 2h3l1.5 4-2 1.5a9 9 0 004 4L11 9.5l4 1.5v3c0 .5-.5 1-1 1C6 15 1 10 1 3c0-.5.5-1 1-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-      <span id="lbl-phone">TELEFONO</span>
+      <span id="lbl-phone" data-i18n="maint.telefono">TELEFONO</span>
     </a>
   </div>
 
@@ -498,7 +505,7 @@
   <div class="bot-left">
     <div class="bot-item"><div class="bdot bdot-r"></div><span data-i18n="maint.sito">SITO OFFLINE</span></div>
     <div class="bot-item"><div class="bdot bdot-y"></div><span data-i18n="maint.attiva">MANUTENZIONE ATTIVA</span></div>
-    <div class="bot-item"><div class="bdot bdot-g"></div><span>SERVER OK</span></div>
+    <div class="bot-item"><div class="bdot bdot-g"></div><span data-i18n="maint.server">SERVER OK</span></div>
   </div>
   <span class="bot-right">PRINT3D STUDIO — v16</span>
 </footer>
@@ -508,112 +515,296 @@
    PRINT3D MAINTENANCE PAGE — v16
    ============================================================ */
 
-// ── Background: network mesh ────────────────────────────────
+// ── Background: multi-layer generative animation ─────────────
 ;(function () {
-  const cv  = document.getElementById('cvs-bg');
-  const ctx = cv.getContext('2d');
-  let W, H, nodes = [], frame = 0;
+  const bg  = document.getElementById('cvs-bg');
+  const fg  = document.getElementById('cvs-particles');
+  const bx  = bg.getContext('2d');
+  const fx  = fg.getContext('2d');
+  let W, H, t = 0;
 
-  function resize() {
-    W = cv.width  = window.innerWidth;
-    H = cv.height = window.innerHeight;
-    nodes = [];
-    const n = Math.floor(W * H / 22000);
-    for (let i = 0; i < n; i++) nodes.push({
-      x: Math.random() * W, y: Math.random() * H,
-      vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .3,
-      r: Math.random() * 1.2 + .4, ph: Math.random() * Math.PI * 2,
+  /* ── Shared state ─────────────────────────────── */
+  const R = (a, b) => a + Math.random() * (b - a);
+  const TAU = Math.PI * 2;
+
+  /* ── Layer 1: deep plasma field ───────────────── */
+  let offscreen, oCtx;
+  function buildPlasmaCache() {
+    offscreen = document.createElement('canvas');
+    offscreen.width = 256; offscreen.height = 256;
+    oCtx = offscreen.getContext('2d');
+  }
+  function drawPlasma() {
+    // Animated gradient blobs composited at low opacity
+    oCtx.clearRect(0, 0, 256, 256);
+    const blobs = [
+      { x: 0.3 + 0.22 * Math.sin(t * 0.0008),   y: 0.25 + 0.18 * Math.cos(t * 0.0011),   r: 90,  c: `rgba(180,20,20,` },
+      { x: 0.72 + 0.18 * Math.cos(t * 0.0009),  y: 0.6  + 0.22 * Math.sin(t * 0.0007),   r: 110, c: `rgba(100,0,0,` },
+      { x: 0.5  + 0.25 * Math.sin(t * 0.0006),  y: 0.45 + 0.2  * Math.cos(t * 0.0013),   r: 80,  c: `rgba(220,40,10,` },
+      { x: 0.15 + 0.1  * Math.cos(t * 0.0014),  y: 0.8  + 0.12 * Math.sin(t * 0.001),    r: 70,  c: `rgba(140,10,30,` },
+    ];
+    blobs.forEach(b => {
+      const grd = oCtx.createRadialGradient(b.x*256, b.y*256, 0, b.x*256, b.y*256, b.r);
+      grd.addColorStop(0,   b.c + '0.28)');
+      grd.addColorStop(0.5, b.c + '0.12)');
+      grd.addColorStop(1,   b.c + '0)');
+      oCtx.fillStyle = grd;
+      oCtx.fillRect(0, 0, 256, 256);
     });
+    bx.save();
+    bx.globalAlpha = 0.9;
+    bx.drawImage(offscreen, 0, 0, W, H);
+    bx.restore();
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    frame++;
-    nodes.forEach(n => {
-      n.x += n.vx + Math.sin(frame * .005 + n.ph) * .12;
-      n.y += n.vy + Math.cos(frame * .007 + n.ph) * .1;
-      if (n.x < -20) n.x = W + 20; if (n.x > W + 20) n.x = -20;
-      if (n.y < -20) n.y = H + 20; if (n.y > H + 20) n.y = -20;
-    });
-    const D = 130;
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
-        const d  = Math.sqrt(dx * dx + dy * dy);
-        if (d < D) {
-          ctx.strokeStyle = `rgba(229,62,62,${(1 - d / D) * .11})`;
-          ctx.lineWidth = .5;
-          ctx.beginPath();
-          ctx.moveTo(nodes[i].x, nodes[i].y);
-          ctx.lineTo(nodes[j].x, nodes[j].y);
-          ctx.stroke();
-        }
+  /* ── Layer 2: grid warp ───────────────────────── */
+  function drawGrid() {
+    const cols = 20, rows = 12;
+    const cw = W / cols, rh = H / rows;
+    bx.strokeStyle = 'rgba(229,62,62,0.04)';
+    bx.lineWidth = 0.5;
+    for (let c = 0; c <= cols; c++) {
+      const base = c * cw;
+      const wave = 8 * Math.sin(t * 0.0015 + c * 0.4);
+      bx.beginPath();
+      for (let r = 0; r <= rows; r++) {
+        const y = r * rh;
+        const x = base + wave * Math.sin(r * 0.5 + t * 0.001);
+        r === 0 ? bx.moveTo(x, y) : bx.lineTo(x, y);
       }
+      bx.stroke();
     }
-    nodes.forEach(n => {
-      const p = Math.sin(frame * .035 + n.ph) * .5 + .5;
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(229,62,62,${.06 + p * .1})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
+    for (let r = 0; r <= rows; r++) {
+      const base = r * rh;
+      const wave = 6 * Math.cos(t * 0.0012 + r * 0.5);
+      bx.beginPath();
+      for (let c = 0; c <= cols; c++) {
+        const x = c * cw;
+        const y = base + wave * Math.cos(c * 0.4 + t * 0.0009);
+        c === 0 ? bx.moveTo(x, y) : bx.lineTo(x, y);
+      }
+      bx.stroke();
+    }
   }
 
-  window.addEventListener('resize', resize);
-  resize(); draw();
-})();
+  /* ── Layer 3: sine wave ribbons ───────────────── */
+  const WAVES = [
+    { freq: 0.008, amp: 0.12, speed: 0.0012, phase: 0,    y: 0.3, col: 'rgba(229,62,62,', w: 1.2 },
+    { freq: 0.005, amp: 0.09, speed: 0.0008, phase: 1.2,  y: 0.5, col: 'rgba(180,40,40,', w: 0.8 },
+    { freq: 0.011, amp: 0.07, speed: 0.0018, phase: 2.4,  y: 0.7, col: 'rgba(255,80,60,', w: 0.6 },
+    { freq: 0.006, amp: 0.15, speed: 0.0007, phase: 3.6,  y: 0.2, col: 'rgba(200,30,20,', w: 1.0 },
+    { freq: 0.009, amp: 0.06, speed: 0.0022, phase: 0.8,  y: 0.85, col: 'rgba(240,60,40,', w: 0.5 },
+  ];
+  function drawWaves() {
+    WAVES.forEach(w => {
+      const baseY = H * w.y;
+      bx.beginPath();
+      for (let x = 0; x <= W; x += 2) {
+        const y = baseY + Math.sin(x * w.freq + t * w.speed + w.phase) * H * w.amp
+                        + Math.sin(x * w.freq * 1.7 + t * w.speed * 0.6) * H * w.amp * 0.3;
+        x === 0 ? bx.moveTo(x, y) : bx.lineTo(x, y);
+      }
+      const opacity = 0.08 + 0.04 * Math.sin(t * 0.002 + w.phase);
+      bx.strokeStyle = w.col + opacity + ')';
+      bx.lineWidth = w.w;
+      bx.stroke();
+    });
+  }
 
-// ── Particles: floating geometry ───────────────────────────
-;(function () {
-  const cv  = document.getElementById('cvs-particles');
-  const ctx = cv.getContext('2d');
-  let W, H, pts = [], frame = 0;
+  /* ── Layer 4: orbital ring system ─────────────── */
+  const ORBITS = [
+    { cx: 0.5, cy: 0.5,  rx: 0.38, ry: 0.14, speed: 0.0006, phase: 0,    tilt: 0.3 },
+    { cx: 0.5, cy: 0.5,  rx: 0.28, ry: 0.10, speed: -0.0009, phase: 1.0, tilt: -0.5 },
+    { cx: 0.5, cy: 0.5,  rx: 0.48, ry: 0.18, speed: 0.0004, phase: 2.1,  tilt: 0.8 },
+  ];
+  function drawOrbits() {
+    ORBITS.forEach(o => {
+      bx.save();
+      bx.translate(o.cx * W, o.cy * H);
+      bx.rotate(o.tilt);
+      bx.scale(1, o.ry / o.rx);
+      bx.beginPath();
+      bx.arc(0, 0, o.rx * W, 0, TAU);
+      const pulse = 0.06 + 0.03 * Math.sin(t * 0.003 + o.phase);
+      bx.strokeStyle = `rgba(229,62,62,${pulse})`;
+      bx.lineWidth = 0.7;
+      bx.stroke();
+      // Dot on orbit
+      const angle = t * o.speed + o.phase;
+      const dx = Math.cos(angle) * o.rx * W;
+      const dy = Math.sin(angle) * o.rx * W * (o.ry / o.rx);
+      bx.restore();
+      // Draw dot in screen space
+      const sx = o.cx * W + Math.cos(angle + o.tilt) * o.rx * W - Math.sin(angle + o.tilt) * o.ry * H * 0;
+      const sy = o.cy * H + Math.sin(angle) * o.ry * H;
+      const grd = bx.createRadialGradient(o.cx*W + dx, o.cy*H + dy, 0, o.cx*W + dx, o.cy*H + dy, 8);
+      grd.addColorStop(0, 'rgba(255,80,60,0.9)');
+      grd.addColorStop(1, 'rgba(229,62,62,0)');
+      bx.beginPath();
+      bx.arc(o.cx*W + dx, o.cy*H + dy, 8, 0, TAU);
+      bx.fillStyle = grd;
+      bx.fill();
+    });
+  }
 
-  function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+  /* ── Layer 5: laser scan lines ────────────────── */
+  let scanY = 0, scanSpeed = 0.6;
+  function drawScan() {
+    scanY += scanSpeed;
+    if (scanY > H) scanY = 0;
+    const g = bx.createLinearGradient(0, scanY - 60, 0, scanY + 60);
+    g.addColorStop(0,   'rgba(229,62,62,0)');
+    g.addColorStop(0.4, 'rgba(229,62,62,0.04)');
+    g.addColorStop(0.5, 'rgba(229,62,62,0.12)');
+    g.addColorStop(0.6, 'rgba(229,62,62,0.04)');
+    g.addColorStop(1,   'rgba(229,62,62,0)');
+    bx.fillStyle = g;
+    bx.fillRect(0, scanY - 60, W, 120);
+    // thin bright line
+    bx.fillStyle = `rgba(255,100,80,${0.1 + 0.08 * Math.sin(t * 0.04)})`;
+    bx.fillRect(0, scanY - 0.5, W, 1);
+  }
 
-  function spawn(random) {
+  /* ── Foreground: particle system ─────────────── */
+  const PCOUNT = 55;
+  const parts  = [];
+  function spawnPart(init) {
     return {
-      x: random ? Math.random() * (W||800) : (W||800) * .5,
-      y: random ? Math.random() * (H||600) : (H||600) + 20,
-      sz: Math.random() * 5 + 2,
-      vx: (Math.random() - .5) * .5,
-      vy: -(Math.random() * .7 + .25),
-      a: Math.random() * .35 + .05,
-      rot: Math.random() * Math.PI * 2,
-      rv: (Math.random() - .5) * .018,
-      sq: Math.random() > .45,
-      life: 0, max: 360 + Math.random() * 280,
+      x:    init ? R(0, W||1200) : R(0.1, 0.9) * (W||1200),
+      y:    init ? R(0, H||800)  : (H||800) + 10,
+      vx:   R(-0.4, 0.4),
+      vy:   R(-0.8, -0.25),
+      size: R(1.5, 5),
+      alpha:R(0.1, 0.45),
+      rot:  R(0, TAU),
+      rv:   R(-0.02, 0.02),
+      life: init ? R(0, 200) : 0,
+      max:  R(220, 480),
+      type: Math.random() > 0.5 ? 'hex' : (Math.random() > 0.5 ? 'sq' : 'cross'),
+      pulse: R(0, TAU),
     };
   }
+  for (let i = 0; i < PCOUNT; i++) parts.push(spawnPart(true));
 
-  const COUNT = 18;
-  resize();
-  for (let i = 0; i < COUNT; i++) pts.push(spawn(true));
+  function drawHex(ctx, x, y, r) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * TAU - Math.PI / 6;
+      i === 0 ? ctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a))
+              : ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
+    }
+    ctx.closePath();
+  }
 
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    frame++;
-    pts.forEach((p, i) => {
-      p.x += p.vx; p.y += p.vy; p.rot += p.rv; p.life++;
+  function drawParts() {
+    fx.clearRect(0, 0, W, H);
+    parts.forEach((p, i) => {
+      p.x += p.vx + Math.sin(t * 0.002 + p.pulse) * 0.3;
+      p.y += p.vy;
+      p.rot += p.rv;
+      p.life++;
       if (p.life > p.max || p.y < -30) {
-        pts[i] = spawn(false);
-        pts[i].x = Math.random() * W;
+        parts[i] = spawnPart(false);
+        parts[i].x = R(0, W);
         return;
       }
       const r = p.life / p.max;
-      const a = p.a * Math.min(r * 8, 1) * (1 - Math.max((r - .7) / .3, 0));
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-      ctx.globalAlpha = a; ctx.strokeStyle = '#e53e3e'; ctx.lineWidth = .7;
-      if (p.sq) ctx.strokeRect(-p.sz / 2, -p.sz / 2, p.sz, p.sz);
-      else { ctx.beginPath(); ctx.arc(0, 0, p.sz / 2, 0, Math.PI * 2); ctx.stroke(); }
-      ctx.restore();
+      const a = p.alpha * Math.min(r * 6, 1) * (1 - Math.max((r - 0.75) / 0.25, 0));
+      const pulse = 0.7 + 0.3 * Math.sin(t * 0.025 + p.pulse);
+      fx.save();
+      fx.translate(p.x, p.y);
+      fx.rotate(p.rot);
+      fx.globalAlpha = a * pulse;
+      fx.strokeStyle = '#e53e3e';
+      fx.lineWidth = 0.8;
+      if (p.type === 'hex') {
+        drawHex(fx, 0, 0, p.size);
+        fx.stroke();
+        // inner glow dot
+        fx.globalAlpha = a * pulse * 0.5;
+        fx.fillStyle = 'rgba(255,80,60,0.6)';
+        fx.beginPath(); fx.arc(0, 0, p.size * 0.25, 0, TAU); fx.fill();
+      } else if (p.type === 'sq') {
+        fx.strokeRect(-p.size/2, -p.size/2, p.size, p.size);
+        fx.globalAlpha = a * pulse * 0.3;
+        fx.fillStyle = 'rgba(229,62,62,0.2)';
+        fx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+      } else {
+        fx.beginPath();
+        fx.moveTo(-p.size, 0); fx.lineTo(p.size, 0);
+        fx.moveTo(0, -p.size); fx.lineTo(0, p.size);
+        fx.stroke();
+      }
+      fx.restore();
     });
-    requestAnimationFrame(draw);
+  }
+
+  /* ── Floating data glitch strings ────────────── */
+  const GLYPHS  = '0123456789ABCDEF01アイウエオ⬡◈⬢';
+  const dataStr = [];
+  for (let i = 0; i < 8; i++) dataStr.push({
+    x: R(0.05, 0.95), y: R(0, 1),
+    vy: R(0.0002, 0.0008),
+    chars: Array.from({length: R(4,10)|0}, () => GLYPHS[Math.floor(Math.random()*GLYPHS.length)]),
+    alpha: R(0.03, 0.09),
+    tick: 0, tickMax: R(18, 60)|0,
+    fontSize: R(8, 13)|0,
+  });
+  function drawDataStr() {
+    dataStr.forEach(s => {
+      s.y += s.vy;
+      if (s.y > 1.1) s.y = -0.1;
+      s.tick++;
+      if (s.tick >= s.tickMax) {
+        s.tick = 0;
+        const idx = Math.floor(Math.random() * s.chars.length);
+        s.chars[idx] = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      }
+      fx.save();
+      fx.font = `${s.fontSize}px 'Space Mono', monospace`;
+      fx.fillStyle = `rgba(229,62,62,${s.alpha})`;
+      fx.globalAlpha = 1;
+      s.chars.forEach((c, ci) => {
+        fx.fillText(c, s.x * W, s.y * H + ci * (s.fontSize + 3));
+      });
+      fx.restore();
+    });
+  }
+
+  /* ── Vignette overlay ─────────────────────────── */
+  function drawVignette() {
+    const grd = bx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, H*0.85);
+    grd.addColorStop(0, 'rgba(0,0,0,0)');
+    grd.addColorStop(1, 'rgba(0,0,0,0.72)');
+    bx.fillStyle = grd;
+    bx.fillRect(0, 0, W, H);
+  }
+
+  /* ── Resize ───────────────────────────────────── */
+  function resize() {
+    W = bg.width = fg.width = window.innerWidth;
+    H = bg.height = fg.height = window.innerHeight;
+  }
+
+  /* ── Main loop ────────────────────────────────── */
+  function loop() {
+    t++;
+    bx.clearRect(0, 0, W, H);
+    drawPlasma();
+    drawGrid();
+    drawWaves();
+    drawOrbits();
+    drawScan();
+    drawVignette();
+    drawParts();
+    drawDataStr();
+    requestAnimationFrame(loop);
   }
 
   window.addEventListener('resize', resize);
-  draw();
+  resize();
+  buildPlasmaCache();
+  loop();
 })();
 
 // ── Clock ───────────────────────────────────────────────────
@@ -767,5 +958,6 @@ boot();
 startPollRedirect();
 </script>
 <script src="/js/i18n.js"></script>
+<script src="/js/translate-map.js"></script>
 </body>
 </html>

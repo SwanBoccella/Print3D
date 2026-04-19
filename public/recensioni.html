@@ -791,8 +791,8 @@
 <section class="rec-hero" data-reveal>
   <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <div class="rec-hero-label" data-i18n="rec.label">Opinioni Verificate</div>
-  <h1>Cosa dicono<br>i <span>nostri clienti</span>.</h1>
-  <p class="rec-hero-sub">Ogni recensione è autentica. Leggi le esperienze di chi ha già stampato con noi, o condividi la tua.</p>
+  <h1>Cosa dicono<br>i <span data-i18n="rec.title_nostri">nostri clienti</span>.</h1>
+  <p data-i18n="rec.sub2">Ogni recensione è autentica. Leggi le esperienze di chi ha già stampato con noi, o condividi la tua.</p>
 </section>
 
 <!-- AGGREGATE SCORE -->
@@ -807,7 +807,7 @@
       <span class="agg-star">★</span>
       <span class="agg-star">★</span>
     </div>
-    <div class="agg-label" id="agg-count">0 recensioni</div>
+    <div class="agg-label" id="agg-count" data-i18n="rec.zero">0 recensioni</div>
   </div>
   <div class="rec-agg-cell">
     <div class="rec-dist" id="rec-dist">
@@ -834,8 +834,8 @@
   <canvas id="form-canvas" aria-hidden="true"></canvas>
   <div class="rec-form-inner">
     <div class="rec-hero-label" style="animation:none;" data-i18n="rec.form_label">Lascia il tuo feedback</div>
-    <h2 class="rec-form-title">La tua <span>esperienza</span><br>conta.</h2>
-    <p class="rec-form-sub">— Hai già ordinato con noi? Raccontaci com'è andata.</p>
+    <h2 class="rec-form-title">La tua <span data-i18n="rec.esperienza">esperienza</span><br>conta.</h2>
+    <p class="rec-form-sub"><span data-i18n="rec.form_intro">— Hai già ordinato con noi? Raccontaci com'è andata.</span></p>
 
     <div id="rec-form-wrap">
       <!-- STARS -->
@@ -875,9 +875,9 @@
           <div class="rec-error" id="err-nome"></div>
         </div>
         <div class="rec-field">
-          <label for="rec-email">Email</label>
+          <label for="rec-email" data-i18n="rec.email_label2">Email</label>
           <input type="email" id="rec-email" placeholder="mario@email.it (non pubblicata)" autocomplete="off">
-          <span class="field-hint">Non verrà mostrata pubblicamente</span>
+          <span class="field-hint" data-i18n="rec.email_note2">Non verrà mostrata pubblicamente</span>
         </div>
         <div class="rec-field full">
           <label for="rec-title" data-i18n="rec.titolo_label">Titolo *</label>
@@ -898,20 +898,20 @@
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/>
           </svg>
         </button>
-        <span class="rec-submit-note">Soggetta a moderazione prima<br>della pubblicazione</span>
+        <span class="rec-submit-note" data-i18n="rec.moderation2">Soggetta a moderazione prima<br>della pubblicazione</span>
       </div>
 
       <div class="rec-success" id="rec-success">
         <span class="rec-success-icon">✓</span>
         <div>
           <h4 data-i18n="rec.success_title">Recensione Inviata!</h4>
-          <p>Grazie per il tuo feedback. Sarà pubblicata dopo la moderazione (di solito entro 24h).</p>
+          <p data-i18n="rec.moderation2">Grazie per il tuo feedback. Sarà pubblicata dopo la moderazione (di solito entro 24h).</p>
         </div>
       </div>
 
       <div class="rec-pending-note">
         <span>🔒</span>
-        <p>Le recensioni vengono verificate prima della pubblicazione per garantire autenticità e rispetto delle linee guida.</p>
+        <p data-i18n="rec.verify2">Le recensioni vengono verificate prima della pubblicazione per garantire autenticità e rispetto delle linee guida.</p>
       </div>
     </div>
   </div>
@@ -923,7 +923,7 @@
   <div class="rec-list-header">
     <div>
       <div class="rec-hero-label" style="animation:none; margin-bottom:8px;" data-i18n="rec.list_label">Tutte le recensioni</div>
-      <h2 class="rec-list-title">Voci <span>autentiche</span>.</h2>
+      <h2 class="rec-list-title">Voci <span data-i18n="rec.autentiche">autentiche</span>.</h2>
     </div>
     <div class="rec-controls">
       <button class="rec-sort-btn active" data-sort="recenti" data-i18n="rec.sort_recent">Recenti</button>
@@ -982,13 +982,13 @@
   <div class="footer-col">
     <h4 data-i18n="footer.nav_title">Navigazione</h4>
     <ul>
-      <li><a href="/">Home</a></li>
-      <li><a href="/catalogo">Catalogo</a></li>
-      <li><a href="/materiali">Materiali</a></li>
+      <li><a href="/" data-i18n="nav.home">Home</a></li>
+      <li><a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a></li>
+      <li><a href="/materiali" data-i18n="nav.materiali">Materiali</a></li>
       <li><a href="/prenotazione" data-i18n="footer.prenotazione">Prenotazione</a></li>
-      <li><a href="/recensioni">Recensioni</a></li>
-      <li><a href="/contatti">Contatti</a></li>
-      <li><a href="/tos">Termini &amp; Privacy</a></li>
+      <li><a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a></li>
+      <li><a href="/contatti" data-i18n="nav.contatti">Contatti</a></li>
+      <li><a href="/tos" data-i18n="footer.termini">Termini &amp; Privacy</a></li>
     </ul>
   </div>
   <div class="footer-col">
@@ -1292,7 +1292,7 @@ document.getElementById('rec-submit-btn').addEventListener('click', async () => 
       successEl.classList.add('visible');
       gsap.fromTo(successEl, { opacity:0, y:20 }, { opacity:1, y:0, duration:0.6, ease:'power3.out' });
       gsap.to('#rec-form-wrap', { opacity:0.4, pointerEvents:'none', duration:0.4 });
-      showToast('✓ Recensione inviata — in attesa di moderazione', 'success');
+      showToast('✓ ' + (window.P3Di18n && window.P3Di18n.lang() === 'en' ? 'Review submitted — pending moderation' : 'Recensione inviata — in attesa di moderazione'), 'success');
     } else {
       showToast('✗ Errore: ' + (data.error || 'riprovare'), 'error');
       btn.disabled = false;
@@ -1400,7 +1400,7 @@ function renderCard(r, delay = 0) {
         <div class="rec-card-meta">${r.categoria || ''}</div>
         <div class="rec-card-stars">${renderStars(r.stelle)}</div>
       </div>
-      ${r.verificata ? '<span class="rec-verified">Verificato</span>' : ''}
+      ${r.verificata ? `<span class="rec-verified">${window.P3Di18n ? window.P3Di18n.t('rec.verificato') : 'Verificato'}</span>` : ''}
     </div>
     <div class="rec-card-title">${r.titolo}</div>
     <div class="rec-card-body">${r.testo}</div>
@@ -1990,5 +1990,7 @@ if (loadMoreBtn) {
 })();
 </script>
 <script src="/js/i18n.js"></script>
+<script src="/js/translate-map.js"></script>
+
 </body>
 </html>

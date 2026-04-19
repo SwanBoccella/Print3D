@@ -53,8 +53,8 @@
   <canvas id="booking-canvas"></canvas>
   <div class="page-header-content">
     <div class="section-label" style="justify-content:center; margin-bottom:16px;" data-i18n="pre.label">Inizia il processo</div>
-    <h1 class="page-header-title">Prenota<br><span>la tua stampa.</span></h1>
-    <p class="page-header-sub">Compila il modulo — rispondiamo entro 24 ore con preventivo.</p>
+    <h1 class="page-header-title">Prenota<br><span data-i18n="pre.title_span2">la tua stampa.</span></h1>
+    <p class="page-header-sub" data-i18n="pre.sub2">Compila il modulo — rispondiamo entro 24 ore con preventivo.</p>
   </div>
 </header>
 
@@ -159,7 +159,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="note">Descrizione dettagliata, file disponibili, preferenze</label>
+              <label for="note" data-i18n="pre.note_label">Descrizione dettagliata, file disponibili, preferenze</label>
               <textarea id="note" name="note" placeholder="Hai un file .STL o .OBJ? Misure specifiche? Qualsiasi dettaglio è utile..." rows="4"></textarea>
               <div class="field-line"></div>
             </div>
@@ -193,22 +193,22 @@
           <div class="sidebar-card-label" data-i18n="pre.info1_label">Tempi di risposta</div>
           <div class="sidebar-stat">
             <span class="stat-big">24h</span>
-            <span class="stat-desc">risposta con preventivo</span>
+            <span class="stat-desc" data-i18n="pre.risposta">risposta con preventivo</span>
           </div>
         </div>
 
         <div class="sidebar-card">
           <div class="sidebar-card-label" data-i18n="pre.info2_label">Come funziona</div>
           <ol class="sidebar-steps">
-            <li><span>1</span> Compili il modulo</li>
-            <li><span>2</span> Ricevi preventivo via email</li>
-            <li><span>3</span> Approvi e iniziamo</li>
-            <li><span>4</span> Oggetto pronto in 2–7gg</li>
+            <li><span>1</span> <span data-i18n="pre.how1">Compili il modulo</span></li>
+            <li><span>2</span> <span data-i18n="pre.how2">Ricevi preventivo via email</span></li>
+            <li><span>3</span> <span data-i18n="pre.how3">Approvi e iniziamo</span></li>
+            <li><span>4</span> <span data-i18n="pre.how4">Oggetto pronto in 2–7gg</span></li>
           </ol>
         </div>
 
         <div class="sidebar-card">
-          <div class="sidebar-card-label">Contatto diretto</div>
+          <div class="sidebar-card-label" data-i18n="pre.direct_title">Contatto diretto</div>
           <a href="mailto:swanboccella@gmail.com" class="sidebar-email">
             swanboccella<br>@gmail.com
           </a>
@@ -216,7 +216,7 @@
 
         <div class="sidebar-card sidebar-card--red">
           <div class="sidebar-card-label" data-i18n="pre.mat_label">Materiale standard</div>
-          <p>PLA — disponibile in oltre 30 colori. Su richiesta è possibile valutare materiali alternativi.</p>
+          <p data-i18n="pre.mat_pla_desc">PLA — disponibile in oltre 30 colori. Su richiesta è possibile valutare materiali alternativi.</p>
         </div>
       </aside>
 
@@ -234,7 +234,7 @@
       </svg>
     </div>
     <h2 data-i18n="pre.success_title">Prenotazione Inviata!</h2>
-    <p>Abbiamo ricevuto la tua richiesta.<br>Riceverai risposta entro 24 ore.</p><p style="color:#e53e3e;font-size:13px;letter-spacing:1px;margin-top:8px;">ID: <strong id="booking-id">—</strong></p>
+    <p><span data-i18n="pre.success_sub">Abbiamo ricevuto la tua richiesta.</span><br><span data-i18n="pre.success_desc">Riceverai risposta entro 24 ore.</span></p><p style="color:#e53e3e;font-size:13px;letter-spacing:1px;margin-top:8px;">ID: <strong id="booking-id">—</strong></p>
     <a href="/" class="btn-primary" style="margin-top:24px; display:inline-flex;" data-i18n="pre.back_home">Torna alla Home</a>
   </div>
 </div>
@@ -245,13 +245,13 @@
   <div class="footer-col">
     <h4 data-i18n="footer.nav_title">Navigazione</h4>
     <ul>
-      <li><a href="/">Home</a></li>
-      <li><a href="/catalogo">Catalogo</a></li>
-      <li><a href="/materiali">Materiali</a></li>
+      <li><a href="/" data-i18n="nav.home">Home</a></li>
+      <li><a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a></li>
+      <li><a href="/materiali" data-i18n="nav.materiali">Materiali</a></li>
       <li><a href="/prenotazione" data-i18n="footer.prenotazione">Prenotazione</a></li>
-      <li><a href="/recensioni">Recensioni</a></li>
-      <li><a href="/contatti">Contatti</a></li>
-      <li><a href="/tos">Termini &amp; Privacy</a></li>
+      <li><a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a></li>
+      <li><a href="/contatti" data-i18n="nav.contatti">Contatti</a></li>
+      <li><a href="/tos" data-i18n="footer.termini">Termini &amp; Privacy</a></li>
     </ul>
   </div>
   <div class="footer-col">
@@ -268,5 +268,7 @@
 <script src="/js/global.js"></script>
 <script src="/js/prenotazione.js"></script>
 <script src="/js/i18n.js"></script>
+<script src="/js/translate-map.js"></script>
+
 </body>
 </html>

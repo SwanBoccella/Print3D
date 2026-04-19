@@ -270,6 +270,11 @@
     <span id="hud-time">—</span>
     <span style="color:var(--red)">ERR:404</span>
     <span>FDM v3.6.2</span>
+    <button id="lang-toggle" class="lang-toggle-btn" aria-label="Switch language" data-lang="it" style="background:none;border:1px solid rgba(200,200,255,0.18);color:var(--text);font-family:var(--font-mono);font-size:10px;padding:4px 10px;cursor:pointer;letter-spacing:.08em;border-radius:2px;transition:border-color .2s;">
+      <span class="lang-it" style="opacity:1;letter-spacing:.05em;">IT</span>
+      <span style="opacity:.3;margin:0 4px;">|</span>
+      <span class="lang-en" style="opacity:.35;letter-spacing:.05em;">EN</span>
+    </button>
   </div>
 </div>
 
@@ -285,7 +290,7 @@
 </div>
 
 <div id="root">
-  <div class="layer-badge">// ERRORE DI STAMPA — STRATO NON TROVATO</div>
+  <div class="layer-badge" data-i18n="404.err">// ERRORE DI STAMPA — STRATO NON TROVATO</div>
 
   <div class="giant-wrap">
     <div class="giant-404">404</div>
@@ -297,7 +302,7 @@
     <div class="subtitle-main" data-i18n="404.title">STRATO MANCANTE</div>
     <div class="subtitle-sub">
       <span data-i18n="404.sub">La pagina che cerchi non è mai stata estrusa.</span><br>
-      <span class="ac">PATH_NOT_FOUND</span> — il materiale è esaurito a questo livello.
+      <span class="ac">PATH_NOT_FOUND</span> <span data-i18n="404.desc">— il materiale è esaurito a questo livello.</span>
     </div>
   </div>
 
@@ -322,10 +327,10 @@
         <path d="M5 1L1 5L5 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
         <path d="M1 5H9"       stroke="white" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
-      TORNA ALL'INIZIO
+      <span data-i18n="404.home">TORNA ALL'INIZIO</span>
     </a>
-    <a href="/catalogo" class="btn btn--g">CATALOGO</a>
-    <a href="/contatti" class="btn btn--g">CONTATTI</a>
+    <a href="/catalogo" class="btn btn--g" data-i18n="nav.catalogo">CATALOGO</a>
+    <a href="/contatti" class="btn btn--g" data-i18n="nav.contatti">CONTATTI</a>
     <a href="javascript:location.reload()" class="btn btn--g" data-i18n="404.refresh">↺ AGGIORNA</a>
   </div>
 </div>
@@ -573,5 +578,6 @@ function draw(){
 draw();
 </script>
 <script src="/js/i18n.js"></script>
+<script src="/js/translate-map.js"></script>
 </body>
 </html>
