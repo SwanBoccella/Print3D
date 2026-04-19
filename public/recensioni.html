@@ -752,33 +752,45 @@
     <img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" />
     PRINT<span>3D</span>
   </a>
-  <ul class="nav-links">
-    <li><a href="/">Home</a></li>
-    <li><a href="/catalogo">Catalogo</a></li>
-    <li><a href="/materiali">Materiali</a></li>
-    <li><a href="/recensioni" class="active">Recensioni</a></li>
-    <li><a href="/tos">T&amp;C</a></li>
-    <li><a href="/contatti">Contatti</a></li>
-    <li><a href="/prenotazione" class="nav-cta">Prenota</a></li>
+    <ul class="nav-links">
+    <li><a href="/" data-i18n="nav.home">Home</a></li>
+    <li><a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a></li>
+    <li><a href="/materiali" data-i18n="nav.materiali">Materiali</a></li>
+    <li><a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a></li>
+    <li><a href="/tos" data-i18n="nav.tc">T&amp;C</a></li>
+    <li><a href="/contatti" data-i18n="nav.contatti">Contatti</a></li>
+    <li><a href="/prenotazione" class="nav-cta" data-i18n="nav.prenota">Prenota</a></li>
   </ul>
+  <div class="nav-right">
+  <button id="lang-toggle" class="lang-toggle-btn" aria-label="Switch language" data-lang="it">
+    <span class="lang-it" style="opacity:1">IT</span>
+    <span class="lang-sep">|</span>
+    <span class="lang-en" style="opacity:0.35">EN</span>
+  </button>
   <button class="nav-toggle" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
+  </div>
 </nav>
 <div class="nav-mobile">
-  <a href="/">Home</a>
-  <a href="/catalogo">Catalogo</a>
-  <a href="/materiali">Materiali</a>
-  <a href="/recensioni">Recensioni</a>
-  <a href="/tos">Termini &amp; Privacy</a>
-  <a href="/contatti">Contatti</a>
-  <a href="/prenotazione">Prenota ora</a>
+  <a href="/" data-i18n="nav.home">Home</a>
+  <a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a>
+  <a href="/materiali" data-i18n="nav.materiali">Materiali</a>
+  <a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a>
+  <a href="/tos" data-i18n="nav.termini">Termini &amp; Privacy</a>
+  <a href="/contatti" data-i18n="nav.contatti">Contatti</a>
+  <a href="/prenotazione" data-i18n="nav.prenota_mobile">Prenota ora</a>
+  <button id="lang-toggle-mobile" class="lang-toggle-btn" aria-label="Switch language" data-lang="it" style="margin-top:8px">
+    <span class="lang-it" style="opacity:1">IT</span>
+    <span class="lang-sep">|</span>
+    <span class="lang-en" style="opacity:0.35">EN</span>
+  </button>
 </div>
 
 <!-- HERO -->
 <section class="rec-hero" data-reveal>
   <canvas id="hero-canvas" aria-hidden="true"></canvas>
-  <div class="rec-hero-label">Opinioni Verificate</div>
+  <div class="rec-hero-label" data-i18n="rec.label">Opinioni Verificate</div>
   <h1>Cosa dicono<br>i <span>nostri clienti</span>.</h1>
   <p class="rec-hero-sub">Ogni recensione è autentica. Leggi le esperienze di chi ha già stampato con noi, o condividi la tua.</p>
 </section>
@@ -808,7 +820,7 @@
   </div>
   <div class="rec-agg-cell" style="gap:20px;">
     <div style="text-align:center;">
-      <div class="agg-label" style="margin-bottom:8px;">Consiglierebbero</div>
+      <div class="agg-label" style="margin-bottom:8px;" data-i18n="rec.consiglio">Consiglierebbero</div>
       <div class="agg-num" id="agg-recommend">—<span>%</span></div>
     </div>
     <a href="#scrivi-recensione" class="btn-rec-submit" style="padding:12px 28px; font-size:10px; text-decoration:none;">
@@ -821,14 +833,14 @@
 <section class="rec-form-section" id="scrivi-recensione">
   <canvas id="form-canvas" aria-hidden="true"></canvas>
   <div class="rec-form-inner">
-    <div class="rec-hero-label" style="animation:none;">Lascia il tuo feedback</div>
+    <div class="rec-hero-label" style="animation:none;" data-i18n="rec.form_label">Lascia il tuo feedback</div>
     <h2 class="rec-form-title">La tua <span>esperienza</span><br>conta.</h2>
     <p class="rec-form-sub">— Hai già ordinato con noi? Raccontaci com'è andata.</p>
 
     <div id="rec-form-wrap">
       <!-- STARS -->
       <div>
-        <div class="star-selector-label">La tua valutazione *</div>
+        <div class="star-selector-label" data-i18n="rec.voto_label">La tua valutazione *</div>
         <div style="display:flex; align-items:center;">
           <div class="star-selector" id="star-selector">
             <button type="button" class="star-btn" data-v="1" aria-label="1 stella">★</button>
@@ -844,13 +856,13 @@
 
       <!-- CATEGORY -->
       <div style="margin-bottom:20px;">
-        <div class="star-selector-label" style="margin-bottom:10px;">Tipo di ordine *</div>
+        <div class="star-selector-label" style="margin-bottom:10px;" data-i18n="rec.tipo_label">Tipo di ordine *</div>
         <div class="rec-category-grid" id="rec-category-grid">
-          <button type="button" class="rec-cat-btn" data-cat="Oggetto Decorativo">Oggetto Decorativo</button>
+          <button type="button" class="rec-cat-btn" data-cat="Oggetto Decorativo" data-i18n="rec.tipo1">Oggetto Decorativo</button>
           <button type="button" class="rec-cat-btn" data-cat="Componentistica">Componentistica</button>
-          <button type="button" class="rec-cat-btn" data-cat="Prototipo">Prototipo</button>
-          <button type="button" class="rec-cat-btn" data-cat="Personalizzato">Personalizzato</button>
-          <button type="button" class="rec-cat-btn" data-cat="Altro">Altro</button>
+          <button type="button" class="rec-cat-btn" data-cat="Prototipo" data-i18n="rec.tipo3">Prototipo</button>
+          <button type="button" class="rec-cat-btn" data-cat="Personalizzato" data-i18n="rec.tipo4">Personalizzato</button>
+          <button type="button" class="rec-cat-btn" data-cat="Altro" data-i18n="rec.tipo5">Altro</button>
         </div>
         <div class="rec-error" id="err-cat"></div>
       </div>
@@ -858,7 +870,7 @@
       <!-- FIELDS -->
       <div class="rec-fields">
         <div class="rec-field">
-          <label for="rec-nome">Nome *</label>
+          <label for="rec-nome" data-i18n="rec.nome_label">Nome *</label>
           <input type="text" id="rec-nome" placeholder="Mario R." maxlength="50" autocomplete="off">
           <div class="rec-error" id="err-nome"></div>
         </div>
@@ -868,12 +880,12 @@
           <span class="field-hint">Non verrà mostrata pubblicamente</span>
         </div>
         <div class="rec-field full">
-          <label for="rec-title">Titolo *</label>
+          <label for="rec-title" data-i18n="rec.titolo_label">Titolo *</label>
           <input type="text" id="rec-title" placeholder="Es. Qualità eccezionale, consegna veloce" maxlength="80">
           <div class="rec-error" id="err-title"></div>
         </div>
         <div class="rec-field full">
-          <label for="rec-body">Recensione *</label>
+          <label for="rec-body" data-i18n="rec.testo_label">Recensione *</label>
           <textarea id="rec-body" placeholder="Racconta la tua esperienza in dettaglio..." maxlength="800"></textarea>
           <div class="rec-error" id="err-body"></div>
         </div>
@@ -881,7 +893,7 @@
 
       <div class="rec-submit">
         <button class="btn-rec-submit" id="rec-submit-btn" type="button">
-          <span>Invia Recensione</span>
+          <span data-i18n="rec.submit">Invia Recensione</span>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/>
           </svg>
@@ -892,7 +904,7 @@
       <div class="rec-success" id="rec-success">
         <span class="rec-success-icon">✓</span>
         <div>
-          <h4>Recensione Inviata!</h4>
+          <h4 data-i18n="rec.success_title">Recensione Inviata!</h4>
           <p>Grazie per il tuo feedback. Sarà pubblicata dopo la moderazione (di solito entro 24h).</p>
         </div>
       </div>
@@ -910,19 +922,19 @@
   <canvas id="list-canvas" aria-hidden="true"></canvas>
   <div class="rec-list-header">
     <div>
-      <div class="rec-hero-label" style="animation:none; margin-bottom:8px;">Tutte le recensioni</div>
+      <div class="rec-hero-label" style="animation:none; margin-bottom:8px;" data-i18n="rec.list_label">Tutte le recensioni</div>
       <h2 class="rec-list-title">Voci <span>autentiche</span>.</h2>
     </div>
     <div class="rec-controls">
-      <button class="rec-sort-btn active" data-sort="recenti">Recenti</button>
-      <button class="rec-sort-btn" data-sort="migliori">Migliori</button>
-      <button class="rec-sort-btn" data-sort="peggiori">Peggiori</button>
+      <button class="rec-sort-btn active" data-sort="recenti" data-i18n="rec.sort_recent">Recenti</button>
+      <button class="rec-sort-btn" data-sort="migliori" data-i18n="rec.sort_best">Migliori</button>
+      <button class="rec-sort-btn" data-sort="peggiori" data-i18n="rec.sort_worst">Peggiori</button>
     </div>
   </div>
 
   <!-- FILTER BY STARS -->
   <div style="padding:0 48px; margin-bottom:32px; display:flex; gap:8px; flex-wrap:wrap;">
-    <button class="rec-cat-btn active" data-filter="all">Tutte le stelle</button>
+    <button class="rec-cat-btn active" data-filter="all" data-i18n="rec.filter_all">Tutte le stelle</button>
     <button class="rec-cat-btn" data-filter="5">★★★★★</button>
     <button class="rec-cat-btn" data-filter="4">★★★★☆</button>
     <button class="rec-cat-btn" data-filter="3">★★★☆☆</button>
@@ -956,7 +968,7 @@
   </div>
 
   <div class="rec-load-more" id="rec-load-more" style="display:none;">
-    <button class="btn-load-more" id="btn-load-more">Carica altre recensioni</button>
+    <button class="btn-load-more" id="btn-load-more" data-i18n="rec.load_more">Carica altre recensioni</button>
   </div>
 </section>
 
@@ -965,30 +977,30 @@
   <canvas id="footer-canvas" aria-hidden="true"></canvas>
   <div class="footer-brand">
     PRINT<span>3D</span>
-    <p>Stampa 3D artigianale<br>su prenotazione</p>
+    <p data-i18n="footer.tagline">Stampa 3D artigianale<br>su prenotazione</p>
   </div>
   <div class="footer-col">
-    <h4>Navigazione</h4>
+    <h4 data-i18n="footer.nav_title">Navigazione</h4>
     <ul>
       <li><a href="/">Home</a></li>
       <li><a href="/catalogo">Catalogo</a></li>
       <li><a href="/materiali">Materiali</a></li>
-      <li><a href="/prenotazione">Prenotazione</a></li>
+      <li><a href="/prenotazione" data-i18n="footer.prenotazione">Prenotazione</a></li>
       <li><a href="/recensioni">Recensioni</a></li>
       <li><a href="/contatti">Contatti</a></li>
       <li><a href="/tos">Termini &amp; Privacy</a></li>
     </ul>
   </div>
   <div class="footer-col">
-    <h4>Contatti</h4>
+    <h4 data-i18n="footer.contatti_h">Contatti</h4>
     <p>
       <a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br>
-      Risposta entro 24 ore.<br>
-      Disponibile Lun–Sab.
+      <span data-i18n="footer.risposta">Risposta entro 24 ore.</span><br>
+      <span data-i18n="footer.disponibile">Disponibile Lun–Sab.</span>
     </p>
   </div>
   <div class="footer-bottom">
-    <p>2025-2026 &copy; Print3D Studio — Tutti i diritti riservati</p>
+    <p><span data-i18n="footer.copyright">2025-2026 &copy; Print3D Studio — Tutti i diritti riservati</span></p>
     <a href="/tos" style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--subtle);text-decoration:none;transition:color 0.25s ease;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--subtle)'">Termini &amp; Privacy</a>
   </div>
 </footer>
@@ -1977,5 +1989,6 @@ if (loadMoreBtn) {
 
 })();
 </script>
+<script src="/js/i18n.js"></script>
 </body>
 </html>

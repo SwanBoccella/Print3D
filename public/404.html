@@ -294,9 +294,9 @@
   </div>
 
   <div class="subtitle-wrap">
-    <div class="subtitle-main">STRATO MANCANTE</div>
+    <div class="subtitle-main" data-i18n="404.title">STRATO MANCANTE</div>
     <div class="subtitle-sub">
-      La pagina che cerchi non è mai stata estrusa.<br>
+      <span data-i18n="404.sub">La pagina che cerchi non è mai stata estrusa.</span><br>
       <span class="ac">PATH_NOT_FOUND</span> — il materiale è esaurito a questo livello.
     </div>
   </div>
@@ -326,7 +326,7 @@
     </a>
     <a href="/catalogo" class="btn btn--g">CATALOGO</a>
     <a href="/contatti" class="btn btn--g">CONTATTI</a>
-    <a href="javascript:location.reload()" class="btn btn--g">↺ AGGIORNA</a>
+    <a href="javascript:location.reload()" class="btn btn--g" data-i18n="404.refresh">↺ AGGIORNA</a>
   </div>
 </div>
 
@@ -572,5 +572,6 @@ function draw(){
 }
 draw();
 </script>
+<script src="/js/i18n.js"></script>
 </body>
 </html>

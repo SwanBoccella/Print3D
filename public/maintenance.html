@@ -414,8 +414,8 @@
   <!-- Title -->
   <div class="title-wrap">
     <div class="eyebrow">SISTEMA TEMPORANEAMENTE OFFLINE</div>
-    <h1 class="main-word" data-t="MANUTENZIONE" id="main-title">MANUTENZIONE</h1>
-    <span class="sub-word" id="sub-title">IN CORSO</span>
+    <h1 class="main-word" data-t="MANUTENZIONE" id="main-title" data-i18n="maint.badge">MANUTENZIONE</h1>
+    <span class="sub-word" id="sub-title" data-i18n="maint.badge2">IN CORSO</span>
     <p class="desc" id="main-desc">
       Stiamo lavorando per migliorare la vostra esperienza.<br>
       Torneremo online presto con novità.
@@ -430,28 +430,28 @@
         <div class="cd-box" id="b-d">
           <div class="cd-flip" id="f-d"><span class="cur" id="n-d">00</span></div>
         </div>
-        <span class="cd-name">GIORNI</span>
+        <span class="cd-name" data-i18n="maint.giorni">GIORNI</span>
       </div>
       <span class="cd-colon">:</span>
       <div class="cd-unit">
         <div class="cd-box" id="b-h">
           <div class="cd-flip" id="f-h"><span class="cur" id="n-h">00</span></div>
         </div>
-        <span class="cd-name">ORE</span>
+        <span class="cd-name" data-i18n="maint.ore">ORE</span>
       </div>
       <span class="cd-colon">:</span>
       <div class="cd-unit">
         <div class="cd-box" id="b-m">
           <div class="cd-flip" id="f-m"><span class="cur" id="n-m">00</span></div>
         </div>
-        <span class="cd-name">MINUTI</span>
+        <span class="cd-name" data-i18n="maint.minuti">MINUTI</span>
       </div>
       <span class="cd-colon">:</span>
       <div class="cd-unit">
         <div class="cd-box" id="b-s">
           <div class="cd-flip" id="f-s"><span class="cur" id="n-s">00</span></div>
         </div>
-        <span class="cd-name">SECONDI</span>
+        <span class="cd-name" data-i18n="maint.secondi">SECONDI</span>
       </div>
     </div>
     <div class="cd-expired" id="cd-expired">● RIAPERTURA IMMINENTE — REINDIRIZZAMENTO IN CORSO…</div>
@@ -460,7 +460,7 @@
   <!-- Progress -->
   <div class="prog-wrap">
     <div class="prog-head">
-      <span>AVANZAMENTO LAVORI</span>
+      <span data-i18n="maint.progress">AVANZAMENTO LAVORI</span>
       <span id="prog-pct">0%</span>
     </div>
     <div class="prog-track">
@@ -496,8 +496,8 @@
 <!-- Bottom bar -->
 <footer class="botbar">
   <div class="bot-left">
-    <div class="bot-item"><div class="bdot bdot-r"></div><span>SITO OFFLINE</span></div>
-    <div class="bot-item"><div class="bdot bdot-y"></div><span>MANUTENZIONE ATTIVA</span></div>
+    <div class="bot-item"><div class="bdot bdot-r"></div><span data-i18n="maint.sito">SITO OFFLINE</span></div>
+    <div class="bot-item"><div class="bdot bdot-y"></div><span data-i18n="maint.attiva">MANUTENZIONE ATTIVA</span></div>
     <div class="bot-item"><div class="bdot bdot-g"></div><span>SERVER OK</span></div>
   </div>
   <span class="bot-right">PRINT3D STUDIO — v16</span>
@@ -766,5 +766,6 @@ boot();
 // l'utente viene reindirizzato automaticamente alla homepage.
 startPollRedirect();
 </script>
+<script src="/js/i18n.js"></script>
 </body>
 </html>

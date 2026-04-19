@@ -318,27 +318,39 @@
     <img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" />
     PRINT<span>3D</span>
   </a>
-  <ul class="nav-links">
-    <li><a href="/">Home</a></li>
-    <li><a href="/catalogo">Catalogo</a></li>
-    <li><a href="/materiali">Materiali</a></li>
-    <li><a href="/recensioni">Recensioni</a></li>
-    <li><a href="/tos">T&amp;C</a></li>
-    <li><a href="/contatti">Contatti</a></li>
-    <li><a href="/prenotazione" class="nav-cta">Prenota</a></li>
+    <ul class="nav-links">
+    <li><a href="/" data-i18n="nav.home">Home</a></li>
+    <li><a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a></li>
+    <li><a href="/materiali" data-i18n="nav.materiali">Materiali</a></li>
+    <li><a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a></li>
+    <li><a href="/tos" data-i18n="nav.tc">T&amp;C</a></li>
+    <li><a href="/contatti" data-i18n="nav.contatti">Contatti</a></li>
+    <li><a href="/prenotazione" class="nav-cta" data-i18n="nav.prenota">Prenota</a></li>
   </ul>
+  <div class="nav-right">
+  <button id="lang-toggle" class="lang-toggle-btn" aria-label="Switch language" data-lang="it">
+    <span class="lang-it" style="opacity:1">IT</span>
+    <span class="lang-sep">|</span>
+    <span class="lang-en" style="opacity:0.35">EN</span>
+  </button>
   <button class="nav-toggle" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
+  </div>
 </nav>
 <div class="nav-mobile">
-  <a href="/">Home</a>
-  <a href="/catalogo">Catalogo</a>
-  <a href="/materiali">Materiali</a>
-  <a href="/recensioni">Recensioni</a>
-  <a href="/tos">Termini &amp; Privacy</a>
-  <a href="/contatti">Contatti</a>
-  <a href="/prenotazione">Prenota ora</a>
+  <a href="/" data-i18n="nav.home">Home</a>
+  <a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a>
+  <a href="/materiali" data-i18n="nav.materiali">Materiali</a>
+  <a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a>
+  <a href="/tos" data-i18n="nav.termini">Termini &amp; Privacy</a>
+  <a href="/contatti" data-i18n="nav.contatti">Contatti</a>
+  <a href="/prenotazione" data-i18n="nav.prenota_mobile">Prenota ora</a>
+  <button id="lang-toggle-mobile" class="lang-toggle-btn" aria-label="Switch language" data-lang="it" style="margin-top:8px">
+    <span class="lang-it" style="opacity:1">IT</span>
+    <span class="lang-sep">|</span>
+    <span class="lang-en" style="opacity:0.35">EN</span>
+  </button>
 </div>
 
 <!-- HERO -->
@@ -348,13 +360,13 @@
   <div class="hero-content">
     <div class="hero-badge">
       <span class="hero-badge-dot"></span>
-      <span>Stampa 3D su prenotazione</span>
+      <span data-i18n="index.hero_badge">Stampa 3D su prenotazione</span>
     </div>
 
     <h1 class="hero-title">
-      <span class="hero-line" data-line="1">DAL FILE</span>
-      <span class="hero-line hero-line--red" data-line="2">ALL'OGGETTO</span>
-      <span class="hero-line" data-line="3">REALE.</span>
+      <span class="hero-line" data-line="1" data-i18n="index.hero_line1">DAL FILE</span>
+      <span class="hero-line hero-line--red" data-line="2" data-i18n="index.hero_line2">ALL'OGGETTO</span>
+      <span class="hero-line" data-line="3" data-i18n="index.hero_line3">REALE.</span>
     </h1>
 
     <p class="hero-sub">
@@ -364,12 +376,12 @@
 
     <div class="hero-actions">
       <a href="/prenotazione" class="btn-primary" data-magnetic>
-        <span>Prenota Ora</span>
+        <span data-i18n="index.hero_cta1">Prenota Ora</span>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/>
         </svg>
       </a>
-      <a href="/catalogo" class="btn-ghost">Vedi il Catalogo</a>
+      <a href="/catalogo" class="btn-ghost" data-i18n="index.hero_cta2">Vedi il Catalogo</a>
     </div>
 
     <div class="hero-scroll-hint">
@@ -414,30 +426,30 @@
 <!-- STATS TICKER -->
 <div class="ticker-bar">
   <div class="ticker-inner">
-    <span>⬡ STAMPA FDM</span>
+    <span data-i18n="index.ticker1">⬡ STAMPA FDM</span>
     <span class="ticker-sep">—</span>
     <span>⬡ PLA & PLA+</span>
     <span class="ticker-sep">—</span>
-    <span>⬡ SU PRENOTAZIONE</span>
+    <span data-i18n="index.ticker2">⬡ SU PRENOTAZIONE</span>
     <span class="ticker-sep">—</span>
     <span>⬡ LAYER 0.1–0.3mm</span>
     <span class="ticker-sep">—</span>
-    <span>⬡ QUALSIASI FORMA</span>
+    <span data-i18n="index.ticker3">⬡ QUALSIASI FORMA</span>
     <span class="ticker-sep">—</span>
-    <span>⬡ CONSEGNA RAPIDA</span>
+    <span data-i18n="index.ticker4">⬡ CONSEGNA RAPIDA</span>
     <span class="ticker-sep">—</span>
     <!-- repeat -->
-    <span>⬡ STAMPA FDM</span>
+    <span data-i18n="index.ticker1">⬡ STAMPA FDM</span>
     <span class="ticker-sep">—</span>
     <span>⬡ PLA & PLA+</span>
     <span class="ticker-sep">—</span>
-    <span>⬡ SU PRENOTAZIONE</span>
+    <span data-i18n="index.ticker2">⬡ SU PRENOTAZIONE</span>
     <span class="ticker-sep">—</span>
     <span>⬡ LAYER 0.1–0.3mm</span>
     <span class="ticker-sep">—</span>
-    <span>⬡ QUALSIASI FORMA</span>
+    <span data-i18n="index.ticker3">⬡ QUALSIASI FORMA</span>
     <span class="ticker-sep">—</span>
-    <span>⬡ CONSEGNA RAPIDA</span>
+    <span data-i18n="index.ticker4">⬡ CONSEGNA RAPIDA</span>
     <span class="ticker-sep">—</span>
   </div>
 </div>
@@ -446,7 +458,7 @@
 <section class="process section-pad">
   <canvas id="process-canvas" aria-hidden="true"></canvas>
   <div class="container">
-    <div class="section-label" data-reveal>Come Funziona</div>
+    <div class="section-label" data-reveal data-i18n="index.process_label">Come Funziona</div>
     <h2 class="section-title" data-reveal data-delay="0.1">
       Tre passi verso<br>il tuo oggetto.
     </h2>
@@ -603,30 +615,30 @@
   <canvas id="footer-canvas" aria-hidden="true"></canvas>
   <div class="footer-brand">
     PRINT<span>3D</span>
-    <p>Stampa 3D artigianale<br>su prenotazione</p>
+    <p data-i18n="footer.tagline">Stampa 3D artigianale<br>su prenotazione</p>
   </div>
   <div class="footer-col">
-    <h4>Navigazione</h4>
+    <h4 data-i18n="footer.nav_title">Navigazione</h4>
     <ul>
       <li><a href="/">Home</a></li>
       <li><a href="/catalogo">Catalogo</a></li>
       <li><a href="/materiali">Materiali</a></li>
-      <li><a href="/prenotazione">Prenotazione</a></li>
+      <li><a href="/prenotazione" data-i18n="footer.prenotazione">Prenotazione</a></li>
       <li><a href="/recensioni">Recensioni</a></li>
       <li><a href="/contatti">Contatti</a></li>
       <li><a href="/tos">Termini &amp; Privacy</a></li>
     </ul>
   </div>
   <div class="footer-col">
-    <h4>Contatti</h4>
+    <h4 data-i18n="footer.contatti_h">Contatti</h4>
     <p>
       <a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br>
-      Risposta entro 24 ore.<br>
-      Disponibile Lun–Sab.
+      <span data-i18n="footer.risposta">Risposta entro 24 ore.</span><br>
+      <span data-i18n="footer.disponibile">Disponibile Lun–Sab.</span>
     </p>
   </div>
   <div class="footer-bottom">
-    <p>2025-2026 &copy; Print3D Studio — Tutti i diritti riservati</p>
+    <p><span data-i18n="footer.copyright">2025-2026 &copy; Print3D Studio — Tutti i diritti riservati</span></p>
     <a href="/tos" style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--subtle);text-decoration:none;transition:color 0.25s ease;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--subtle)'">Termini &amp; Privacy</a>
   </div>
 </footer>
@@ -909,5 +921,6 @@
 
 })();
 </script>
+<script src="/js/i18n.js"></script>
 </body>
 </html>

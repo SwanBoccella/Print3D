@@ -222,31 +222,43 @@
     <img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img">
     PRINT<span>3D</span>
   </a>
-  <ul class="nav-links">
-    <li><a href="/">Home</a></li>
-    <li><a href="/catalogo">Catalogo</a></li>
-    <li><a href="/materiali">Materiali</a></li>
-    <li><a href="/recensioni">Recensioni</a></li>
-    <li><a href="/tos">T&amp;C</a></li>
-    <li><a href="/contatti">Contatti</a></li>
-    <li><a href="/prenotazione" class="nav-cta">Prenota</a></li>
+    <ul class="nav-links">
+    <li><a href="/" data-i18n="nav.home">Home</a></li>
+    <li><a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a></li>
+    <li><a href="/materiali" data-i18n="nav.materiali">Materiali</a></li>
+    <li><a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a></li>
+    <li><a href="/tos" data-i18n="nav.tc">T&amp;C</a></li>
+    <li><a href="/contatti" data-i18n="nav.contatti">Contatti</a></li>
+    <li><a href="/prenotazione" class="nav-cta" data-i18n="nav.prenota">Prenota</a></li>
   </ul>
+  <div class="nav-right">
+  <button id="lang-toggle" class="lang-toggle-btn" aria-label="Switch language" data-lang="it">
+    <span class="lang-it" style="opacity:1">IT</span>
+    <span class="lang-sep">|</span>
+    <span class="lang-en" style="opacity:0.35">EN</span>
+  </button>
   <button class="nav-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
 </nav>
 <div class="nav-mobile">
-  <a href="/">Home</a>
-  <a href="/catalogo">Catalogo</a>
-  <a href="/materiali">Materiali</a>
-  <a href="/recensioni">Recensioni</a>
-  <a href="/tos">Termini &amp; Privacy</a>
-  <a href="/contatti">Contatti</a>
-  <a href="/prenotazione">Prenota ora</a>
+  <a href="/" data-i18n="nav.home">Home</a>
+  <a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a>
+  <a href="/materiali" data-i18n="nav.materiali">Materiali</a>
+  <a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a>
+  <a href="/tos" data-i18n="nav.termini">Termini &amp; Privacy</a>
+  <a href="/contatti" data-i18n="nav.contatti">Contatti</a>
+  <a href="/prenotazione" data-i18n="nav.prenota_mobile">Prenota ora</a>
+  <button id="lang-toggle-mobile" class="lang-toggle-btn" aria-label="Switch language" data-lang="it" style="margin-top:8px">
+    <span class="lang-it" style="opacity:1">IT</span>
+    <span class="lang-sep">|</span>
+    <span class="lang-en" style="opacity:0.35">EN</span>
+  </button>
 </div>
 
 <!-- HERO -->
 <section class="cat-hero" id="hero">
   <canvas id="hero-canvas" aria-hidden="true"></canvas>
-  <div class="cat-hero-label">Categoria</div>
+  <div class="cat-hero-label" data-i18n="catpage.label">Categoria</div>
   <div class="cat-hero-icon" id="hero-icon">◈</div>
   <h1 id="hero-h1"><span class="skel" style="display:inline-block;width:260px;height:80px;"></span></h1>
   <p class="cat-hero-sub" id="hero-sub"></p>
@@ -255,7 +267,7 @@
       Richiedi un Preventivo
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5"/></svg>
     </a>
-    <a href="/catalogo" class="btn-ghost">Vedi il Catalogo →</a>
+    <a href="/catalogo" class="btn-ghost" data-i18n="catpage.cta_cat">Vedi il Catalogo →</a>
   </div>
 </section>
 
@@ -270,7 +282,7 @@
 <section class="gallery-section">
   <div class="gallery-header">
     <div>
-      <div class="process-label">I Nostri Lavori</div>
+      <div class="process-label" data-i18n="catpage.works_label">I Nostri Lavori</div>
       <h2>Esempi di<br><span id="gallery-h2-accent">produzione</span>.</h2>
     </div>
     <p>Ogni pezzo è stampato su ordinazione. Nessun magazzino, massima qualità.</p>
@@ -286,7 +298,7 @@
 <!-- PROCESS -->
 <section class="process-section">
   <canvas id="process-canvas" aria-hidden="true"></canvas>
-  <div class="process-label">Come Funziona</div>
+  <div class="process-label" data-i18n="catpage.process_label">Come Funziona</div>
   <h2 class="process-title">Dal concept all'oggetto<br>in 4 passi.</h2>
   <div class="process-steps">
     <div class="process-step" data-reveal><div class="step-num">01</div><div class="step-title">Descrivi l'idea</div><p class="step-desc">Mandaci il tuo file STL o descrivi l'oggetto che vuoi. Più dettagli hai, meglio è.</p></div>
@@ -299,7 +311,7 @@
 <!-- CTA -->
 <div class="cat-cta">
   <div class="cat-cta-text">
-    <div class="label">Pronto a Iniziare?</div>
+    <div class="label" data-i18n="catpage.cta_ready">Pronto a Iniziare?</div>
     <h2 id="cta-h2"><span class="skel" style="display:inline-block;width:320px;height:52px;"></span></h2>
   </div>
   <a href="/prenotazione" class="btn-primary" style="font-size:12px; padding:18px 44px;">
@@ -311,20 +323,20 @@
   <canvas id="footer-canvas" aria-hidden="true"></canvas>
   <div class="footer-brand">PRINT<span>3D</span><p>Stampa 3D artigianale<br>su prenotazione</p></div>
   <div class="footer-col">
-    <h4>Categorie</h4>
+    <h4 data-i18n="footer.categorie">Categorie</h4>
     <ul>
-      <li><a href="/decorativi">Oggetti Decorativi</a></li>
-      <li><a href="/componentistica">Componentistica</a></li>
-      <li><a href="/prototipi">Prototipi</a></li>
-      <li><a href="/personalizzati">Personalizzati</a></li>
+      <li><a href="/decorativi" data-i18n="footer.decorativi">Oggetti Decorativi</a></li>
+      <li><a href="/componentistica" data-i18n="footer.componentistica">Componentistica</a></li>
+      <li><a href="/prototipi" data-i18n="footer.prototipi">Prototipi</a></li>
+      <li><a href="/personalizzati" data-i18n="footer.personalizzati">Personalizzati</a></li>
     </ul>
   </div>
   <div class="footer-col">
     <h4>Contatti</h4>
-    <p><a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br>Risposta entro 24 ore.<br>Disponibile Lun–Sab.</p>
+    <p><a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br><span data-i18n="footer.risposta">Risposta entro 24 ore.</span><br><span data-i18n="footer.disponibile">Disponibile Lun–Sab.</span></p>
   </div>
   <div class="footer-bottom">
-    <p>2025-2026 &copy; Print3D Studio — Tutti i diritti riservati</p>
+    <p><span data-i18n="footer.copyright">2025-2026 &copy; Print3D Studio — Tutti i diritti riservati</span></p>
     <a href="/tos" style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--subtle);text-decoration:none;">Termini &amp; Privacy</a>
   </div>
 </footer>
@@ -655,6 +667,14 @@ loadPage();
 
 })();
 
+</script>
+<script src="/js/i18n.js"></script>
+<script>
+// i18n hook per contenuto dinamico caricato via API
+document.addEventListener('p3d:langchange', function(e) {
+  // Ri-applica le traduzioni dopo il cambio lingua
+  if (window.P3Di18n) window.P3Di18n.apply();
+});
 </script>
 </body>
 </html>

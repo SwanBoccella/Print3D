@@ -512,9 +512,12 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <div class="sidebar-logo-text">PRINT<span>3D</span></div>
-      <div class="sidebar-logo-sub">ADMIN PANEL</div>
+    <div class="sidebar-logo" style="position:relative;overflow:hidden;">
+      <canvas id="sidebar-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.55;"></canvas>
+      <div style="position:relative;z-index:1;">
+        <div class="sidebar-logo-text">PRINT<span>3D</span></div>
+        <div class="sidebar-logo-sub">ADMIN PANEL</div>
+      </div>
     </div>
     <nav>
       <div class="nav-item active" data-panel="dashboard">
@@ -556,7 +559,8 @@
 
   <!-- MAIN -->
   <main class="main">
-    <div class="topbar">
+    <div class="topbar" style="position:relative;overflow:hidden;">
+      <canvas id="topbar-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.4;"></canvas>
       <div class="topbar-left">
         <button class="hamburger" id="hamburger-btn" aria-label="Menu">
           <span></span><span></span><span></span>
@@ -572,6 +576,9 @@
 
       <!-- DASHBOARD -->
       <div class="panel active" id="panel-dashboard">
+        <div style="position:relative;overflow:hidden;border-radius:var(--radius);margin-bottom:0;">
+          <canvas id="dashboard-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.18;border-radius:var(--radius);"></canvas>
+          <div style="position:relative;z-index:1;">
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-label">TOTALE</div>
@@ -611,6 +618,8 @@
             <div class="stat-sub">Da moderare →</div>
           </div>
         </div>
+          </div><!-- /canvas z-index wrapper -->
+        </div><!-- /canvas container -->
         <div class="table-wrap" style="margin-top:24px">
           <div class="table-header">
             <span class="table-header-title">ULTIME PRENOTAZIONI</span>
@@ -1158,9 +1167,10 @@
 <!-- MODAL CATALOGO -->
 <div class="modal-bg" id="modal-cat">
   <div class="modal">
-    <div class="modal-head">
-      <h3 id="modal-cat-title">ARTICOLO</h3>
-      <button class="modal-close" data-close="modal-cat">×</button>
+    <div class="modal-head" style="position:relative;overflow:hidden;">
+      <canvas id="modal-cat-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.35;"></canvas>
+      <h3 id="modal-cat-title" style="position:relative;z-index:1;">ARTICOLO</h3>
+      <button class="modal-close" data-close="modal-cat" style="position:relative;z-index:1;">×</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
@@ -1664,10 +1674,193 @@ function openCatModal(item = null) {
     img.src = '';
     lbl.textContent = 'Clicca per caricare una foto (JPG, PNG, WEBP — max 8MB)';
   }
+  // Reset autofill flags on new article
+  clearTimeout(_descTimer);
+  if (!item) {
+    document.getElementById('cat-svg').dataset.userEdited  = '';
+    document.getElementById('cat-desc').dataset.userEdited = '';
+    // SVG subito visibile appena si apre il modal su nuovo articolo
+    setTimeout(() => applySvgForCategoria(document.getElementById('cat-cat').value), 0);
+  }
   openModal('modal-cat');
 }
 document.getElementById('cat-large-toggle').addEventListener('click', () => { catLarge = !catLarge; document.getElementById('cat-large-t').className = 'toggle' + (catLarge ? ' on' : ''); });
 document.getElementById('btn-new-cat').addEventListener('click', () => openCatModal());
+
+// ── Autofill SVG + Descrizione in base al nome articolo ──────────────────
+const SVG_LIBRARY = {
+  vaso:        `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="82" rx="22" ry="8" stroke="currentColor" stroke-width="2.5"/><path d="M28 82 C24 60 20 40 30 25 Q50 10 70 25 C80 40 76 60 72 82" stroke="currentColor" stroke-width="2.5" fill="none"/><ellipse cx="50" cy="26" rx="20" ry="7" stroke="currentColor" stroke-width="2" opacity=".5"/></svg>`,
+  statua:      `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="18" r="10" stroke="currentColor" stroke-width="2.5"/><path d="M50 28 L50 60" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M30 42 L70 42" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M50 60 L38 82 M50 60 L62 82" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><rect x="30" y="86" width="40" height="6" rx="2" stroke="currentColor" stroke-width="2"/></svg>`,
+  scultura:    `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,10 80,40 70,80 30,80 20,40" stroke="currentColor" stroke-width="2.5" fill="none"/><polygon points="50,25 68,45 62,68 38,68 32,45" stroke="currentColor" stroke-width="1.5" opacity=".5" fill="none"/><circle cx="50" cy="50" r="6" stroke="currentColor" stroke-width="2"/></svg>`,
+  busto:       `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="22" r="14" stroke="currentColor" stroke-width="2.5"/><path d="M28 78 C28 55 36 44 50 40 C64 44 72 55 72 78" stroke="currentColor" stroke-width="2.5" fill="none"/><line x1="25" y1="86" x2="75" y2="86" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><rect x="32" y="86" width="36" height="8" rx="2" stroke="currentColor" stroke-width="2"/></svg>`,
+  fioriera:    `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M25 40 L32 82 L68 82 L75 40 Z" stroke="currentColor" stroke-width="2.5" fill="none"/><line x1="20" y1="40" x2="80" y2="40" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M50 40 C50 30 42 22 42 14 M50 40 C50 28 58 18 62 10 M50 40 C44 32 34 30 28 26" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".7"/></svg>`,
+  cornice:     `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="3" stroke="currentColor" stroke-width="2.5"/><rect x="20" y="20" width="60" height="60" rx="2" stroke="currentColor" stroke-width="1.5" opacity=".5"/><path d="M10 10 L20 20 M90 10 L80 20 M10 90 L20 80 M90 90 L80 80" stroke="currentColor" stroke-width="2"/></svg>`,
+  lampada:     `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M35 55 Q30 30 50 20 Q70 30 65 55 Z" stroke="currentColor" stroke-width="2.5" fill="none"/><line x1="40" y1="55" x2="60" y2="55" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="50" y1="55" x2="50" y2="75" stroke="currentColor" stroke-width="2.5"/><ellipse cx="50" cy="78" rx="16" ry="5" stroke="currentColor" stroke-width="2"/><path d="M36 32 Q28 28 24 20 M64 32 Q72 28 76 20" stroke="currentColor" stroke-width="1.5" opacity=".5" stroke-linecap="round"/></svg>`,
+  portacandela:`<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="32" y="45" width="36" height="42" rx="4" stroke="currentColor" stroke-width="2.5"/><ellipse cx="50" cy="45" rx="18" ry="6" stroke="currentColor" stroke-width="2"/><line x1="50" y1="45" x2="50" y2="26" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M50 26 C48 20 44 18 46 13 C48 10 52 10 54 13 C56 18 52 20 50 26" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
+  portachiavi: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="38" r="22" stroke="currentColor" stroke-width="2.5"/><circle cx="50" cy="38" r="12" stroke="currentColor" stroke-width="2"/><line x1="50" y1="60" x2="50" y2="85" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="50" cy="90" r="5" stroke="currentColor" stroke-width="2"/></svg>`,
+  portapenne:  `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="28" y="35" width="44" height="52" rx="4" stroke="currentColor" stroke-width="2.5"/><ellipse cx="50" cy="35" rx="22" ry="8" stroke="currentColor" stroke-width="2"/><line x1="40" y1="35" x2="40" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="50" y1="35" x2="50" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="60" y1="35" x2="60" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  portafoto:   `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="18" y="12" width="64" height="76" rx="3" stroke="currentColor" stroke-width="2.5"/><rect x="26" y="20" width="48" height="52" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M26 58 L38 44 L48 54 L58 40 L74 58" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="36" cy="32" r="5" stroke="currentColor" stroke-width="1.8"/><line x1="36" y1="78" x2="64" y2="78" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  segnalibro:  `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M28 10 L72 10 L72 90 L50 74 L28 90 Z" stroke="currentColor" stroke-width="2.5" fill="none"/><line x1="38" y1="30" x2="62" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="38" y1="42" x2="62" y2="42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="38" y1="54" x2="54" y2="54" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  badge:       `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="22" y="30" width="56" height="58" rx="6" stroke="currentColor" stroke-width="2.5"/><rect x="38" y="18" width="24" height="20" rx="4" stroke="currentColor" stroke-width="2"/><line x1="50" y1="18" x2="50" y2="30" stroke="currentColor" stroke-width="2"/><line x1="34" y1="55" x2="66" y2="55" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="34" y1="66" x2="58" y2="66" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  targa:       `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="28" width="76" height="44" rx="5" stroke="currentColor" stroke-width="2.5"/><line x1="26" y1="44" x2="74" y2="44" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="56" x2="60" y2="56" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="22" cy="32" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="78" cy="32" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="22" cy="68" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="78" cy="68" r="3" stroke="currentColor" stroke-width="1.5"/></svg>`,
+  supporto:    `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="60" width="60" height="12" rx="3" stroke="currentColor" stroke-width="2.5"/><rect x="36" y="24" width="28" height="36" rx="3" stroke="currentColor" stroke-width="2.5"/><line x1="42" y1="60" x2="42" y2="72" stroke="currentColor" stroke-width="2"/><line x1="58" y1="60" x2="58" y2="72" stroke="currentColor" stroke-width="2"/></svg>`,
+  staffa:      `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="14" width="16" height="72" rx="3" stroke="currentColor" stroke-width="2.5"/><rect x="14" y="14" width="72" height="16" rx="3" stroke="currentColor" stroke-width="2.5"/><circle cx="22" cy="22" r="5" stroke="currentColor" stroke-width="2"/></svg>`,
+  giunto:      `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="20" stroke="currentColor" stroke-width="2.5"/><rect x="8" y="43" width="24" height="14" rx="3" stroke="currentColor" stroke-width="2"/><rect x="68" y="43" width="24" height="14" rx="3" stroke="currentColor" stroke-width="2"/><circle cx="50" cy="50" r="8" stroke="currentColor" stroke-width="2" opacity=".5"/></svg>`,
+  vite:        `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M42 18 L58 18 L62 32 L56 86 L44 86 L38 32 Z" stroke="currentColor" stroke-width="2.5" fill="none"/><ellipse cx="50" cy="18" rx="14" ry="8" stroke="currentColor" stroke-width="2.5"/><line x1="44" y1="18" x2="56" y2="18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`,
+  custodia:    `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="22" width="68" height="56" rx="6" stroke="currentColor" stroke-width="2.5"/><path d="M16 44 L84 44" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/><rect x="38" y="10" width="24" height="14" rx="4" stroke="currentColor" stroke-width="2"/><circle cx="50" cy="70" r="6" stroke="currentColor" stroke-width="2"/></svg>`,
+  rack:        `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="12" width="76" height="76" rx="4" stroke="currentColor" stroke-width="2.5"/><line x1="12" y1="32" x2="88" y2="32" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="52" x2="88" y2="52" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="72" x2="88" y2="72" stroke="currentColor" stroke-width="1.5"/><circle cx="80" cy="22" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="80" cy="42" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="80" cy="62" r="3" stroke="currentColor" stroke-width="1.5"/></svg>`,
+  prototipo:   `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,12 88,34 88,66 50,88 12,66 12,34" stroke="currentColor" stroke-width="2.5" fill="none"/><polygon points="50,28 72,40 72,62 50,74 28,62 28,40" stroke="currentColor" stroke-width="1.8" fill="none" opacity=".5"/><circle cx="50" cy="50" r="10" stroke="currentColor" stroke-width="2"/></svg>`,
+  modello:     `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="22" y="36" width="56" height="50" rx="3" stroke="currentColor" stroke-width="2.5"/><path d="M22 36 L50 14 L78 36" stroke="currentColor" stroke-width="2.5" fill="none"/><line x1="50" y1="14" x2="50" y2="86" stroke="currentColor" stroke-width="1.5" opacity=".4"/><line x1="22" y1="61" x2="78" y2="61" stroke="currentColor" stroke-width="1.5" opacity=".4"/></svg>`,
+  drone:       `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="14" stroke="currentColor" stroke-width="2.5"/><line x1="50" y1="36" x2="50" y2="18" stroke="currentColor" stroke-width="2"/><line x1="50" y1="64" x2="50" y2="82" stroke="currentColor" stroke-width="2"/><line x1="36" y1="50" x2="18" y2="50" stroke="currentColor" stroke-width="2"/><line x1="64" y1="50" x2="82" y2="50" stroke="currentColor" stroke-width="2"/><ellipse cx="50" cy="16" rx="10" ry="4" stroke="currentColor" stroke-width="1.8"/><ellipse cx="50" cy="84" rx="10" ry="4" stroke="currentColor" stroke-width="1.8"/><ellipse cx="16" cy="50" rx="4" ry="10" stroke="currentColor" stroke-width="1.8"/><ellipse cx="84" cy="50" rx="4" ry="10" stroke="currentColor" stroke-width="1.8"/></svg>`,
+  _decorativo: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="32" stroke="currentColor" stroke-width="2.5"/><path d="M50 18 C60 30 70 32 72 50 C70 68 60 70 50 82 C40 70 30 68 28 50 C30 32 40 30 50 18Z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="50" cy="50" r="10" stroke="currentColor" stroke-width="2"/></svg>`,
+  _gadget:     `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="28" y="18" width="44" height="64" rx="8" stroke="currentColor" stroke-width="2.5"/><line x1="38" y1="30" x2="62" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="38" y1="42" x2="62" y2="42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="38" y1="54" x2="54" y2="54" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="50" cy="70" r="5" stroke="currentColor" stroke-width="2"/></svg>`,
+  _tecnico:    `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="24" stroke="currentColor" stroke-width="2.5"/><circle cx="50" cy="50" r="10" stroke="currentColor" stroke-width="2"/><path d="M50 16 L50 26 M50 74 L50 84 M16 50 L26 50 M74 50 L84 50 M26 26 L33 33 M67 67 L74 74 M74 26 L67 33 M33 67 L26 74" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+  _prototipo:  `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,12 88,34 88,66 50,88 12,66 12,34" stroke="currentColor" stroke-width="2.5" fill="none"/><circle cx="50" cy="50" r="14" stroke="currentColor" stroke-width="2"/><line x1="50" y1="36" x2="50" y2="24" stroke="currentColor" stroke-width="2"/><line x1="50" y1="64" x2="50" y2="76" stroke="currentColor" stroke-width="2"/></svg>`,
+};
+
+const DESC_LIBRARY = {
+  vaso:        () => `Vaso decorativo stampato in 3D, disponibile in diverse dimensioni e finiture. Realizzato su misura con design personalizzabile — forma, altezza, texture e colore a tua scelta. Ideale come complemento d'arredo.`,
+  statua:      () => `Statua decorativa in PLA+ ad alta risoluzione, con strati da 0.1mm per dettagli nitidi. Personalizzabile nelle dimensioni e nella finitura — grezza, levigata o verniciata.`,
+  scultura:    () => `Scultura tridimensionale realizzata con stampa FDM di precisione. Design geometrico o organico, su progetto o da file STL fornito dal cliente.`,
+  busto:       () => `Busto decorativo in scala reale o ridotta, prodotto su misura. Perfetto come pezzo unico da esposizione o come regalo personalizzato.`,
+  fioriera:    () => `Fioriera stampata in 3D in PLA o PETG, resistente all'umidità. Disponibile in forme geometriche, esagonali o organiche. Drenaggio interno su richiesta.`,
+  cornice:     () => `Cornice realizzata con stampa 3D ad alta precisione. Design classico o moderno, su misura per qualsiasi formato foto o quadro. Finitura opaca o lucida.`,
+  lampada:     () => `Base o paralume per lampada stampato in 3D in PLA+ traslucido. Design unico che gioca con la diffusione della luce. Adattabile a qualsiasi attacco E27/E14.`,
+  portacandela:() => `Portacandela decorativo in PLA, dal design minimale o elaborato. Resistente al calore fino a 60°C. Disponibile singolo o in set coordinato.`,
+  portachiavi: () => `Portachiavi personalizzato stampato in 3D in PLA+ resistente. Nome, logo, forme geometriche o qualsiasi design fornito. Consegna in 2–3 giorni lavorativi.`,
+  portapenne:  () => `Portapenne e organizer da scrivania in PLA+ con scomparti modulari. Design minimal e funzionale, personalizzabile nelle dimensioni e nel colore.`,
+  portafoto:   () => `Portafoto da tavolo in PLA+, disponibile in formati 10x15, 13x18 o su misura. Design contemporaneo con piedistallo integrato.`,
+  segnalibro:  () => `Segnalibro personalizzato in PLA+ sottile e resistente. Può includere nome, citazione o design a scelta. Finitura liscia, spessore 1.5mm.`,
+  badge:       () => `Badge nominativo o segnaposto stampato in 3D. Testo e logo personalizzati, attacco a clip o magnetico. Finitura opaca professionale.`,
+  targa:       () => `Targa personalizzata in PLA+ con testo, numero civico o logo. Montaggio a vite o biadesivo. Disponibile in vari formati e con finitura nera, bianca o colorata.`,
+  supporto:    () => `Supporto tecnico stampato in 3D con tolleranze precise. Compatibile con profili standard. Disponibile in PLA+, PETG o ABS secondo il carico richiesto.`,
+  staffa:      () => `Staffa di fissaggio in PLA+ o PETG ad alta resistenza. Dimensioni e angolazioni personalizzabili, fori predisposti per viti M3/M4/M5.`,
+  giunto:      () => `Giunto di raccordo stampato in 3D con accoppiamenti calibrati. Tolleranza ±0.2mm. Disponibile in diverse geometrie su file STL o disegno tecnico fornito.`,
+  vite:        () => `Elemento filettato personalizzato in PLA+ o PETG. Passo, lunghezza e testa customizzabili. Ideale per prototipi o sostituzioni non standard.`,
+  custodia:    () => `Custodia protettiva su misura stampata in 3D. Progettata attorno al tuo dispositivo o componente. Chiusura a scatto, guarnizione o vite su richiesta.`,
+  rack:        () => `Pannello rack o supporto multi-componente in PLA+. 1U, 2U o dimensioni personalizzate. Fori standard 19" o su misura per rack industriali.`,
+  prototipo:   () => `Prototipo funzionale realizzato con stampa FDM in PLA+ o PETG. Iterazione rapida — dal file al pezzo fisico in 24–48 ore lavorative. Ideale per test e presentazioni.`,
+  modello:     () => `Modello tridimensionale in scala reale o ridotta, prodotto con layer 0.1–0.2mm per massimo dettaglio. Perfetto per presentazioni, architettura o concept design.`,
+  drone:       () => `Componente o telaio per drone stampato in 3D in PLA+ o PETG. Peso ottimizzato con geometria a nido d'ape. Compatibile con motori e ESC standard.`,
+  _decorativo: () => `Oggetto decorativo stampato in 3D su misura in PLA+. Design personalizzabile — invia il tuo file STL o descrivi l'idea. Finitura grezza, levigata o verniciata a scelta.`,
+  _gadget:     () => `Gadget personalizzato realizzato con stampa 3D in PLA+. Compatto, resistente e customizzabile nel design, nel colore e nelle dimensioni. Consegna in 2–4 giorni.`,
+  _tecnico:    () => `Componente tecnico stampato in 3D con tolleranze precise. Materiali disponibili: PLA+, PETG, ABS, ASA. Realizzato da file STL, STEP o disegno tecnico.`,
+  _prototipo:  () => `Prototipo stampato in 3D con layer fino a 0.1mm per massimo dettaglio. Disponibile in diversi materiali. Dal concept al pezzo fisico in pochi giorni lavorativi.`,
+};
+
+function getAutofill(nome, categoria) {
+  const key = nome.toLowerCase().trim();
+  for (const word of Object.keys(SVG_LIBRARY)) {
+    if (word.startsWith('_')) continue;
+    if (key.includes(word)) {
+      return { svg: SVG_LIBRARY[word], desc: DESC_LIBRARY[word] ? DESC_LIBRARY[word]() : '' };
+    }
+  }
+  const fallbackKey = '_' + (categoria || 'decorativo');
+  return {
+    svg:  SVG_LIBRARY[fallbackKey]  || '',
+    desc: DESC_LIBRARY[fallbackKey] ? DESC_LIBRARY[fallbackKey]() : '',
+  };
+}
+
+// ── Logica autofill articolo ────────────────────────────────────────────────
+//
+//  SVG   → si imposta SUBITO al cambio categoria (fallback categoria)
+//           oppure quando il nome contiene una keyword esatta della libreria.
+//           L'admin può sovrascrivere liberamente.
+//
+//  DESC  → si genera SOLO quando nome + categoria + materiale + tag sono
+//           tutti valorizzati, usando i dati reali inseriti dall'admin.
+//           Non usa testi hardcoded dalla DESC_LIBRARY: costruisce la frase
+//           con i campi forniti. Si attiva con debounce 600ms sull'ultimo
+//           campo compilato.
+//
+let _descTimer = null;
+
+// ── SVG: imposta subito in base alla categoria ──────────────────────────────
+function applySvgForCategoria(categoria) {
+  if (editingCatId) return;
+  const svgField = document.getElementById('cat-svg');
+  if (svgField.dataset.userEdited) return; // l'admin ha già scritto qualcosa
+  // Prima cerca keyword nel nome
+  const nome = document.getElementById('cat-nome').value.toLowerCase().trim();
+  const words = nome.split(/[\s\-_,]+/).filter(Boolean);
+  for (const word of words) {
+    if (SVG_LIBRARY[word]) { svgField.value = SVG_LIBRARY[word]; return; }
+  }
+  // Fallback categoria
+  const fallbackKey = '_' + (categoria || 'decorativo');
+  const svg = SVG_LIBRARY[fallbackKey] || '';
+  if (svg) svgField.value = svg;
+}
+
+// ── DESC: genera solo quando tutti i campi necessari sono presenti ──────────
+function tryBuildDesc() {
+  if (editingCatId) return;
+  const descField = document.getElementById('cat-desc');
+  if (descField.dataset.userEdited) return; // l'admin ha già scritto qualcosa
+
+  const nome      = document.getElementById('cat-nome').value.trim();
+  const categoria = document.getElementById('cat-cat').value.trim();
+  const materiale = document.getElementById('cat-mat').value.trim();
+  const tag       = document.getElementById('cat-tag').value.trim();
+
+  // Aspetta che siano tutti compilati
+  if (!nome || !categoria || !materiale || !tag) return;
+
+  // Mappa categoria → etichetta leggibile
+  const catLabel = {
+    decorativo:    'oggetto decorativo',
+    gadget:        'gadget personalizzato',
+    tecnico:       'componente tecnico',
+    prototipo:     'prototipo funzionale',
+  }[categoria] || categoria;
+
+  // Mappa tag → frase finale
+  const tagLower = tag.toLowerCase();
+  let tagFrase = '';
+  if (tagLower.includes('misura') || tagLower.includes('custom') || tagLower.includes('personaliz')) {
+    tagFrase = 'Personalizzabile su richiesta: invia il tuo file STL o descrivi l\'idea.';
+  } else if (tagLower.includes('serie') || tagLower.includes('stock')) {
+    tagFrase = 'Disponibile in serie o su ordinazione.';
+  } else {
+    tagFrase = `Tag: ${tag}.`;
+  }
+
+  // Costruisce la descrizione con i dati reali
+  const desc = `${nome} — ${catLabel} stampato in 3D in ${materiale}. ${tagFrase} Finitura grezza, levigata o verniciata a scelta.`;
+
+  descField.value = desc;
+}
+
+// ── Listener: cambio categoria → SVG immediato + tenta desc ────────────────
+document.getElementById('cat-cat').addEventListener('change', function() {
+  if (editingCatId) return;
+  applySvgForCategoria(this.value);
+  clearTimeout(_descTimer);
+  _descTimer = setTimeout(tryBuildDesc, 600);
+});
+
+// ── Listener: nome → aggiorna SVG se keyword trovata + tenta desc ──────────
+document.getElementById('cat-nome').addEventListener('input', function() {
+  if (editingCatId) return;
+  applySvgForCategoria(document.getElementById('cat-cat').value);
+  clearTimeout(_descTimer);
+  _descTimer = setTimeout(tryBuildDesc, 600);
+});
+
+// ── Listener: materiale e tag → tentano solo la desc ───────────────────────
+['cat-mat', 'cat-tag'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function() {
+    if (editingCatId) return;
+    clearTimeout(_descTimer);
+    _descTimer = setTimeout(tryBuildDesc, 600);
+  });
+});
+
+// ── Protezione: se l'admin modifica manualmente SVG o DESC, blocca l'auto ──
+document.getElementById('cat-svg').addEventListener('input',  function() { this.dataset.userEdited = '1'; });
+document.getElementById('cat-desc').addEventListener('input', function() { this.dataset.userEdited = '1'; });
 function editCatalogo(id) { const i = allCatalogo.find(c => c.id === id); if (i) openCatModal(i); }
 
 document.getElementById('btn-save-cat').addEventListener('click', async () => {
@@ -2412,7 +2605,7 @@ async function uploadGalleryFoto(idx, input) {
   try {
     const res = await fetch(`/api/admin/cat-pages/${pagineSlug}/gallery/${idx}/foto`, {
       method: 'POST',
-      headers: { 'x-admin-token': token },
+      headers: { 'x-admin-token': TOKEN },
       body: fd,
     });
     const data = await res.json();
@@ -2434,7 +2627,7 @@ async function removeGalleryFoto(idx) {
   try {
     await fetch(`/api/admin/cat-pages/${pagineSlug}/gallery/${idx}/foto`, {
       method: 'DELETE',
-      headers: { 'x-admin-token': token },
+      headers: { 'x-admin-token': TOKEN },
     });
     pagineData[pagineSlug].gallery[idx].foto = '';
     renderPagineEditor();
@@ -2445,7 +2638,20 @@ async function removeGalleryFoto(idx) {
 }
 
 document.getElementById('btn-save-pagina').addEventListener('click', async () => {
+  // Se i dati non sono ancora caricati, carica prima e poi riprova
+  if (!pagineData[pagineSlug]) {
+    showPagMsg('Caricamento dati in corso…', 'yellow');
+    try {
+      pagineData = await api('/api/admin/cat-pages');
+      renderPagineEditor();
+    } catch(e) {
+      showPagMsg('Errore caricamento dati', 'red');
+      return;
+    }
+  }
+
   const p = pagineData[pagineSlug];
+  if (!p) { showPagMsg('Seleziona prima una pagina', 'red'); return; }
 
   // Raccogli testi
   const heroTitolo = document.getElementById('pag-hero-titolo').value.trim();
@@ -2470,7 +2676,7 @@ document.getElementById('btn-save-pagina').addEventListener('click', async () =>
   try {
     const res = await fetch(`/api/admin/cat-pages/${pagineSlug}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
       body: JSON.stringify(payload),
     });
     const data = await res.json();
@@ -2921,6 +3127,222 @@ function hidePagMsg() {
       const n = new Date();
       ltime.textContent = [n.getHours(), n.getMinutes(), n.getSeconds()].map(v => String(v).padStart(2,'0')).join(':');
     }, 1000);
+  }
+})();
+
+// ============================================================
+// ADMIN CANVAS ANIMATIONS — pannello amministrazione
+// ============================================================
+(function initAdminCanvases() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const DPR = Math.min(devicePixelRatio || 1, 2);
+  const RED = 'rgba(229,62,62,';
+  const WHT = 'rgba(255,255,255,';
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  function setupCanvas(canvas) {
+    if (!canvas) return null;
+    const ctx = canvas.getContext('2d');
+    const parent = canvas.parentElement;
+    let W = 0, H = 0;
+    function resize() {
+      const r = parent.getBoundingClientRect();
+      W = r.width || parent.offsetWidth; H = r.height || parent.offsetHeight;
+      if (!W || !H) return;
+      canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', () => setTimeout(resize, 200), { passive: true });
+    return { ctx, get W() { return W; }, get H() { return H; } };
+  }
+
+  // ── 1. SIDEBAR LOGO — particelle DNA a doppia elica ─────────────────────
+  (function sidebarDNA() {
+    const cv = document.getElementById('sidebar-canvas');
+    const s = setupCanvas(cv);
+    if (!s) return;
+    let t = 0;
+    const N = 18;
+    (function loop() {
+      const { ctx, W, H } = s;
+      if (!W || !H) { requestAnimationFrame(loop); return; }
+      ctx.clearRect(0, 0, W, H);
+      t += 0.025;
+      // Doppia elica orizzontale
+      for (let i = 0; i < N; i++) {
+        const px = (i / (N - 1)) * W;
+        const wave = Math.sin(t + i * 0.7) * (H * 0.28);
+        const y1 = H / 2 + wave;
+        const y2 = H / 2 - wave;
+        const alpha1 = 0.3 + Math.abs(Math.sin(t + i * 0.7)) * 0.5;
+        const alpha2 = 0.15 + Math.abs(Math.cos(t + i * 0.7)) * 0.35;
+        // Filo 1 (rosso)
+        ctx.beginPath(); ctx.arc(px, y1, i % 3 === 0 ? 2.2 : 1.2, 0, Math.PI * 2);
+        ctx.fillStyle = RED + alpha1.toFixed(2) + ')'; ctx.fill();
+        // Filo 2 (bianco)
+        ctx.beginPath(); ctx.arc(px, y2, i % 4 === 0 ? 1.8 : 1, 0, Math.PI * 2);
+        ctx.fillStyle = WHT + alpha2.toFixed(2) + ')'; ctx.fill();
+        // Traversa
+        if (i % 3 === 0 && i > 0) {
+          ctx.beginPath(); ctx.moveTo(px, y1); ctx.lineTo(px, y2);
+          ctx.strokeStyle = RED + '0.12)'; ctx.lineWidth = 0.8; ctx.stroke();
+        }
+      }
+      requestAnimationFrame(loop);
+    })();
+  })();
+
+  // ── 2. TOPBAR — scanline + griglia PCB ──────────────────────────────────
+  (function topbarGrid() {
+    const cv = document.getElementById('topbar-canvas');
+    const s = setupCanvas(cv);
+    if (!s) return;
+    let t = 0;
+    (function loop() {
+      const { ctx, W, H } = s;
+      if (!W || !H) { requestAnimationFrame(loop); return; }
+      ctx.clearRect(0, 0, W, H);
+      t += 0.018;
+      // Linee orizzontali animate
+      const step = 14;
+      for (let y = 0; y < H; y += step) {
+        const alpha = 0.04 + Math.sin(t * 0.8 + y * 0.05) * 0.025;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y);
+        ctx.strokeStyle = WHT + alpha.toFixed(3) + ')'; ctx.lineWidth = 0.5; ctx.stroke();
+      }
+      // Nodi lampeggianti
+      const nodes = [0.12, 0.28, 0.45, 0.62, 0.78, 0.91];
+      nodes.forEach((nx, idx) => {
+        const pulse = 0.3 + Math.sin(t * 1.4 + idx * 1.1) * 0.25;
+        const x = nx * W, y = H / 2;
+        ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = RED + pulse.toFixed(2) + ')'; ctx.fill();
+        if (idx < nodes.length - 1) {
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nodes[idx + 1] * W, y);
+          ctx.strokeStyle = RED + '0.12)'; ctx.lineWidth = 0.7; ctx.stroke();
+        }
+      });
+      // Scanline mobile
+      const scanX = ((t * 40) % (W + 40)) - 20;
+      const grad = ctx.createLinearGradient(scanX - 30, 0, scanX + 30, 0);
+      grad.addColorStop(0, RED + '0)'); grad.addColorStop(0.5, RED + '0.18)'); grad.addColorStop(1, RED + '0)');
+      ctx.fillStyle = grad; ctx.fillRect(scanX - 30, 0, 60, H);
+      requestAnimationFrame(loop);
+    })();
+  })();
+
+  // ── 3. MODAL ARTICOLO HEAD — raggi laser a rimbalzo ─────────────────────
+  (function modalLasers() {
+    const cv = document.getElementById('modal-cat-canvas');
+    if (!cv) return;
+    const s = setupCanvas(cv);
+    if (!s) return;
+    let t = 0;
+    const beams = Array.from({ length: 5 }, (_, i) => ({
+      x: rand(0.1, 0.9), y: rand(0, 1), vx: rand(0.3, 0.7) * (Math.random() > 0.5 ? 1 : -1),
+      vy: rand(0.2, 0.5) * (Math.random() > 0.5 ? 1 : -1),
+      hue: i < 2 ? 'red' : 'white', len: rand(30, 70),
+    }));
+    (function loop() {
+      const { ctx, W, H } = s;
+      if (!W || !H) { requestAnimationFrame(loop); return; }
+      ctx.clearRect(0, 0, W, H);
+      t += 0.016;
+      const dt = 0.016;
+      beams.forEach(b => {
+        b.x += b.vx * dt; b.y += b.vy * dt;
+        if (b.x < 0 || b.x > 1) { b.vx *= -1; b.x = Math.max(0, Math.min(1, b.x)); }
+        if (b.y < 0 || b.y > 1) { b.vy *= -1; b.y = Math.max(0, Math.min(1, b.y)); }
+        const px = b.x * W, py = b.y * H;
+        const ex = px - Math.cos(t * 0.6) * b.len, ey = py - Math.sin(t * 0.4) * b.len;
+        const alpha = 0.2 + Math.sin(t * 1.5 + b.x * 10) * 0.12;
+        const grd = ctx.createLinearGradient(px, py, ex, ey);
+        const col = b.hue === 'red' ? RED : WHT;
+        grd.addColorStop(0, col + alpha.toFixed(2) + ')'); grd.addColorStop(1, col + '0)');
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(ex, ey);
+        ctx.strokeStyle = grd; ctx.lineWidth = b.hue === 'red' ? 1.2 : 0.7; ctx.stroke();
+        ctx.beginPath(); ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = col + (alpha + 0.2).toFixed(2) + ')'; ctx.fill();
+      });
+      requestAnimationFrame(loop);
+    })();
+  })();
+
+  // ── 4. DASHBOARD STATS — nebulosa a punti 3D isometrica ─────────────────
+  (function dashboardNebula() {
+    const cv = document.getElementById('dashboard-canvas');
+    if (!cv) return;
+    const s = setupCanvas(cv);
+    if (!s) return;
+    let t = 0;
+    const N = 80;
+    const pts = Array.from({ length: N }, (_, i) => ({
+      x: rand(0, 1), y: rand(0, 1), z: rand(0, 1),
+      vx: rand(-0.05, 0.05), vy: rand(-0.03, 0.03), vz: rand(-0.04, 0.04),
+      r: rand(1, 3.5), red: i < N * 0.25,
+    }));
+    // Griglia isometrica statica
+    const gridLines = [];
+    for (let i = 0; i <= 6; i++) {
+      gridLines.push({ x1: i / 6, y1: 0, x2: i / 6, y2: 1 });
+      gridLines.push({ x1: 0, y1: i / 6, x2: 1, y2: i / 6 });
+    }
+    (function loop() {
+      const { ctx, W, H } = s;
+      if (!W || !H) { requestAnimationFrame(loop); return; }
+      ctx.clearRect(0, 0, W, H);
+      t += 0.012;
+      // Griglia
+      gridLines.forEach(l => {
+        ctx.beginPath(); ctx.moveTo(l.x1 * W, l.y1 * H); ctx.lineTo(l.x2 * W, l.y2 * H);
+        ctx.strokeStyle = WHT + '0.04)'; ctx.lineWidth = 0.5; ctx.stroke();
+      });
+      // Nebulosa punti con profondità Z simulata
+      pts.forEach(p => {
+        p.x += p.vx * 0.012; p.y += p.vy * 0.012; p.z += p.vz * 0.012;
+        if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
+        if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
+        if (p.z < 0) p.z = 1; if (p.z > 1) p.z = 0;
+        const depth = 0.4 + p.z * 0.6;
+        const alpha = depth * (0.4 + Math.sin(t * 0.8 + p.x * 6) * 0.2);
+        const r = p.r * depth;
+        ctx.beginPath(); ctx.arc(p.x * W, p.y * H, r, 0, Math.PI * 2);
+        if (p.red) {
+          ctx.fillStyle = RED + alpha.toFixed(2) + ')';
+          if (r > 2) { ctx.shadowBlur = 6; ctx.shadowColor = 'rgba(229,62,62,0.4)'; }
+        } else {
+          ctx.fillStyle = WHT + (alpha * 0.5).toFixed(2) + ')';
+          ctx.shadowBlur = 0;
+        }
+        ctx.fill(); ctx.shadowBlur = 0;
+      });
+      requestAnimationFrame(loop);
+    })();
+  })();
+
+  // Riavvia canvas modal quando si apre
+  const origOpenModal = window.openModal;
+  if (origOpenModal) {
+    window.openModal = function(id) {
+      origOpenModal(id);
+      if (id === 'modal-cat') {
+        // Ridisegna il canvas del modal dopo l'apertura (il container potrebbe aver cambiato size)
+        setTimeout(() => {
+          const cv = document.getElementById('modal-cat-canvas');
+          if (cv) {
+            const p = cv.parentElement;
+            const r = p.getBoundingClientRect();
+            if (r.width) {
+              cv.width = Math.round(r.width * DPR); cv.height = Math.round(r.height * DPR);
+              cv.style.width = r.width + 'px'; cv.style.height = r.height + 'px';
+              const ctx = cv.getContext('2d'); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+            }
+          }
+        }, 50);
+      }
+    };
   }
 })();
 </script>

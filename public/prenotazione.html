@@ -15,32 +15,44 @@
 
 <nav>
   <a href="/" class="nav-logo"><img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" onerror="this.style.display='none'">PRINT<span>3D</span></a>
-  <ul class="nav-links">
-    <li><a href="/">Home</a></li>
-    <li><a href="/catalogo">Catalogo</a></li>
-    <li><a href="/materiali">Materiali</a></li>
-    <li><a href="/recensioni">Recensioni</a></li>
-    <li><a href="/tos">T&amp;C</a></li>
-    <li><a href="/contatti">Contatti</a></li>
-    <li><a href="/prenotazione" class="nav-cta active">Prenota</a></li>
+    <ul class="nav-links">
+    <li><a href="/" data-i18n="nav.home">Home</a></li>
+    <li><a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a></li>
+    <li><a href="/materiali" data-i18n="nav.materiali">Materiali</a></li>
+    <li><a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a></li>
+    <li><a href="/tos" data-i18n="nav.tc">T&amp;C</a></li>
+    <li><a href="/contatti" data-i18n="nav.contatti">Contatti</a></li>
+    <li><a href="/prenotazione" class="nav-cta" data-i18n="nav.prenota">Prenota</a></li>
   </ul>
+  <div class="nav-right">
+  <button id="lang-toggle" class="lang-toggle-btn" aria-label="Switch language" data-lang="it">
+    <span class="lang-it" style="opacity:1">IT</span>
+    <span class="lang-sep">|</span>
+    <span class="lang-en" style="opacity:0.35">EN</span>
+  </button>
   <button class="nav-toggle"><span></span><span></span><span></span></button>
+  </div>
 </nav>
 <div class="nav-mobile">
-  <a href="/">Home</a>
-  <a href="/catalogo">Catalogo</a>
-  <a href="/materiali">Materiali</a>
-  <a href="/recensioni">Recensioni</a>
-  <a href="/tos">Termini &amp; Privacy</a>
-  <a href="/contatti">Contatti</a>
-  <a href="/prenotazione">Prenota ora</a>
+  <a href="/" data-i18n="nav.home">Home</a>
+  <a href="/catalogo" data-i18n="nav.catalogo">Catalogo</a>
+  <a href="/materiali" data-i18n="nav.materiali">Materiali</a>
+  <a href="/recensioni" data-i18n="nav.recensioni">Recensioni</a>
+  <a href="/tos" data-i18n="nav.termini">Termini &amp; Privacy</a>
+  <a href="/contatti" data-i18n="nav.contatti">Contatti</a>
+  <a href="/prenotazione" data-i18n="nav.prenota_mobile">Prenota ora</a>
+  <button id="lang-toggle-mobile" class="lang-toggle-btn" aria-label="Switch language" data-lang="it" style="margin-top:8px">
+    <span class="lang-it" style="opacity:1">IT</span>
+    <span class="lang-sep">|</span>
+    <span class="lang-en" style="opacity:0.35">EN</span>
+  </button>
 </div>
 
 <!-- PAGE HEADER -->
 <header class="page-header">
   <canvas id="booking-canvas"></canvas>
   <div class="page-header-content">
-    <div class="section-label" style="justify-content:center; margin-bottom:16px;">Inizia il processo</div>
+    <div class="section-label" style="justify-content:center; margin-bottom:16px;" data-i18n="pre.label">Inizia il processo</div>
     <h1 class="page-header-title">Prenota<br><span>la tua stampa.</span></h1>
     <p class="page-header-sub">Compila il modulo — rispondiamo entro 24 ore con preventivo.</p>
   </div>
@@ -62,7 +74,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="nome">Nome e Cognome *</label>
+              <label for="nome" data-i18n="pre.nome">Nome e Cognome *</label>
               <input type="text" id="nome" name="nome" placeholder="Mario Rossi" required>
               <div class="field-line"></div>
               <span class="field-error"></span>
@@ -71,13 +83,13 @@
 
           <div class="form-row form-row--2">
             <div class="form-group">
-              <label for="email">Email *</label>
+              <label for="email" data-i18n="pre.email">Email *</label>
               <input type="email" id="email" name="email" placeholder="mario@email.com" required>
               <div class="field-line"></div>
               <span class="field-error"></span>
             </div>
             <div class="form-group">
-              <label for="telefono">Telefono</label>
+              <label for="telefono" data-i18n="pre.tel">Telefono</label>
               <input type="tel" id="telefono" name="telefono" placeholder="+39 333 000 0000">
               <div class="field-line"></div>
             </div>
@@ -92,7 +104,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="oggetto">Descrizione oggetto *</label>
+              <label for="oggetto" data-i18n="pre.desc">Descrizione oggetto *</label>
               <input type="text" id="oggetto" name="oggetto" placeholder="es. Portachiavi personalizzato con logo, 5×3cm" required>
               <div class="field-line"></div>
               <span class="field-error"></span>
@@ -101,14 +113,14 @@
 
           <div class="form-row form-row--3">
             <div class="form-group">
-              <label for="materiale">Materiale</label>
+              <label for="materiale" data-i18n="pre.materiale">Materiale</label>
               <div class="select-wrap">
                 <select id="materiale" name="materiale">
-                  <option value="PLA Standard">PLA Standard</option>
+                  <option value="PLA Standard" data-i18n="pre.pla">PLA Standard</option>
                   <option value="PLA+">PLA+</option>
-                  <option value="PLA Silk">PLA Silk (lucido)</option>
-                  <option value="PLA Matte">PLA Matte (opaco)</option>
-                  <option value="Altro (da definire)">Altro — da definire</option>
+                  <option value="PLA Silk" data-i18n="pre.silk">PLA Silk (lucido)</option>
+                  <option value="PLA Matte" data-i18n="pre.matte">PLA Matte (opaco)</option>
+                  <option value="Altro (da definire)" data-i18n="pre.altro">Altro — da definire</option>
                 </select>
                 <svg class="select-arrow" viewBox="0 0 16 16" fill="none">
                   <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5"/>
@@ -116,12 +128,12 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="colore">Colore preferito</label>
+              <label for="colore" data-i18n="pre.colore">Colore preferito</label>
               <input type="text" id="colore" name="colore" placeholder="es. Rosso, Nero, Bianco...">
               <div class="field-line"></div>
             </div>
             <div class="form-group">
-              <label for="quantita">Quantità</label>
+              <label for="quantita" data-i18n="pre.quantita">Quantità</label>
               <div class="qty-wrap">
                 <button type="button" class="qty-btn" data-dir="-1">−</button>
                 <input type="number" id="quantita" name="quantita" value="1" min="1" max="99">
@@ -132,7 +144,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="deadline">Consegna desiderata entro</label>
+              <label for="deadline" data-i18n="pre.deadline">Consegna desiderata entro</label>
               <input type="date" id="deadline" name="deadline">
               <div class="field-line"></div>
             </div>
@@ -163,7 +175,7 @@
           </div>
 
           <button type="submit" class="submit-btn" data-magnetic id="submit-btn">
-            <span class="submit-text">Invia Prenotazione</span>
+            <span class="submit-text" data-i18n="pre.submit">Invia Prenotazione</span>
             <div class="submit-loader" aria-hidden="true">
               <div class="loader-ring"></div>
             </div>
@@ -178,7 +190,7 @@
       <!-- SIDEBAR INFO -->
       <aside class="booking-sidebar" data-reveal data-delay="0.2">
         <div class="sidebar-card">
-          <div class="sidebar-card-label">Tempi di risposta</div>
+          <div class="sidebar-card-label" data-i18n="pre.info1_label">Tempi di risposta</div>
           <div class="sidebar-stat">
             <span class="stat-big">24h</span>
             <span class="stat-desc">risposta con preventivo</span>
@@ -186,7 +198,7 @@
         </div>
 
         <div class="sidebar-card">
-          <div class="sidebar-card-label">Come funziona</div>
+          <div class="sidebar-card-label" data-i18n="pre.info2_label">Come funziona</div>
           <ol class="sidebar-steps">
             <li><span>1</span> Compili il modulo</li>
             <li><span>2</span> Ricevi preventivo via email</li>
@@ -203,7 +215,7 @@
         </div>
 
         <div class="sidebar-card sidebar-card--red">
-          <div class="sidebar-card-label">Materiale standard</div>
+          <div class="sidebar-card-label" data-i18n="pre.mat_label">Materiale standard</div>
           <p>PLA — disponibile in oltre 30 colori. Su richiesta è possibile valutare materiali alternativi.</p>
         </div>
       </aside>
@@ -221,33 +233,33 @@
         <path d="M18 32l10 10 18-18" stroke="#e53e3e" stroke-width="2" stroke-linecap="round" class="success-check"/>
       </svg>
     </div>
-    <h2>Prenotazione Inviata!</h2>
+    <h2 data-i18n="pre.success_title">Prenotazione Inviata!</h2>
     <p>Abbiamo ricevuto la tua richiesta.<br>Riceverai risposta entro 24 ore.</p><p style="color:#e53e3e;font-size:13px;letter-spacing:1px;margin-top:8px;">ID: <strong id="booking-id">—</strong></p>
-    <a href="/" class="btn-primary" style="margin-top:24px; display:inline-flex;">Torna alla Home</a>
+    <a href="/" class="btn-primary" style="margin-top:24px; display:inline-flex;" data-i18n="pre.back_home">Torna alla Home</a>
   </div>
 </div>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-brand">PRINT<span>3D</span><p>Stampa 3D artigianale<br>su prenotazione</p></div>
+  <div class="footer-brand">PRINT<span>3D</span><p data-i18n="footer.tagline">Stampa 3D artigianale<br>su prenotazione</p></div>
   <div class="footer-col">
-    <h4>Navigazione</h4>
+    <h4 data-i18n="footer.nav_title">Navigazione</h4>
     <ul>
       <li><a href="/">Home</a></li>
       <li><a href="/catalogo">Catalogo</a></li>
       <li><a href="/materiali">Materiali</a></li>
-      <li><a href="/prenotazione">Prenotazione</a></li>
+      <li><a href="/prenotazione" data-i18n="footer.prenotazione">Prenotazione</a></li>
       <li><a href="/recensioni">Recensioni</a></li>
       <li><a href="/contatti">Contatti</a></li>
       <li><a href="/tos">Termini &amp; Privacy</a></li>
     </ul>
   </div>
   <div class="footer-col">
-    <h4>Contatti</h4>
+    <h4 data-i18n="footer.contatti_h">Contatti</h4>
     <p><a href="mailto:swanboccella@gmail.com">swanboccella@gmail.com</a><br><br>Risposta entro 24 ore.</p>
   </div>
   <div class="footer-bottom">
-    <p>2025-2026 &copy; Print3D Studio — Tutti i diritti riservati</p>
+    <p><span data-i18n="footer.copyright">2025-2026 &copy; Print3D Studio — Tutti i diritti riservati</span></p>
     <a href="/tos" style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;color:var(--subtle);text-decoration:none;transition:color 0.25s ease;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--subtle)'">Termini &amp; Privacy</a>
   </div>
 </footer>
@@ -255,5 +267,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="/js/global.js"></script>
 <script src="/js/prenotazione.js"></script>
+<script src="/js/i18n.js"></script>
 </body>
 </html>
