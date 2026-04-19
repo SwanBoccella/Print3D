@@ -168,23 +168,25 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     let lddCurrPct = 0;
+    let lddDisplayPct = 0; // floating point for organic step animation
     lddPhases.forEach(({ pct, label, chk, delay }) => {
       setTimeout(() => {
         if (lddPhaseEl) lddPhaseEl.textContent = label;
         if (lddStatusEl) lddStatusEl.textContent = label;
 
-        // Animate pct
-        const from = lddCurrPct, to = pct;
-        const dur = 420;
-        const t0 = Date.now();
-        function tick() {
-          const t = Math.min((Date.now()-t0)/dur, 1);
-          const ease = 1 - Math.pow(1-t, 3);
-          setLddProgress(Math.round(from + (to-from)*ease));
-          if (t < 1) requestAnimationFrame(tick);
-        }
-        requestAnimationFrame(tick);
+        // Animate pct — organic micro-step crawl
         lddCurrPct = pct;
+        (function lddOrganicStep(target) {
+          if (lddDisplayPct >= target) return;
+          const gap = target - lddDisplayPct;
+          const stepBase = gap * (0.06 + Math.random() * 0.09);
+          const jitter = (Math.random() - 0.3) * 0.5;
+          const step = Math.max(0.2, stepBase + jitter);
+          lddDisplayPct = Math.min(target, lddDisplayPct + step);
+          setLddProgress(Math.round(lddDisplayPct));
+          const delay = 18 + Math.random() * 38;
+          if (lddDisplayPct < target) setTimeout(() => lddOrganicStep(target), delay);
+        })(pct);
 
         // Checklist
         for (let i = 0; i <= chk; i++) {
@@ -464,24 +466,30 @@ document.addEventListener('DOMContentLoaded', () => {
     { pct: 100, label: 'SYSTEM READY',       chk: 4, delay: 3200 },
   ];
 
-  // Animate progress smoothly
+  // Animate progress — organic micro-step crawl (irregular, never a-scatti)
   let currentPct = 0;
+  let ldrDisplayPct = 0; // floating point internal value
+
+  function ldrOrganicStep(target) {
+    if (ldrDisplayPct >= target) return;
+    // Pick a small random increment: sometimes fast, sometimes a micro-pause
+    const gap = target - ldrDisplayPct;
+    const stepBase = gap * (0.06 + Math.random() * 0.09); // 6–15% of remaining
+    const jitter = (Math.random() - 0.3) * 0.6; // slight backward jitter for realism
+    const step = Math.max(0.2, stepBase + jitter);
+    ldrDisplayPct = Math.min(target, ldrDisplayPct + step);
+    setProgress(Math.round(ldrDisplayPct));
+    // Variable delay: 18–55ms gives organic feel
+    const delay = 18 + Math.random() * 37;
+    if (ldrDisplayPct < target) setTimeout(() => ldrOrganicStep(target), delay);
+  }
+
   phases.forEach(({ pct, label, chk, delay }) => {
     setTimeout(() => {
       if (ldrPhase) ldrPhase.textContent = label;
       if (ldrStatus) ldrStatus.textContent = '● ' + label;
 
-      // Animate from current to target
-      const from = currentPct, to = pct;
-      const dur = 400;
-      const t0 = Date.now();
-      function tick() {
-        const t = Math.min((Date.now() - t0) / dur, 1);
-        const ease = 1 - Math.pow(1 - t, 3);
-        setProgress(Math.round(from + (to - from) * ease));
-        if (t < 1) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
+      ldrOrganicStep(pct);
       currentPct = pct;
 
       // Mark checklist
@@ -680,7 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
       NORMAL:    'DRAG · CLICK · EXPLORE',
       ELECTRIC:  '⚡ ELECTRIC MODE — SCARICA!',
       SONAR:     '📡 SONAR MODE — PING!',
-      MATRIX:    '⬛ MATRIX MODE — SEGUI IL CONIGLIO',
+      MATRIX:    '🌌 AURORA MAGNETICA — FILAMENTI DI PLASMA',
       PARTY:     '🎉 PARTY MODE — BALLA!',
       BLACKHOLE: '🕳 BLACK HOLE — TUTTO VIENE ASSORBITO',
       VORTEX:    '🌀 VORTEX — RISUCCHIATO!',
@@ -1092,43 +1100,115 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderMatrix() {
-      // Faint dark overlay for trail effect (instead of full clear)
-      ctx.fillStyle = 'rgba(0,0,0,0.15)';
-      ctx.fillRect(0,0,W,H);
+      // ── AURORA MAGNETICA — filamenti di plasma che percorrono la sfera ──
+      // Faint trail overlay
+      ctx.fillStyle = 'rgba(0,0,5,0.18)';
+      ctx.fillRect(0, 0, W, H);
 
-      ctx.font = 'bold 12px monospace';  // set once, not per char
-      matrixChars.forEach(col => {
-        col.y += col.speed;
-        if (col.y > H + 100) { col.y = -Math.random()*H*0.5; col.x = Math.random()*W; }
-        // Randomly mutate one char per column per frame
-        if (Math.random() > 0.9) {
-          const idx = Math.floor(Math.random() * col.chars.length);
-          col.chars[idx] = String.fromCharCode(0x30A0 + Math.random()*96);
-        }
-        col.chars.forEach((ch, i) => {
-          const cy2 = col.y - i * 14;
-          if (cy2 < -14 || cy2 > H + 14) return;
-          const isHead = i === 0;
-          const distFromCenter = Math.hypot(col.x - CX, cy2 - CY);
-          const fade = 1 - i / col.chars.length;
-          const alpha = distFromCenter < 78 ? 0.08 : fade;
-          if (alpha < 0.02) return;
-          ctx.fillStyle = isHead
-            ? `rgba(200,255,200,${alpha})`
-            : `rgba(0,${140 + Math.floor(fade * 100)},0,${alpha})`;
-          ctx.fillText(ch, col.x, cy2);
-        });
-      });
+      const cx = CX, cy = CY;
+      const baseR = 80;
+      const aT = t * 0.018;
 
-      // Pulse ring around sphere
-      const pulseR = 72 + Math.sin(t*0.05)*4;
-      ctx.beginPath(); ctx.arc(CX,CY,pulseR,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(0,255,70,${0.25+Math.sin(t*0.05)*0.1})`;
-      ctx.lineWidth=1.5; ctx.stroke();
+      // ── 1. Onde concentriche dall'esterno verso il centro ──
+      for (let w = 0; w < 6; w++) {
+        const waveOffset = (w / 6) * Math.PI * 2;
+        const wR = 155 - ((aT * 60 + waveOffset * 25) % 155);
+        const hue = 170 + w * 22 + Math.sin(aT + w) * 30; // cyan→violet
+        const alpha = 0.08 + 0.06 * Math.sin(aT * 3 + w);
+        ctx.beginPath();
+        ctx.arc(cx, cy, Math.max(1, wR), 0, Math.PI * 2);
+        ctx.strokeStyle = `hsla(${hue}, 100%, 65%, ${alpha})`;
+        ctx.lineWidth = 1 + Math.sin(aT * 2 + w) * 0.5;
+        ctx.stroke();
+      }
 
-      inner.style.background = `radial-gradient(circle at 35% 35%, #0a2a0a, #000)`;
-      inner.style.boxShadow = `0 0 40px rgba(0,255,70,0.4), inset 0 0 20px rgba(0,0,0,0.9)`;
-      if (plaLabel) { plaLabel.style.color = '#0f0'; plaLabel.style.textShadow = '0 0 20px #0f0'; }
+      // ── 2. Filamenti magnetici curvilinei (bezier) ──
+      const FILAMENTS = 14;
+      for (let f = 0; f < FILAMENTS; f++) {
+        const baseAngle = (f / FILAMENTS) * Math.PI * 2 + aT * (f % 2 === 0 ? 1 : -0.7);
+        const hue = 160 + f * 14 + Math.sin(aT * 1.5 + f * 0.4) * 40;
+        const alpha = 0.15 + 0.1 * Math.abs(Math.sin(aT * 2 + f));
+
+        // Entry point on outer boundary
+        const r1 = 130 + Math.sin(aT * 2.1 + f * 0.9) * 20;
+        const x1 = cx + Math.cos(baseAngle) * r1;
+        const y1 = cy + Math.sin(baseAngle) * r1;
+
+        // Control points — bent inward
+        const cpAngle1 = baseAngle + 0.6 + Math.sin(aT + f) * 0.4;
+        const cpAngle2 = baseAngle - 0.5 + Math.cos(aT * 0.8 + f) * 0.3;
+        const cpR1 = 75 + Math.sin(aT * 1.3 + f * 1.1) * 25;
+        const cpR2 = 50 + Math.cos(aT * 1.7 + f * 0.7) * 20;
+        const cpx1 = cx + Math.cos(cpAngle1) * cpR1;
+        const cpy1 = cy + Math.sin(cpAngle1) * cpR1;
+        const cpx2 = cx + Math.cos(cpAngle2) * cpR2;
+        const cpy2 = cy + Math.sin(cpAngle2) * cpR2;
+
+        // End point — on opposite side near core
+        const exitAngle = baseAngle + Math.PI + Math.sin(aT * 0.9 + f) * 0.5;
+        const r2 = 90 + Math.cos(aT * 1.4 + f * 1.3) * 30;
+        const x2 = cx + Math.cos(exitAngle) * r2;
+        const y2 = cy + Math.sin(exitAngle) * r2;
+
+        // Gradient stroke
+        const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+        grad.addColorStop(0, `hsla(${hue}, 100%, 70%, 0)`);
+        grad.addColorStop(0.3, `hsla(${hue}, 100%, 75%, ${alpha * 1.4})`);
+        grad.addColorStop(0.7, `hsla(${(hue + 40) % 360}, 100%, 80%, ${alpha})`);
+        grad.addColorStop(1, `hsla(${(hue + 80) % 360}, 100%, 60%, 0)`);
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, x2, y2);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 0.8 + Math.sin(aT * 3 + f) * 0.4;
+        ctx.stroke();
+      }
+
+      // ── 3. Core glow pulsante ──
+      const glowR = baseR * (0.88 + Math.sin(aT * 4) * 0.05);
+      const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+      const coreHue = 180 + Math.sin(aT * 0.7) * 30;
+      coreGrad.addColorStop(0, `hsla(${coreHue}, 100%, 80%, 0.12)`);
+      coreGrad.addColorStop(0.6, `hsla(${coreHue + 20}, 100%, 60%, 0.05)`);
+      coreGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.beginPath();
+      ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+      ctx.fillStyle = coreGrad;
+      ctx.fill();
+
+      // ── 4. Particelle lungo i filamenti — nodi luminosi ──
+      for (let p = 0; p < 20; p++) {
+        const angle = (p / 20) * Math.PI * 2 + aT * (p % 3 === 0 ? 1.3 : -0.9);
+        const pR = 55 + Math.sin(aT * 2.5 + p * 0.7) * 55;
+        const px = cx + Math.cos(angle) * pR;
+        const py = cy + Math.sin(angle) * pR;
+        const hue = 160 + p * 9 + Math.sin(aT * 2 + p) * 50;
+        const size = 1 + Math.abs(Math.sin(aT * 4 + p)) * 2;
+        const alpha = 0.4 + 0.4 * Math.abs(Math.sin(aT * 3 + p * 0.5));
+        ctx.beginPath();
+        ctx.arc(px, py, size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${alpha})`;
+        ctx.fill();
+      }
+
+      // ── 5. Anello pulsante attorno alla sfera ──
+      const ringPulse = baseR + Math.sin(aT * 5) * 3;
+      const ringHue = 190 + Math.sin(aT * 0.5) * 40;
+      ctx.beginPath();
+      ctx.arc(cx, cy, ringPulse, 0, Math.PI * 2);
+      ctx.strokeStyle = `hsla(${ringHue}, 100%, 70%, ${0.2 + Math.sin(aT * 4) * 0.08})`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // ── Inner sphere skin ──
+      const skinHue = 185 + Math.sin(aT * 0.3) * 25;
+      inner.style.background = `radial-gradient(circle at 38% 32%, hsl(${skinHue},80%,12%), hsl(${skinHue + 40},90%,4%))`;
+      inner.style.boxShadow = `0 0 45px hsla(${skinHue}, 100%, 55%, 0.45), inset 0 0 25px rgba(0,0,0,0.9)`;
+      if (plaLabel) {
+        plaLabel.style.color = `hsl(${skinHue}, 100%, 75%)`;
+        plaLabel.style.textShadow = `0 0 18px hsl(${skinHue + 30}, 100%, 70%)`;
+      }
     }
 
     function renderParty() {
