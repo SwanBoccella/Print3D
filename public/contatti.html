@@ -6,6 +6,59 @@
   <title>Contatti — Print3D Studio</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/pages.css">
+  <style>
+    /* ---- NAV CANVAS ---- */
+    #nav-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    nav > *:not(#nav-canvas) { position: relative; z-index: 1; }
+
+    /* ---- HEADER CANVAS (signal / onde radio) ---- */
+    #header-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .page-header-sm { overflow: hidden; }
+    .page-header-sm > *:not(#header-canvas) { position: relative; z-index: 1; }
+
+    /* ---- CONTACTS SECTION CANVAS (node network) ---- */
+    #contacts-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .contacts-section { position: relative; overflow: hidden; }
+    .contacts-section > *:not(#contacts-canvas) { position: relative; z-index: 1; }
+
+    /* ---- MAP SECTION CANVAS (geo grid overlay) ---- */
+    #map-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 2;
+    }
+    .map-section { position: relative; }
+
+    /* ---- CTA CANVAS ---- */
+    #cta-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .page-cta { position: relative; overflow: hidden; }
+    .page-cta > *:not(#cta-canvas) { position: relative; z-index: 1; }
+
+    /* ---- FOOTER CANVAS ---- */
+    #footer-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    footer { overflow: hidden; }
+    footer > *:not(#footer-canvas) { position: relative; z-index: 1; }
+  </style>
 </head>
 <body>
 
@@ -14,6 +67,7 @@
 <div id="page-transition"></div>
 
 <nav>
+  <canvas id="nav-canvas" aria-hidden="true"></canvas>
   <a href="/" class="nav-logo"><img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" onerror="this.style.display='none'">PRINT<span>3D</span></a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
@@ -37,6 +91,7 @@
 </div>
 
 <header class="page-header-sm">
+  <canvas id="header-canvas" aria-hidden="true"></canvas>
   <div class="page-header-sm-content">
     <div class="section-label" style="justify-content:center; margin-bottom:16px;">Siamo qui</div>
     <h1 class="page-header-sm-title">Scrivici.<br><span>Rispondiamo.</span></h1>
@@ -45,6 +100,7 @@
 </header>
 
 <section class="contacts-section">
+  <canvas id="contacts-canvas" aria-hidden="true"></canvas>
   <div class="container">
     <div class="contacts-layout">
 
@@ -166,6 +222,7 @@
 
 <!-- MAP SECTION -->
 <section class="map-section">
+  <canvas id="map-canvas" aria-hidden="true"></canvas>
   <div class="map-section-header container">
     <div class="section-label">Dove siamo</div>
     <h2 class="map-section-title">Calenzano<span>,</span> Firenze</h2>
@@ -209,6 +266,7 @@
 
 <!-- CTA STRIP -->
 <section class="page-cta">
+  <canvas id="cta-canvas" aria-hidden="true"></canvas>
   <div class="container">
     <div class="page-cta-inner" data-reveal>
       <h2>Pronto a iniziare?</h2>
@@ -222,6 +280,7 @@
 </section>
 
 <footer>
+  <canvas id="footer-canvas" aria-hidden="true"></canvas>
   <div class="footer-brand">PRINT<span>3D</span><p>Stampa 3D artigianale<br>su prenotazione</p></div>
   <div class="footer-col">
     <h4>Navigazione</h4>
@@ -247,5 +306,369 @@
 
 <script src="/js/global.js"></script>
 <script src="/js/contatti.js"></script>
+<script>
+/* ============================================================
+   PRINT3D CONTATTI — DECORATIVE CANVAS ANIMATIONS
+   1. Nav           — micro-particelle (identico index)
+   2. Header        — onde radio / signal emanating from center
+   3. Contacts      — node network (punti + connessioni attive)
+   4. Map section   — geo coordinate grid + radar sweep
+   5. CTA           — bracket corners + horizonal tracer line
+   6. Footer        — glow dots + brackets (identico index)
+   ============================================================ */
+(function () {
+  'use strict';
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+
+  /* ============================================================
+     1. NAV — micro-particles + connessioni rosse (uguale index)
+     ============================================================ */
+  (function initNav() {
+    const canvas = document.getElementById('nav-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const nav = canvas.parentElement;
+    function resize() { canvas.width = nav.offsetWidth; canvas.height = nav.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    const dots = Array.from({ length: 38 }, () => ({
+      x: rand(0,1), y: rand(0,1),
+      vx: rand(-0.08,0.08), vy: rand(-0.04,0.04),
+      r: rand(0.6,1.8), alpha: rand(0.08,0.32),
+      red: Math.random() > 0.82,
+      pulse: rand(0, Math.PI*2), pulseSpeed: rand(0.008,0.022)
+    }));
+
+    (function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+      dots.forEach(d => {
+        d.pulse += d.pulseSpeed;
+        d.x += d.vx/W*60; d.y += d.vy/H*60;
+        if (d.x < -0.02) d.x = 1.02; if (d.x > 1.02) d.x = -0.02;
+        if (d.y < -0.02) d.y = 1.02; if (d.y > 1.02) d.y = -0.02;
+        const a = d.alpha * (0.7 + 0.3*Math.sin(d.pulse));
+        ctx.beginPath(); ctx.arc(d.x*W, d.y*H, d.r, 0, Math.PI*2);
+        ctx.fillStyle = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`; ctx.fill();
+      });
+      const reds = dots.filter(d => d.red);
+      for (let i = 0; i < reds.length; i++)
+        for (let j = i+1; j < reds.length; j++) {
+          const dist = Math.hypot((reds[i].x - reds[j].x)*W, (reds[i].y - reds[j].y)*H);
+          if (dist < 120) {
+            ctx.beginPath(); ctx.moveTo(reds[i].x*W, reds[i].y*H); ctx.lineTo(reds[j].x*W, reds[j].y*H);
+            ctx.strokeStyle = `rgba(229,62,62,${(1-dist/120)*0.08})`; ctx.lineWidth = 0.5; ctx.stroke();
+          }
+        }
+      requestAnimationFrame(draw);
+    })();
+  })();
+
+  /* ============================================================
+     2. HEADER — onde radio concentriche dal centro
+        Tema: "scrivici / siamo qui / segnale"
+        Due anelli sottili che si espandono lentamente e svaniscono,
+        periodicità lunga, molto discreti. + bracket angolari statici.
+     ============================================================ */
+  (function initHeader() {
+    const canvas = document.getElementById('header-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    // Due onde sfasate, periodo lungo, sottili
+    const waves = [
+      { r: 0, alpha: 0, age: 0, period: 200, maxR: 0 },
+      { r: 0, alpha: 0, age: -100, period: 200, maxR: 0 },
+    ];
+
+    function drawCorners(W, H) {
+      const sz = 24; ctx.lineWidth = 0.9;
+      ctx.strokeStyle = 'rgba(229,62,62,0.09)';
+      [[24,24,1,1],[W-24,24,-1,1],[24,H-24,1,-1],[W-24,H-24,-1,-1]].forEach(([x,y,dx,dy]) => {
+        ctx.beginPath(); ctx.moveTo(x+dx*sz,y); ctx.lineTo(x,y); ctx.lineTo(x,y+dy*sz); ctx.stroke();
+      });
+    }
+
+    let running = false, raf, t = 0;
+    function draw() {
+      t++;
+      const W = canvas.width, H = canvas.height;
+      const cx = W * 0.5, cy = H * 0.5;
+      ctx.clearRect(0, 0, W, H);
+      drawCorners(W, H);
+
+      waves.forEach(w => {
+        w.age++;
+        if (w.age < 0) return;
+        w.maxR = Math.min(W, H) * 0.48;
+        if (w.age === 0 || w.r >= w.maxR * 0.97) { w.r = 2; w.alpha = 0.18; w.age = 0; }
+        w.r += (w.maxR - w.r) * 0.008;
+        w.alpha *= 0.992;
+        if (w.alpha < 0.004) return;
+        ctx.beginPath();
+        ctx.arc(cx, cy, w.r, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(229,62,62,${w.alpha})`;
+        ctx.lineWidth = 0.8; ctx.stroke();
+      });
+
+      // Piccolo dot centrale pulsante
+      const pa = 0.12 + 0.07 * Math.sin(t * 0.05);
+      ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(229,62,62,${pa})`; ctx.fill();
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+    const io = new IntersectionObserver(es => { es.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); }); }, { threshold: 0.05 });
+    io.observe(section);
+  })();
+
+  /* ============================================================
+     3. CONTACTS SECTION — node network
+        Punti fluttuanti collegati da linee quando vicini.
+        Alcuni "nodi attivi" rossi più grandi, animati con glow.
+        Tema: rete di comunicazione, connessioni umane.
+     ============================================================ */
+  (function initContacts() {
+    const canvas = document.getElementById('contacts-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    const COUNT = 42;
+    const nodes = Array.from({ length: COUNT }, () => ({
+      x: rand(0,1), y: rand(0,1),
+      vx: rand(-0.012,0.012), vy: rand(-0.007,0.007),
+      r: rand(1,2.4),
+      alpha: rand(0.06,0.18),
+      red: Math.random() > 0.87,
+      pulse: rand(0, Math.PI*2), pulseSpeed: rand(0.012,0.028)
+    }));
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+
+      // Connections
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i+1; j < nodes.length; j++) {
+          const ax = nodes[i].x*W, ay = nodes[i].y*H;
+          const bx = nodes[j].x*W, by = nodes[j].y*H;
+          const dist = Math.hypot(ax-bx, ay-by);
+          const maxDist = nodes[i].red || nodes[j].red ? 130 : 95;
+          if (dist < maxDist) {
+            const strength = 1 - dist/maxDist;
+            const isRed = nodes[i].red || nodes[j].red;
+            ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+            ctx.strokeStyle = isRed
+              ? `rgba(229,62,62,${strength * 0.10})`
+              : `rgba(255,255,255,${strength * 0.05})`;
+            ctx.lineWidth = isRed ? 0.6 : 0.35; ctx.stroke();
+          }
+        }
+      }
+
+      // Nodes
+      nodes.forEach(d => {
+        d.pulse += d.pulseSpeed;
+        d.x += d.vx/W*50; d.y += d.vy/H*50;
+        if (d.x < -0.02) d.x = 1.02; if (d.x > 1.02) d.x = -0.02;
+        if (d.y < -0.02) d.y = 1.02; if (d.y > 1.02) d.y = -0.02;
+
+        const a = d.alpha * (0.65 + 0.35 * Math.sin(d.pulse));
+
+        if (d.red) {
+          // glow halo per nodi rossi
+          const grd = ctx.createRadialGradient(d.x*W, d.y*H, 0, d.x*W, d.y*H, d.r*5);
+          grd.addColorStop(0, `rgba(229,62,62,${a*0.5})`);
+          grd.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.beginPath(); ctx.arc(d.x*W, d.y*H, d.r*5, 0, Math.PI*2);
+          ctx.fillStyle = grd; ctx.fill();
+        }
+
+        ctx.beginPath(); ctx.arc(d.x*W, d.y*H, d.red ? d.r*1.4 : d.r, 0, Math.PI*2);
+        ctx.fillStyle = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`;
+        ctx.fill();
+      });
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+    const io = new IntersectionObserver(es => { es.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); }); }, { threshold: 0.02 });
+    io.observe(section);
+  })();
+
+  /* ============================================================
+     4. MAP SECTION — geo coordinate grid + radar sweep
+        Griglia lat/lon tenue sovrapposta alla mappa +
+        un sweep radar sottile che ruota attorno a un punto
+        fisso (centro sezione). Tematica geolocalizzazione.
+     ============================================================ */
+  (function initMap() {
+    const canvas = document.getElementById('map-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    let angle = 0;
+    let running = false, raf;
+
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Geo grid — linee orizzontali e verticali tenuissime
+      const STEP = 52;
+      ctx.strokeStyle = 'rgba(229,62,62,0.055)'; ctx.lineWidth = 0.5;
+      for (let x = STEP; x < W; x += STEP) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+      for (let y = STEP; y < H; y += STEP) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+      // Crosshair centrale (pin virtuale)
+      const cx = W * 0.5, cy = H * 0.42;
+      const csz = 10;
+      ctx.strokeStyle = 'rgba(229,62,62,0.22)'; ctx.lineWidth = 0.9;
+      ctx.beginPath(); ctx.moveTo(cx-csz, cy); ctx.lineTo(cx+csz, cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy-csz); ctx.lineTo(cx, cy+csz); ctx.stroke();
+      // dot centrale
+      ctx.beginPath(); ctx.arc(cx, cy, 2.8, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(229,62,62,0.35)'; ctx.fill();
+
+      // Radar sweep — arco che ruota
+      angle += 0.008;
+      const sweepR = Math.min(W, H) * 0.32;
+      const sweepWidth = Math.PI * 0.22;
+      const grd = ctx.createConicalGradient
+        ? null  // fallback a metodo manuale se non supportato
+        : null;
+
+      // Disegno sweep manuale (triangolo di arco)
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle);
+      const grad = ctx.createLinearGradient(0, 0, sweepR, 0);
+      grad.addColorStop(0, 'rgba(229,62,62,0.10)');
+      grad.addColorStop(1, 'rgba(229,62,62,0)');
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, sweepR, -sweepWidth * 0.5, sweepWidth * 0.5);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.restore();
+
+      // Cerchio perimetro radar
+      ctx.beginPath(); ctx.arc(cx, cy, sweepR, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(229,62,62,0.07)'; ctx.lineWidth = 0.7; ctx.stroke();
+      // Cerchio interno (metà)
+      ctx.beginPath(); ctx.arc(cx, cy, sweepR * 0.5, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(229,62,62,0.05)'; ctx.lineWidth = 0.5; ctx.stroke();
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+    const io = new IntersectionObserver(es => { es.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); }); }, { threshold: 0.05 });
+    io.observe(section);
+  })();
+
+  /* ============================================================
+     5. CTA — bracket corners + tracer line orizzontale
+        Una linea sottile scorre da sinistra a destra e svanisce,
+        loop continuo. Bracket statici agli angoli.
+     ============================================================ */
+  (function initCTA() {
+    const canvas = document.getElementById('cta-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    let tracerX = 0;
+
+    function drawCorners(W, H) {
+      const sz = 26; ctx.lineWidth = 0.9;
+      ctx.strokeStyle = 'rgba(229,62,62,0.10)';
+      [[26,26,1,1],[W-26,26,-1,1],[26,H-26,1,-1],[W-26,H-26,-1,-1]].forEach(([x,y,dx,dy]) => {
+        ctx.beginPath(); ctx.moveTo(x+dx*sz,y); ctx.lineTo(x,y); ctx.lineTo(x,y+dy*sz); ctx.stroke();
+      });
+    }
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+      drawCorners(W, H);
+
+      // Tracer line
+      tracerX = (tracerX + 0.7) % (W + 80);
+      const grd = ctx.createLinearGradient(tracerX - 80, 0, tracerX + 20, 0);
+      grd.addColorStop(0, 'rgba(229,62,62,0)');
+      grd.addColorStop(0.7, 'rgba(229,62,62,0.13)');
+      grd.addColorStop(1, 'rgba(229,62,62,0)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(tracerX - 80, H * 0.5 - 0.5, 100, 1);
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+    const io = new IntersectionObserver(es => { es.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); }); }, { threshold: 0.05 });
+    io.observe(section);
+  })();
+
+  /* ============================================================
+     6. FOOTER — glow dots + bracket corners (uguale index)
+     ============================================================ */
+  (function initFooter() {
+    const canvas = document.getElementById('footer-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const footer = canvas.parentElement;
+    function resize() { canvas.width = footer.offsetWidth; canvas.height = footer.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    const dots = Array.from({ length: 28 }, () => ({
+      x: rand(0.02,0.98), y: rand(0.05,0.95),
+      r: rand(1.0,3.2), alpha: rand(0.04,0.14),
+      red: Math.random() > 0.68,
+      phase: rand(0, Math.PI*2), speed: rand(0.006,0.018),
+      vx: rand(-0.015,0.015), vy: rand(-0.008,0.008)
+    }));
+
+    function drawStatic(W, H) {
+      ctx.strokeStyle = 'rgba(229,62,62,0.06)'; ctx.lineWidth = 0.8;
+      const sz = 22;
+      [[22,22,1,1],[W-22,22,-1,1],[22,H-22,1,-1],[W-22,H-22,-1,-1]].forEach(([x,y,dx,dy]) => {
+        ctx.beginPath(); ctx.moveTo(x+dx*sz,y); ctx.lineTo(x,y); ctx.lineTo(x,y+dy*sz); ctx.stroke();
+      });
+    }
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H); drawStatic(W,H);
+      dots.forEach(d => {
+        d.phase += d.speed;
+        d.x += d.vx/100; d.y += d.vy/100;
+        if (d.x < 0) d.x = 1; if (d.x > 1) d.x = 0;
+        if (d.y < 0) d.y = 1; if (d.y > 1) d.y = 0;
+        const a = d.alpha * (0.5 + 0.5*Math.sin(d.phase));
+        const grd = ctx.createRadialGradient(d.x*W,d.y*H,0,d.x*W,d.y*H,d.r*4);
+        grd.addColorStop(0, d.red ? `rgba(229,62,62,${a*0.6})` : `rgba(255,255,255,${a*0.4})`);
+        grd.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.beginPath(); ctx.arc(d.x*W,d.y*H,d.r*4,0,Math.PI*2); ctx.fillStyle=grd; ctx.fill();
+        ctx.beginPath(); ctx.arc(d.x*W,d.y*H,d.r,0,Math.PI*2);
+        ctx.fillStyle = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`; ctx.fill();
+      });
+      if (running) raf = requestAnimationFrame(draw);
+    }
+    const io = new IntersectionObserver(es => { es.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); }); }, { threshold: 0.05 });
+    io.observe(footer);
+  })();
+
+})();
+</script>
 </body>
-</html>

@@ -6,11 +6,11 @@
   <title>Admin — Print3D Studio</title>
   <style>
     :root {
-      --bg: #080808; --bg2: #0f0f0f; --bg3: #161616; --bg4: #1c1c1c;
-      --border: #222; --border2: #2a2a2a;
-      --red: #e53e3e; --red-dim: rgba(229,62,62,.12); --red-hover: #f56565;
-      --text: #e8e8e8; --text2: #888; --text3: #555;
-      --green: #48bb78; --yellow: #ecc94b; --blue: #63b3ed; --orange: #ed8936;
+      --bg: #060608; --bg2: #0c0c12; --bg3: #121218; --bg4: #181820;
+      --border: #1e1e2e; --border2: #2a2a3a;
+      --red: #ff3b3b; --red-dim: rgba(255,59,59,.1); --red-hover: #ff6060;
+      --text: #eeeeff; --text2: #7878a8; --text3: #44445a;
+      --green: #3dffa0; --yellow: #ffdd44; --blue: #44aaff; --orange: #ff7733;
       --font: 'Courier New', 'Courier', monospace;
       --radius: 6px;
       --sidebar-w: 220px;
@@ -21,32 +21,155 @@
 
     /* LOGIN */
     #login-screen {
-      position: fixed; inset: 0; background: var(--bg);
+      position: fixed; inset: 0; background: #02020a;
       display: flex; align-items: center; justify-content: center;
-      z-index: 1000; transition: opacity .4s;
+      z-index: 1000; transition: opacity .6s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
     }
     #login-screen.hidden { opacity: 0; pointer-events: none; }
+    #login-canvas { position: absolute; inset: 0; z-index: 0; }
+
+    .login-wrap {
+      position: relative; z-index: 10;
+      display: flex; flex-direction: column; align-items: center;
+      animation: lw-in .9s cubic-bezier(0.16,1,0.3,1) .1s both;
+    }
+    @keyframes lw-in { from { opacity:0; transform:translateY(28px) scale(.96); } to { opacity:1; transform:none; } }
+
+    /* HUD corners on login */
+    .lc { position: absolute; width: 56px; height: 56px; pointer-events: none; }
+    .lc svg { width: 100%; height: 100%; }
+    .lc--tl { top: -28px; left: -28px; }
+    .lc--tr { top: -28px; right: -28px; transform: scaleX(-1); }
+    .lc--bl { bottom: -28px; left: -28px; transform: scaleY(-1); }
+    .lc--br { bottom: -28px; right: -28px; transform: scale(-1); }
+    .lc-line {
+      stroke: #e53e3e; fill: none; stroke-width: 1.5;
+      stroke-dasharray: 90; stroke-dashoffset: 90;
+      animation: lc-draw .7s cubic-bezier(0.16,1,0.3,1) .6s forwards;
+    }
+    .lc-line2 {
+      stroke: #ff6b35; fill: none; stroke-width: .6; opacity: .5;
+      stroke-dasharray: 90; stroke-dashoffset: 90;
+      animation: lc-draw .7s cubic-bezier(0.16,1,0.3,1) .75s forwards;
+    }
+    @keyframes lc-draw { to { stroke-dashoffset: 0; } }
+
+    /* top badge */
+    .login-badge {
+      font-family: 'Courier New', monospace; font-size: 8px; letter-spacing: 4px;
+      color: #e53e3e; text-transform: uppercase; margin-bottom: 32px;
+      padding: 5px 18px; border: 1px solid rgba(229,62,62,.25); border-radius: 2px;
+      background: rgba(229,62,62,.06);
+      opacity: 0; animation: lw-in .5s ease .5s both;
+      position: relative; overflow: hidden;
+    }
+    .login-badge::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(229,62,62,.18), transparent);
+      animation: badge-shine 3s ease 1.2s infinite;
+    }
+    @keyframes badge-shine { to { left: 200%; } }
+
     .login-box {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 8px; padding: 48px 40px; width: 360px; text-align: center;
+      background: rgba(6,6,18,.88);
+      border: 1px solid rgba(255,59,59,.22);
+      border-radius: 4px; padding: 48px 44px 40px; width: 360px; text-align: center;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 0 0 1px rgba(255,59,59,.08), 0 32px 80px rgba(0,0,0,.8),
+                  0 0 80px rgba(255,59,59,.12), inset 0 1px 0 rgba(255,255,255,.04);
+      position: relative;
     }
-    .login-logo { font-size: 22px; letter-spacing: 3px; margin-bottom: 6px; }
-    .login-logo span { color: var(--red); }
-    .login-sub { color: var(--text3); font-size: 11px; letter-spacing: 2px; margin-bottom: 36px; }
+
+    .login-logo {
+      font-family: 'Courier New', monospace;
+      font-size: 26px; letter-spacing: 5px; margin-bottom: 4px;
+      color: #f0f0ff;
+      text-shadow: 0 0 30px rgba(229,62,62,.4);
+      opacity: 0; animation: lw-in .5s ease .3s both;
+    }
+    .login-logo span {
+      color: #e53e3e;
+      text-shadow: 0 0 20px rgba(229,62,62,.8), 0 0 60px rgba(229,62,62,.3);
+    }
+    .login-sub {
+      font-family: 'Courier New', monospace;
+      color: rgba(104,104,160,.7); font-size: 9px; letter-spacing: 4px; margin-bottom: 40px;
+      opacity: 0; animation: lw-in .5s ease .4s both;
+    }
+
+    /* separator */
+    .login-sep {
+      width: 100%; height: 1px; margin-bottom: 28px;
+      background: linear-gradient(90deg, transparent, rgba(229,62,62,.3), rgba(255,107,53,.2), transparent);
+      opacity: 0; animation: lw-in .4s ease .5s both;
+    }
+
+    .login-field {
+      position: relative; margin-bottom: 16px;
+      opacity: 0; animation: lw-in .5s ease .6s both;
+    }
+    .login-field-label {
+      font-family: 'Courier New', monospace; font-size: 8px; letter-spacing: 3px;
+      color: rgba(229,62,62,.6); text-align: left; display: block; margin-bottom: 6px;
+    }
     .login-box input {
-      width: 100%; background: var(--bg3); border: 1px solid var(--border2);
-      color: var(--text); font-family: var(--font); font-size: 14px;
-      padding: 12px 16px; border-radius: var(--radius); outline: none;
-      transition: border-color .2s; margin-bottom: 16px;
+      width: 100%; background: rgba(229,62,62,.04);
+      border: 1px solid rgba(229,62,62,.15);
+      color: #f0f0ff; font-family: 'Courier New', monospace; font-size: 14px;
+      padding: 13px 16px 13px 42px; border-radius: 3px; outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      letter-spacing: 2px;
     }
-    .login-box input:focus { border-color: var(--red); }
+    .login-box input:focus {
+      border-color: rgba(229,62,62,.6);
+      background: rgba(229,62,62,.07);
+      box-shadow: 0 0 0 3px rgba(229,62,62,.1), 0 0 20px rgba(229,62,62,.08);
+    }
+    .login-field-icon {
+      position: absolute; left: 14px; bottom: 14px;
+      width: 14px; height: 14px; opacity: .4;
+      color: #e53e3e;
+    }
+
     .login-btn {
-      width: 100%; background: var(--red); color: #fff; border: none; cursor: pointer;
-      font-family: var(--font); font-size: 13px; letter-spacing: 2px;
-      padding: 12px; border-radius: var(--radius); transition: background .2s;
+      width: 100%; margin-top: 8px;
+      background: linear-gradient(135deg, #e53e3e 0%, #c02020 60%, #a01010 100%);
+      color: #fff; border: none; cursor: pointer;
+      font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 4px;
+      padding: 14px; border-radius: 3px;
+      transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .2s, filter .2s;
+      position: relative; overflow: hidden;
+      box-shadow: 0 4px 24px rgba(229,62,62,.35);
+      opacity: 0; animation: lw-in .5s ease .75s both;
     }
-    .login-btn:hover { background: var(--red-hover); }
-    .login-error { color: var(--red); font-size: 12px; margin-top: 12px; min-height: 18px; }
+    .login-btn::before {
+      content: ''; position: absolute; top: -50%; left: -60%; width: 50%; height: 200%;
+      background: rgba(255,255,255,.12); transform: skewX(-18deg);
+      transition: left .45s cubic-bezier(0.16,1,0.3,1);
+    }
+    .login-btn:hover { transform: translateY(-2px) scale(1.01); filter: brightness(1.15); box-shadow: 0 8px 32px rgba(229,62,62,.5); }
+    .login-btn:hover::before { left: 150%; }
+    .login-btn:active { transform: scale(.97); }
+
+    /* status row */
+    .login-status {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(229,62,62,.08);
+      opacity: 0; animation: lw-in .5s ease .9s both;
+    }
+    .login-status-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: #e53e3e;
+      box-shadow: 0 0 8px #e53e3e; animation: ls-blink 1.6s ease-in-out infinite;
+    }
+    @keyframes ls-blink { 0%,100%{opacity:1} 50%{opacity:.1} }
+    .login-status-text { font-family: 'Courier New', monospace; font-size: 8px; letter-spacing: 2px; color: rgba(104,104,160,.5); }
+
+    .login-error {
+      color: #ff4a4a; font-family: 'Courier New', monospace;
+      font-size: 10px; letter-spacing: 1px; margin-top: 10px; min-height: 16px;
+      text-shadow: 0 0 10px rgba(229,62,62,.5);
+    }
 
     /* LAYOUT */
     #app { display: flex; height: 100vh; }
@@ -71,12 +194,14 @@
     .sidebar-logo-sub { color: var(--text3); font-size: 10px; letter-spacing: 1px; }
     .nav-item {
       display: flex; align-items: center; gap: 10px; padding: 10px 20px;
-      color: var(--text2); cursor: pointer; transition: all .15s;
+      color: var(--text2); cursor: pointer;
+      transition: color .18s, background .18s, border-left-color .18s, transform .15s;
       border-left: 2px solid transparent; font-size: 12px; letter-spacing: 1px;
       user-select: none;
     }
-    .nav-item:hover { color: var(--text); background: var(--bg3); }
-    .nav-item.active { color: var(--red); border-left-color: var(--red); background: var(--red-dim); }
+    .nav-item:hover { color: var(--text); background: var(--bg3); transform: translateX(2px); }
+    .nav-item.active { color: var(--red); border-left-color: var(--red); background: var(--red-dim);
+      box-shadow: inset 0 0 20px rgba(255,59,59,.04); }
     .nav-item svg { width: 14px; height: 14px; flex-shrink: 0; }
     .nav-badge {
       margin-left: auto; background: var(--red); color: #fff; border-radius: 10px;
@@ -126,6 +251,12 @@
     .rec-filter-btn:hover { border-color:var(--red); color:var(--text); }
     .rec-filter-btn.active { border-color:var(--red); color:var(--red); background:var(--red-dim); }
     .rec-admin-grid { display:flex; flex-direction:column; gap:10px; }
+    .pagina-tab.active { background: var(--red) !important; color: #fff !important; border-color: var(--red) !important; }
+    .gallery-thumb-wrap { position:relative; width:100%; aspect-ratio:4/3; background:var(--bg3); border:1px dashed var(--border2); border-radius:var(--radius); overflow:hidden; display:flex; align-items:center; justify-content:center; margin-bottom:8px; }
+    .gallery-thumb-wrap img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .gallery-thumb-empty { font-size:28px; color:var(--border2); }
+    .feat-row { display:grid; grid-template-columns:56px 1fr 1fr; gap:10px; align-items:start; padding:12px; background:var(--bg3); border-radius:var(--radius); border:1px solid var(--border); }
+    .feat-row label { font-size:10px; letter-spacing:2px; color:var(--text3); margin-bottom:4px; display:block; }
     .rec-admin-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; transition:border-color .2s; }
     .rec-admin-card:hover { border-color:var(--border2); }
     .rec-admin-card.stato-in_attesa { border-left:3px solid var(--yellow); }
@@ -166,13 +297,25 @@
     .rec-edit-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .rec-admin-empty { text-align:center; padding:48px; color:var(--text3); font-size:11px; letter-spacing:2px; }
 
-    /* STATS */
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-    .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+    .stat-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 20px; transition: border-color .2s, transform .2s, box-shadow .2s;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:1px;
+      background: linear-gradient(90deg, transparent, rgba(255,59,59,.25), transparent);
+      opacity: 0; transition: opacity .2s;
+    }
+    .stat-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+    .stat-card:hover::before { opacity: 1; }
     .stat-label { color: var(--text3); font-size: 10px; letter-spacing: 2px; margin-bottom: 8px; }
     .stat-val { font-size: 30px; line-height: 1; }
-    .stat-val.red { color: var(--red); } .stat-val.green { color: var(--green); }
-    .stat-val.yellow { color: var(--yellow); } .stat-val.blue { color: var(--blue); }
+    .stat-val.red { color: var(--red); text-shadow: 0 0 20px rgba(255,59,59,.4); }
+    .stat-val.green { color: var(--green); text-shadow: 0 0 20px rgba(61,255,160,.3); }
+    .stat-val.yellow { color: var(--yellow); text-shadow: 0 0 20px rgba(255,221,68,.3); }
+    .stat-val.blue { color: var(--blue); text-shadow: 0 0 20px rgba(68,170,255,.3); }
     .stat-sub { color: var(--text3); font-size: 10px; margin-top: 4px; }
 
     /* TABLE */
@@ -185,9 +328,9 @@
     .table-scroll { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; min-width: 460px; }
     th { text-align: left; padding: 9px 14px; font-size: 10px; letter-spacing: 2px; color: var(--text3); border-bottom: 1px solid var(--border); background: var(--bg3); font-weight: normal; white-space: nowrap; }
-    td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; transition: background .15s; }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: var(--bg3); }
+    tr:hover td { background: rgba(255,59,59,.04); }
 
     /* BADGES */
     .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
@@ -323,12 +466,41 @@
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">PRINT<span>3D</span></div>
-    <div class="login-sub">PANNELLO ADMIN</div>
-    <input type="password" id="login-pwd" placeholder="Password" autocomplete="current-password">
-    <button class="login-btn" id="login-btn">ACCEDI</button>
-    <div class="login-error" id="login-err"></div>
+  <canvas id="login-canvas"></canvas>
+
+  <div class="login-wrap">
+    <div class="login-badge">// SISTEMA DI CONTROLLO — ACCESSO RISERVATO</div>
+
+    <div class="login-box">
+      <!-- HUD corners -->
+      <div class="lc lc--tl"><svg viewBox="0 0 56 56"><polyline points="0,28 0,0 28,0" class="lc-line"/><polyline points="0,28 0,0 28,0" class="lc-line2"/></svg></div>
+      <div class="lc lc--tr"><svg viewBox="0 0 56 56"><polyline points="0,28 0,0 28,0" class="lc-line"/><polyline points="0,28 0,0 28,0" class="lc-line2"/></svg></div>
+      <div class="lc lc--bl"><svg viewBox="0 0 56 56"><polyline points="0,28 0,0 28,0" class="lc-line"/><polyline points="0,28 0,0 28,0" class="lc-line2"/></svg></div>
+      <div class="lc lc--br"><svg viewBox="0 0 56 56"><polyline points="0,28 0,0 28,0" class="lc-line"/><polyline points="0,28 0,0 28,0" class="lc-line2"/></svg></div>
+
+      <div class="login-logo">PRINT<span>3D</span></div>
+      <div class="login-sub">PANNELLO AMMINISTRAZIONE</div>
+      <div class="login-sep"></div>
+
+      <div class="login-field">
+        <label class="login-field-label">// PASSWORD</label>
+        <svg class="login-field-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="7" width="10" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/>
+        </svg>
+        <input type="password" id="login-pwd" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="login-btn" id="login-btn">⟶ &nbsp;ACCEDI AL SISTEMA</button>
+      <div class="login-error" id="login-err"></div>
+
+      <div class="login-status">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="login-status-dot"></div>
+          <span class="login-status-text">SYS ONLINE</span>
+        </div>
+        <span class="login-status-text" id="login-time">—</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -366,6 +538,10 @@
         <svg viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4 4.5.7-3.2 3.1.75 4.4L8 11l-4.05 2.2.75-4.4L1.5 5.7 6 5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
         Recensioni
         <span class="nav-badge" id="badge-recensioni" style="display:none;">0</span>
+      </div>
+      <div class="nav-item" data-panel="pagine">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Pagine Categorie
       </div>
       <div class="nav-item" data-panel="maintenance" id="nav-maint">
         <svg viewBox="0 0 16 16" fill="none"><path d="M13.5 2.5L10 6l-1.5-1.5L12 1l-2-1-3 3a3 3 0 004 4l4.5 4.5a1.4 1.4 0 002-2L13 5l1-2.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M1 14l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
@@ -896,6 +1072,73 @@
 
       </div><!-- /panel-recensioni -->
 
+      <!-- ═══════════════════════════════════════════════════
+           PANNELLO PAGINE CATEGORIE
+           ═══════════════════════════════════════════════════ -->
+      <div class="panel" id="panel-pagine">
+
+        <div style="margin-bottom:20px;">
+          <div style="font-size:10px;letter-spacing:3px;color:var(--text3);margin-bottom:6px;">SELEZIONA PAGINA</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="pagine-tabs">
+            <button class="btn btn-ghost btn-sm pagina-tab active" data-slug="decorativi">Decorativi</button>
+            <button class="btn btn-ghost btn-sm pagina-tab" data-slug="componentistica">Componentistica</button>
+            <button class="btn btn-ghost btn-sm pagina-tab" data-slug="prototipi">Prototipi</button>
+            <button class="btn btn-ghost btn-sm pagina-tab" data-slug="personalizzati">Personalizzati</button>
+          </div>
+        </div>
+
+        <div id="pagine-editor" style="display:grid;gap:20px;">
+
+          <!-- TESTI -->
+          <div class="card">
+            <div class="card-head">TESTI HERO &amp; CTA</div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-field full">
+                  <label>TITOLO HERO <span style="color:var(--text3);font-weight:400;">(usa \\n per andare a capo, la seconda riga diventa rossa)</span></label>
+                  <input type="text" id="pag-hero-titolo" placeholder="OGGETTI\nDECORATIVI">
+                </div>
+                <div class="form-field full">
+                  <label>SOTTOTITOLO HERO</label>
+                  <textarea id="pag-hero-sub" rows="3"></textarea>
+                </div>
+                <div class="form-field full">
+                  <label>TITOLO CTA <span style="color:var(--text3);font-weight:400;">(usa \\n per andare a capo, la seconda riga diventa rossa)</span></label>
+                  <input type="text" id="pag-cta-titolo" placeholder="Dal concept\nall'oggetto in giorni.">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FEATURES -->
+          <div class="card">
+            <div class="card-head">FEATURES (3 celle)</div>
+            <div class="card-body">
+              <div id="pag-features-list" style="display:grid;gap:16px;">
+                <!-- iniettate via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- GALLERY -->
+          <div class="card">
+            <div class="card-head">GALLERY (4 elementi)</div>
+            <div class="card-body">
+              <div id="pag-gallery-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+                <!-- iniettati via JS -->
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:12px;padding-top:4px;">
+            <a id="pag-preview-link" href="/decorativi" target="_blank" class="btn btn-ghost btn-sm">Anteprima →</a>
+            <button class="btn btn-primary btn-sm" id="btn-save-pagina">SALVA PAGINA</button>
+          </div>
+          <div id="pag-msg" style="display:none;font-family:var(--font-mono);font-size:11px;letter-spacing:2px;padding:10px 16px;border-radius:var(--radius);"></div>
+
+        </div>
+      </div><!-- /panel-pagine -->
+
     </div>
   </main>
 </div>
@@ -1075,14 +1318,29 @@ async function doLogin() {
       TOKEN = d.token; LOGIN_TIME = new Date();
       sessionStorage.setItem('admin_token', TOKEN);
       sessionStorage.setItem('admin_login_time', LOGIN_TIME.toISOString());
-      document.getElementById('login-screen').classList.add('hidden');
+      const ls = document.getElementById('login-screen');
+      ls.style.transition = ''; // ripristina transizione normale
+      ls.classList.add('hidden');
+      // Fallback: se transitionend non scatta entro 800ms, forza display:none
+      setTimeout(() => { if (ls.classList.contains('hidden')) ls.style.display = 'none'; }, 800);
       document.getElementById('app').style.display = 'flex';
+      if (window._loginCanvasStop) window._loginCanvasStop();
       loadDashboard();
     } else { err.textContent = d.message || 'Password errata'; }
   } catch { err.textContent = 'Errore di connessione'; }
 }
 document.getElementById('login-btn').addEventListener('click', doLogin);
 document.getElementById('login-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// Nasconde completamente il login-screen dopo il fade-out
+(function() {
+  const ls = document.getElementById('login-screen');
+  ls.addEventListener('transitionend', function(e) {
+    if (e.propertyName === 'opacity' && ls.classList.contains('hidden')) {
+      ls.style.display = 'none';
+    }
+  });
+})();
 
 // ── Ripristino automatico sessione ─────────────────────────
 (async function tryRestoreSession() {
@@ -1093,8 +1351,13 @@ document.getElementById('login-pwd').addEventListener('keydown', e => { if (e.ke
       headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN }
     });
     if (res.ok) {
-      document.getElementById('login-screen').classList.add('hidden');
+      const ls = document.getElementById('login-screen');
+      // Nasconde immediatamente senza transizione (nessuno vede il login)
+      ls.style.transition = 'none';
+      ls.classList.add('hidden');
+      ls.style.display = 'none';
       document.getElementById('app').style.display = 'flex';
+      if (window._loginCanvasStop) window._loginCanvasStop();
       loadDashboard();
     } else {
       // Token non più valido, rimuovi e mostra login
@@ -1112,10 +1375,26 @@ function doLogout() {
   TOKEN = null;
   sessionStorage.removeItem('admin_token');
   sessionStorage.removeItem('admin_login_time');
-  document.getElementById('login-screen').classList.remove('hidden');
+  const ls = document.getElementById('login-screen');
+  // Ripristina display e transition prima di rimuovere hidden
+  ls.style.transition = 'none'; // prima senza transizione per evitare flash
+  ls.style.display = 'flex';
+  ls.offsetHeight; // reflow
+  ls.style.transition = ''; // ripristina transizione CSS
+  ls.offsetHeight; // secondo reflow per registrare la transizione
+  ls.classList.remove('hidden');
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-pwd').value = '';
   closeSidebar();
+  // Reset CSS animations su tutti gli elementi animati del login
+  const animEls = ls.querySelectorAll('.login-wrap, .login-badge, .login-logo, .login-sub, .login-sep, .login-field, .login-btn, .login-status, .lc-line, .lc-line2');
+  animEls.forEach(el => {
+    el.style.animation = 'none';
+    el.offsetHeight; // reflow forzato
+    el.style.animation = '';
+  });
+  // Riavvia canvas
+  if (window._loginCanvasStart) window._loginCanvasStart();
 }
 document.getElementById('logout-btn').addEventListener('click', doLogout);
 
@@ -1656,7 +1935,7 @@ function showPanel(name) {
   const TITLES = {
     dashboard:'DASHBOARD', prenotazioni:'PRENOTAZIONI',
     catalogo:'CATALOGO', settings:'IMPOSTAZIONI', maintenance:'MANUTENZIONE',
-    recensioni:'RECENSIONI'
+    recensioni:'RECENSIONI', pagine:'PAGINE CATEGORIE'
   };
   document.getElementById('topbar-title').textContent = TITLES[name] || name.toUpperCase();
   closeSidebar();
@@ -1666,6 +1945,7 @@ function showPanel(name) {
   if (name === 'settings')     loadSettings();
   if (name === 'maintenance')  loadMaintenance();
   if (name === 'recensioni')   loadRecensioni();
+  if (name === 'pagine')       loadPagine();
 }
 // Re-bind all nav items (now includes maintenance)
 document.querySelectorAll('.nav-item').forEach(el => {
@@ -2044,6 +2324,605 @@ function showNotif(msg, type) {
   document.body.appendChild(t);
   setTimeout(() => { t.style.opacity='0'; setTimeout(() => t.remove(), 350); }, 2500);
 }
+
+// ══════════════════════════════════════════════════════════
+// PAGINE CATEGORIE
+// ══════════════════════════════════════════════════════════
+
+let pagineData = {};
+let pagineSlug = 'decorativi';
+let pagineUploading = {}; // idx -> bool
+
+async function loadPagine() {
+  try {
+    pagineData = await api('/api/admin/cat-pages');
+    renderPagineEditor();
+  } catch(e) {
+    console.error('loadPagine error', e);
+  }
+}
+
+function renderPagineEditor() {
+  const p = pagineData[pagineSlug];
+  if (!p) return;
+
+  // Testi
+  document.getElementById('pag-hero-titolo').value = p.hero_titolo || '';
+  document.getElementById('pag-hero-sub').value    = p.hero_sub    || '';
+  document.getElementById('pag-cta-titolo').value  = p.cta_titolo  || '';
+
+  // Preview link
+  document.getElementById('pag-preview-link').href = '/' + pagineSlug;
+
+  // Features
+  const fl = document.getElementById('pag-features-list');
+  fl.innerHTML = (p.features || []).map((f, i) => `
+    <div class="feat-row">
+      <div>
+        <label>ICONA</label>
+        <input type="text" value="${f.icon || ''}" id="pag-feat-icon-${i}" style="width:100%;text-align:center;font-size:20px;padding:6px;" maxlength="4">
+      </div>
+      <div>
+        <label>TITOLO</label>
+        <input type="text" value="${escHtml(f.titolo || '')}" id="pag-feat-titolo-${i}" style="width:100%;">
+      </div>
+      <div>
+        <label>DESCRIZIONE</label>
+        <textarea id="pag-feat-desc-${i}" rows="3" style="width:100%;resize:vertical;">${escHtml(f.desc || '')}</textarea>
+      </div>
+    </div>`).join('');
+
+  // Gallery
+  const gl = document.getElementById('pag-gallery-list');
+  gl.innerHTML = (p.gallery || []).map((g, i) => `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+      <div style="font-size:10px;letter-spacing:2px;color:var(--text3);margin-bottom:8px;">ELEMENTO ${i+1}${i===0?' (grande, span 2)':''}</div>
+      <div class="gallery-thumb-wrap" id="pag-thumb-wrap-${i}">
+        ${g.foto ? `<img src="${g.foto}" id="pag-thumb-img-${i}" alt="">` : `<span class="gallery-thumb-empty" id="pag-thumb-img-${i}">◈</span>`}
+      </div>
+      <input type="text" value="${escHtml(g.label || '')}" id="pag-gallery-label-${i}" placeholder="Etichetta" style="width:100%;margin-bottom:8px;">
+      <div class="gallery-thumb-actions">
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;flex:1;justify-content:center;display:flex;align-items:center;gap:6px;" id="pag-upload-label-${i}">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 5l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1 13h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span id="pag-upload-txt-${i}">Carica</span>
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" onchange="uploadGalleryFoto(${i}, this)">
+        </label>
+        ${g.foto ? `<button class="btn btn-ghost btn-sm" onclick="removeGalleryFoto(${i})" style="color:var(--red);">Rimuovi</button>` : ''}
+      </div>
+    </div>`).join('');
+
+  hidePagMsg();
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function uploadGalleryFoto(idx, input) {
+  if (!input.files[0]) return;
+  if (pagineUploading[idx]) return;
+  pagineUploading[idx] = true;
+
+  const txt = document.getElementById('pag-upload-txt-' + idx);
+  if (txt) txt.textContent = 'Caricamento…';
+
+  const fd = new FormData();
+  fd.append('foto', input.files[0]);
+
+  try {
+    const res = await fetch(`/api/admin/cat-pages/${pagineSlug}/gallery/${idx}/foto`, {
+      method: 'POST',
+      headers: { 'x-admin-token': token },
+      body: fd,
+    });
+    const data = await res.json();
+    if (data.success) {
+      pagineData[pagineSlug].gallery[idx].foto = data.foto;
+      showPagMsg('Foto caricata ✓', 'green');
+      renderPagineEditor();
+    } else {
+      showPagMsg(data.message || 'Errore upload', 'red');
+    }
+  } catch(e) {
+    showPagMsg('Errore di rete', 'red');
+  }
+  pagineUploading[idx] = false;
+  if (txt) txt.textContent = 'Carica';
+}
+
+async function removeGalleryFoto(idx) {
+  try {
+    await fetch(`/api/admin/cat-pages/${pagineSlug}/gallery/${idx}/foto`, {
+      method: 'DELETE',
+      headers: { 'x-admin-token': token },
+    });
+    pagineData[pagineSlug].gallery[idx].foto = '';
+    renderPagineEditor();
+    showPagMsg('Foto rimossa', 'yellow');
+  } catch(e) {
+    showPagMsg('Errore rimozione', 'red');
+  }
+}
+
+document.getElementById('btn-save-pagina').addEventListener('click', async () => {
+  const p = pagineData[pagineSlug];
+
+  // Raccogli testi
+  const heroTitolo = document.getElementById('pag-hero-titolo').value.trim();
+  const heroSub    = document.getElementById('pag-hero-sub').value.trim();
+  const ctaTitolo  = document.getElementById('pag-cta-titolo').value.trim();
+
+  // Raccogli features
+  const features = (p.features || []).map((f, i) => ({
+    icon:   document.getElementById(`pag-feat-icon-${i}`)?.value   || f.icon,
+    titolo: document.getElementById(`pag-feat-titolo-${i}`)?.value || f.titolo,
+    desc:   document.getElementById(`pag-feat-desc-${i}`)?.value   || f.desc,
+  }));
+
+  // Raccogli label gallery (foto già salvate via upload diretto)
+  const gallery = (p.gallery || []).map((g, i) => ({
+    ...g,
+    label: document.getElementById(`pag-gallery-label-${i}`)?.value || g.label,
+  }));
+
+  const payload = { hero_titolo: heroTitolo, hero_sub: heroSub, cta_titolo: ctaTitolo, features, gallery };
+
+  try {
+    const res = await fetch(`/api/admin/cat-pages/${pagineSlug}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.success) {
+      pagineData[pagineSlug] = data.page;
+      showPagMsg('Pagina salvata ✓', 'green');
+    } else {
+      showPagMsg('Errore salvataggio', 'red');
+    }
+  } catch(e) {
+    showPagMsg('Errore di rete', 'red');
+  }
+});
+
+// Tab switching
+document.getElementById('pagine-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.pagina-tab');
+  if (!btn) return;
+  document.querySelectorAll('.pagina-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  pagineSlug = btn.dataset.slug;
+  if (pagineData[pagineSlug]) renderPagineEditor();
+  else loadPagine();
+});
+
+function showPagMsg(msg, color) {
+  const el = document.getElementById('pag-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.background = color === 'green' ? 'rgba(72,187,120,.15)' : color === 'red' ? 'rgba(229,62,62,.15)' : 'rgba(236,201,75,.15)';
+  el.style.color = color === 'green' ? 'var(--green)' : color === 'red' ? 'var(--red)' : '#ecc94b';
+  el.style.border = `1px solid ${color === 'green' ? 'var(--green)' : color === 'red' ? 'var(--red)' : '#ecc94b'}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(hidePagMsg, 3500);
+}
+
+function hidePagMsg() {
+  const el = document.getElementById('pag-msg');
+  if (el) el.style.display = 'none';
+}
+// ═══════════════════════════════════════════════════════
+// LOGIN SCREEN — CANVAS ENGINE v3 (mobile-optimized)
+// ═══════════════════════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('login-canvas');
+  if (!canvas) return;
+
+  // Rileva mobile per ridurre carico
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  let W, H, cx, cy, DPR;
+  let rafId = null;
+  let running = false;
+  let lastTime = 0;
+  let cachedNebulaT = -999;
+  let cachedNebula  = null;
+
+  function resize() {
+    // DPR cap a 2 su mobile per non sovraccaricare la GPU
+    DPR = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
+    const cssW = window.innerWidth;
+    const cssH = window.innerHeight;
+    canvas.width  = Math.round(cssW * DPR);
+    canvas.height = Math.round(cssH * DPR);
+    canvas.style.width  = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    W  = cssW;
+    H  = cssH;
+    cx = W / 2;
+    cy = H / 2;
+    cachedNebulaT = -999;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── START / STOP ──────────────────────────────────────
+  window._loginCanvasStart = function() {
+    if (running) return;
+    running = true;
+    lastTime = 0;
+    if (!shockIntervalId) shockIntervalId = setInterval(addShock, isMobile ? 2800 : 1800);
+    rafId = requestAnimationFrame(loop);
+  };
+  window._loginCanvasStop = function() {
+    running = false;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    if (shockIntervalId) { clearInterval(shockIntervalId); shockIntervalId = null; }
+  };
+
+  // Pausa automatica su tab in background
+  document.addEventListener('visibilitychange', () => {
+    const loginVisible = !document.getElementById('login-screen').classList.contains('hidden');
+    if (document.hidden) { window._loginCanvasStop(); }
+    else if (loginVisible) { window._loginCanvasStart(); }
+  });
+
+  let mx = cx, my = cy;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+  // t in secondi reali (delta-time based) → velocità costante a qualsiasi FPS
+  let t = 0;
+
+  // ── PARAMETRI ADATTIVI ────────────────────────────────
+  const STAR_COUNT    = isMobile ? 120 : 280;
+  const BURST_COUNT   = isMobile ? 50  : 120;
+  const DNA_SPARKS_N  = isMobile ? 25  : 60;
+  const AURORA_LAYERS = isMobile ? 1   : 3;
+  const GRID_LINES    = isMobile ? 10  : 18;
+  const GRID_HLINES   = isMobile ? 6   : 10;
+  const AURORA_STEP   = isMobile ? 12  : 6;   // pixel tra vertici aurora
+  const DNA_STEPS     = isMobile ? 40  : 80;
+
+  // ── STELLE ────────────────────────────────────────────
+  const STARS = Array.from({length: STAR_COUNT}, () => ({
+    x: Math.random(), y: Math.random(),
+    r: 0.3 + Math.random() * 1.4,
+    speed: 0.00008 + Math.random() * 0.00025,
+    twinkle: Math.random() * Math.PI * 2,
+    ts: 0.8 + Math.random() * 1.5,   // scala su t in secondi
+    col: Math.random() < 0.1 ? '#ff6b35' : Math.random() < 0.07 ? '#ff3333' : '#ffffff',
+    streak: !isMobile && Math.random() < 0.08,
+  }));
+
+  // ── ICOSAEDRO 3D ──────────────────────────────────────
+  const PHI = (1 + Math.sqrt(5)) / 2;
+  const ICO_VERTS_BASE = [
+    [-1,PHI,0],[1,PHI,0],[-1,-PHI,0],[1,-PHI,0],
+    [0,-1,PHI],[0,1,PHI],[0,-1,-PHI],[0,1,-PHI],
+    [PHI,0,-1],[PHI,0,1],[-PHI,0,-1],[-PHI,0,1],
+  ].map(([x,y,z]) => { const l = Math.sqrt(x*x+y*y+z*z); return [x/l,y/l,z/l]; });
+  const ICO_EDGES = [
+    [0,1],[0,5],[0,7],[0,10],[0,11],
+    [1,5],[1,7],[1,8],[1,9],
+    [2,3],[2,6],[2,10],[2,11],[2,4],
+    [3,4],[3,6],[3,8],[3,9],
+    [4,5],[4,9],[4,11],
+    [5,9],[5,11],
+    [6,7],[6,8],[6,10],
+    [7,8],[7,10],
+    [8,9],[10,11],
+  ];
+
+  // ── DNA SPARKS ────────────────────────────────────────
+  const DNA_SPARKS = Array.from({length: DNA_SPARKS_N}, () => ({
+    prog: Math.random(), speed: 0.15 + Math.random() * 0.3,  // unità/s
+    strand: Math.random() < 0.5 ? 0 : 1,
+    r: 1 + Math.random() * 2, life: Math.random(),
+  }));
+
+  // ── AURORA ────────────────────────────────────────────
+  const AURORA = [
+    { freq: 0.18, amp: 0.09, phase: 0,   col: [229,62,62],  alpha: 0.13 },
+    { freq: 0.24, amp: 0.07, phase: 1.8, col: [255,107,53], alpha: 0.10 },
+    { freq: 0.14, amp: 0.05, phase: 3.5, col: [180,20,120], alpha: 0.07 },
+    { freq: 0.30, amp: 0.04, phase: 5.1, col: [229,62,62],  alpha: 0.08 },
+  ].slice(0, isMobile ? 2 : 4);
+
+  // ── BURST ─────────────────────────────────────────────
+  const BURST = Array.from({length: BURST_COUNT}, () => {
+    const a = Math.random() * Math.PI * 2;
+    const spd = 25 + Math.random() * 85;  // px/s
+    return {
+      a, vx: Math.cos(a)*spd, vy: Math.sin(a)*spd*0.55,
+      life: Math.random(), maxLife: 0.6 + Math.random() * 1.0,
+      r: 0.5 + Math.random() * 2.0,
+      col: Math.random()<0.3 ? '#ff6b35' : Math.random()<0.12 ? '#ffffff' : '#e53e3e',
+    };
+  });
+
+  // ── SHOCKRINGS ────────────────────────────────────────
+  const shocks = [];
+  function addShock() {
+    if (!W) return;
+    const ox = (Math.random()-0.5)*W*0.6, oy = (Math.random()-0.5)*H*0.6;
+    shocks.push({ x: cx+ox, y: cy+oy, r: 0, maxR: 160+Math.random()*180, alpha: 0.7,
+      col: Math.random()<0.5 ? [229,62,62] : [255,107,53] });
+  }
+  let shockIntervalId = setInterval(addShock, isMobile ? 2800 : 1800);
+  addShock(); addShock();
+
+  // ── PROIEZIONE 3D ─────────────────────────────────────
+  function project3D(x, y, z, rx, ry) {
+    const x1 = x * Math.cos(ry) - z * Math.sin(ry);
+    const z1 = x * Math.sin(ry) + z * Math.cos(ry);
+    const y2 = y * Math.cos(rx) - z1 * Math.sin(rx);
+    const z2 = y * Math.sin(rx) + z1 * Math.cos(rx);
+    const pz = 3.5 + z2;
+    return { sx: x1 / pz, sy: y2 / pz, z: z2 };
+  }
+
+  // ── GRADIENT CACHE (evita ricreazione ogni frame) ─────
+  function getNebula(pulse) {
+    if (t - cachedNebulaT > 0.1) {
+      cachedNebulaT = t;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W,H)*0.8);
+      g.addColorStop(0,   `rgba(30,4,8,${(0.12 + pulse*0.08).toFixed(3)})`);
+      g.addColorStop(0.4, 'rgba(12,2,20,0.10)');
+      g.addColorStop(1,   'rgba(2,2,8,0)');
+      cachedNebula = g;
+    }
+    return cachedNebula;
+  }
+
+  // ── LOOP PRINCIPALE ───────────────────────────────────
+  function loop(now) {
+    if (!running) return;
+    const dt = lastTime ? Math.min((now - lastTime) / 1000, 0.05) : 0.016; // cap a 50ms
+    lastTime = now;
+    t += dt;
+    try { draw(dt); } catch(e) { console.warn('canvas draw error', e); }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function draw(dt) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#02020a';
+    ctx.fillRect(0, 0, W, H);
+
+    const pulse  = 0.5 + 0.5 * Math.sin(t * 0.75);
+    const pulse2 = 0.5 + 0.5 * Math.sin(t * 1.2 + 1.2);
+
+    // ── BG NEBULA (cache) ──
+    if (!isMobile) {
+      ctx.fillStyle = getNebula(pulse);
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // ── STELLE ──
+    ctx.globalAlpha = 1;
+    for (const s of STARS) {
+      const twink = 0.35 + 0.65 * Math.abs(Math.sin(s.twinkle + t * s.ts));
+      const sx = ((s.x + t * s.speed) % 1) * W;
+      const sy = s.y * H;
+      ctx.globalAlpha = twink * 0.9;
+      ctx.fillStyle = s.col;
+      ctx.beginPath(); ctx.arc(sx, sy, s.r, 0, Math.PI*2); ctx.fill();
+      if (s.streak && twink > 0.6) {
+        const streakLen = s.speed * W * 900;
+        const sg = ctx.createLinearGradient(sx - streakLen, sy, sx, sy);
+        sg.addColorStop(0, 'transparent'); sg.addColorStop(1, s.col);
+        ctx.strokeStyle = sg; ctx.lineWidth = s.r * 0.6; ctx.globalAlpha = twink * 0.5;
+        ctx.beginPath(); ctx.moveTo(sx - streakLen, sy); ctx.lineTo(sx, sy); ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // ── AURORA WAVES (gradient riusato orizzontalmente) ──
+    for (const aw of AURORA) {
+      const [r,g,b] = aw.col;
+      const alphaVal = aw.alpha * (1 + pulse * 0.4);
+      // Gradient fisso orizzontale — non cambia per layer, riusabile
+      const wg = ctx.createLinearGradient(0, 0, W, 0);
+      wg.addColorStop(0,   `rgba(${r},${g},${b},0)`);
+      wg.addColorStop(0.2, `rgba(${r},${g},${b},${alphaVal.toFixed(3)})`);
+      wg.addColorStop(0.5, `rgba(${r},${g},${b},${(alphaVal*1.6).toFixed(3)})`);
+      wg.addColorStop(0.8, `rgba(${r},${g},${b},${alphaVal.toFixed(3)})`);
+      wg.addColorStop(1,   `rgba(${r},${g},${b},0)`);
+      for (let layer = 0; layer < AURORA_LAYERS; layer++) {
+        const yBase = H * (0.25 + layer * 0.25);
+        ctx.beginPath();
+        ctx.moveTo(0, yBase);
+        for (let x = 0; x <= W; x += AURORA_STEP) {
+          const y = yBase + H * aw.amp * Math.sin(x * 0.006 + t * aw.freq + aw.phase + layer*1.1)
+                          + H * aw.amp * 0.4 * Math.sin(x * 0.012 + t * aw.freq * 1.7 + aw.phase);
+          ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = wg;
+        ctx.lineWidth = 1.2 + layer * 0.5;
+        ctx.globalAlpha = 0.6 + pulse * 0.4;
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // ── GRIGLIA LASER PROSPETTICA ──
+    // Su mobile: un unico gradient riusato per tutte le linee verticali
+    const gridAlpha = 0.12 + pulse * 0.06;
+    const horizon = H * 0.48;
+    const vpx = isMobile ? cx : cx + (mx - cx) * 0.04;
+    ctx.save();
+    const gridCol0 = `rgba(229,62,62,${(gridAlpha*1.4).toFixed(3)})`;
+    const gridCol1 = `rgba(229,62,62,0)`;
+    for (let i = 0; i <= GRID_LINES; i++) {
+      const xPos = (i / GRID_LINES) * W;
+      if (!isMobile) {
+        const grad = ctx.createLinearGradient(xPos, H, vpx, horizon);
+        grad.addColorStop(0, gridCol0);
+        grad.addColorStop(0.6, `rgba(229,62,62,${(gridAlpha*0.8).toFixed(3)})`);
+        grad.addColorStop(1, gridCol1);
+        ctx.strokeStyle = grad;
+      } else {
+        ctx.strokeStyle = `rgba(229,62,62,${(gridAlpha*0.9).toFixed(3)})`;
+      }
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(xPos, H); ctx.lineTo(vpx, horizon); ctx.stroke();
+    }
+    for (let i = 1; i <= GRID_HLINES; i++) {
+      const prog = i / GRID_HLINES;
+      const y = horizon + (H - horizon) * (prog * prog);
+      const xLeft  = vpx - vpx * prog * 1.1;
+      const xRight = vpx + (W - vpx) * prog * 1.1;
+      const hAlpha = gridAlpha * (0.3 + prog * 0.9) * (0.5 + 0.5 * Math.sin(t * 1.6 - i * 0.5));
+      ctx.strokeStyle = `rgba(229,62,62,${hAlpha.toFixed(3)})`; ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(xLeft, y); ctx.lineTo(xRight, y); ctx.stroke();
+    }
+    // horizon glow
+    const hg = ctx.createLinearGradient(0, horizon, W, horizon);
+    hg.addColorStop(0,'transparent');
+    hg.addColorStop(0.3,`rgba(255,80,30,${(0.18+pulse*0.12).toFixed(3)})`);
+    hg.addColorStop(0.5,`rgba(255,100,30,${(0.3+pulse*0.18).toFixed(3)})`);
+    hg.addColorStop(0.7,`rgba(255,80,30,${(0.18+pulse*0.12).toFixed(3)})`);
+    hg.addColorStop(1,'transparent');
+    ctx.strokeStyle=hg; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(0,horizon); ctx.lineTo(W,horizon); ctx.stroke();
+    ctx.restore();
+
+    // ── ICOSAEDRO 3D ──
+    const icoScale = Math.min(W,H) * 0.13 * (1 + pulse * 0.04);
+    const ry = t * 0.5;
+    const rx = t * 0.3 + Math.sin(t * 0.2) * 0.4;
+    const icoY = cy - H * 0.02;
+    const verts = ICO_VERTS_BASE.map(([x,y,z]) => {
+      const p = project3D(x, y, z, rx, ry);
+      return { sx: cx + p.sx * icoScale, sy: icoY + p.sy * icoScale, z: p.z };
+    });
+    for (const [a,b] of ICO_EDGES) {
+      const va = verts[a], vb = verts[b];
+      const depth = (va.z + vb.z) * 0.5;
+      const depthAlpha = 0.15 + (depth + 1) * 0.22;
+      const glowPulse = 0.5 + 0.5 * Math.sin(t * 1.2 + a + b);
+      const isOrange = (a + b) % 5 === 0;
+      ctx.strokeStyle = isOrange
+        ? `rgba(255,107,53,${(depthAlpha*(0.6+glowPulse*0.5)).toFixed(3)})`
+        : `rgba(229,62,62,${(depthAlpha*(0.55+glowPulse*0.45)).toFixed(3)})`;
+      ctx.lineWidth = 0.6 + glowPulse * 0.8;
+      ctx.beginPath(); ctx.moveTo(va.sx, va.sy); ctx.lineTo(vb.sx, vb.sy); ctx.stroke();
+    }
+    for (const v of verts) {
+      const vg = 0.5 + 0.5 * Math.sin(t*1.8 + v.z*2);
+      ctx.fillStyle = `rgba(255,100,60,${(0.4+vg*0.6).toFixed(3)})`;
+      ctx.beginPath(); ctx.arc(v.sx, v.sy, 1.2 + vg*1.4, 0, Math.PI*2); ctx.fill();
+    }
+
+    // ── DNA DOPPIA ELICA ──
+    const dnaAmpl = Math.min(W,H)*0.055;
+    const dnaH    = H * 0.75;
+    const dnaTop  = H * 0.12;
+    // Gradient verticali — cambiano lentamente, li aggiorniamo ogni frame ma sono solo 2
+    for (let strand = 0; strand < 2; strand++) {
+      const offset = strand === 0 ? 0 : Math.PI;
+      ctx.beginPath();
+      for (let i = 0; i <= DNA_STEPS; i++) {
+        const prog = i / DNA_STEPS;
+        const y = dnaTop + prog * dnaH;
+        const x = cx + Math.sin(prog * Math.PI * 5 + t * 1.4 + offset) * dnaAmpl;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      const dg = ctx.createLinearGradient(0, dnaTop, 0, dnaTop + dnaH);
+      const c  = strand === 0 ? '229,62,62' : '255,107,53';
+      dg.addColorStop(0,    `rgba(${c},0)`);
+      dg.addColorStop(0.15, `rgba(${c},0.35)`);
+      dg.addColorStop(0.5,  `rgba(${c},0.55)`);
+      dg.addColorStop(0.85, `rgba(${c},0.35)`);
+      dg.addColorStop(1,    `rgba(${c},0)`);
+      ctx.strokeStyle = dg; ctx.lineWidth = 1.2; ctx.stroke();
+    }
+    // rungs
+    const rungCount = isMobile ? 10 : 18;
+    for (let i = 1; i < rungCount; i++) {
+      const prog = i / rungCount;
+      const y  = dnaTop + prog * dnaH;
+      const x0 = cx + Math.sin(prog * Math.PI * 5 + t * 1.4) * dnaAmpl;
+      const x1 = cx + Math.sin(prog * Math.PI * 5 + t * 1.4 + Math.PI) * dnaAmpl;
+      const rp  = 0.4 + 0.6 * Math.abs(Math.sin(t * 2.5 + i * 0.7));
+      ctx.strokeStyle = `rgba(255,140,80,${(0.2+rp*0.35).toFixed(3)})`; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+      ctx.fillStyle = `rgba(255,160,80,${(0.5+rp*0.4).toFixed(3)})`;
+      ctx.beginPath(); ctx.arc(x0, y, 1.2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x1, y, 1.2, 0, Math.PI*2); ctx.fill();
+    }
+    // DNA sparks
+    for (const sp of DNA_SPARKS) {
+      sp.prog += sp.speed * dt;
+      sp.life += dt * 1.8;
+      if (sp.prog > 1) { sp.prog = 0; sp.strand = Math.random()<0.5?0:1; sp.life = 0; }
+      const age = sp.life < 0.3 ? sp.life/0.3 : sp.life > 0.7 ? (1-sp.life)/0.3 : 1;
+      if (age <= 0) continue;
+      const y = dnaTop + sp.prog * dnaH;
+      const x = cx + Math.sin(sp.prog * Math.PI * 5 + t * 1.4 + (sp.strand===0?0:Math.PI)) * dnaAmpl;
+      ctx.globalAlpha = age * 0.9;
+      ctx.fillStyle = sp.strand===0 ? '#ff4444' : '#ff8844';
+      ctx.beginPath(); ctx.arc(x, y, sp.r * (0.5+age*0.8), 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // ── PARTICLE BURST ──
+    for (const p of BURST) {
+      p.life += dt;
+      if (p.life > p.maxLife) {
+        p.life = 0; p.a = Math.random()*Math.PI*2;
+        const spd = 25+Math.random()*85;
+        p.vx = Math.cos(p.a)*spd; p.vy = Math.sin(p.a)*spd*0.55;
+      }
+      const prog = p.life / p.maxLife;
+      const age  = prog < 0.12 ? prog/0.12 : prog > 0.7 ? (1-prog)/0.3 : 1;
+      ctx.globalAlpha = age * 0.75;
+      ctx.fillStyle = p.col;
+      ctx.beginPath();
+      ctx.arc(cx + p.vx * p.life, cy + p.vy * p.life, p.r * age, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // ── SHOCKRINGS ──
+    for (let i = shocks.length-1; i >= 0; i--) {
+      const s = shocks[i];
+      s.r += (160 + s.r * 0.8) * dt;
+      s.alpha *= Math.pow(0.968, dt * 60);
+      if (s.r > s.maxR || s.alpha < 0.008) { shocks.splice(i,1); continue; }
+      const prog = s.r / s.maxR;
+      const [sr,sg,sb] = s.col;
+      ctx.strokeStyle = `rgba(${sr},${sg},${sb},${(s.alpha*0.7*(1-prog*0.5)).toFixed(3)})`;
+      ctx.lineWidth = 1.5 * (1-prog*0.8);
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = `rgba(${sr},${sg},${sb},${(s.alpha*0.25).toFixed(3)})`;
+      ctx.lineWidth = 4*(1-prog);
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r*0.75, 0, Math.PI*2); ctx.stroke();
+    }
+
+    // ── SCANLINE ──
+    const scanY = (t * 50) % H;
+    ctx.fillStyle = `rgba(229,62,62,${(0.06+pulse2*0.04).toFixed(3)})`;
+    ctx.fillRect(0, scanY-2, W, 4);
+  }
+
+  // Avvia subito
+  running = true;
+  rafId = requestAnimationFrame(loop);
+
+  // Login clock
+  const ltime = document.getElementById('login-time');
+  if (ltime) {
+    setInterval(() => {
+      const n = new Date();
+      ltime.textContent = [n.getHours(), n.getMinutes(), n.getSeconds()].map(v => String(v).padStart(2,'0')).join(':');
+    }, 1000);
+  }
+})();
 </script>
 </body>
 </html>

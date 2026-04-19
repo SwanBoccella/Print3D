@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Strato Non Trovato | Print3D Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #04040a;
+      --border:  #1a1a28;
+      --text:    #f4f4ff;
+      --muted:   #7070b0;
+      --red:     #ff3030;
+      --red-dim: #6b1a1a;
+      --orange:  #ff6b35;
+      --cyan:    #00ffff;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-mono:    'Space Mono', monospace;
+      --font-body:    'Inter', sans-serif;
+      --expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--font-body); }
+
+    body::before {
+      content:''; position:fixed; inset:0; z-index:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity:0.03; pointer-events:none;
+    }
+
+    #scene-canvas { position:fixed; inset:0; z-index:1; pointer-events:none; }
+
+    .scanlines {
+      position:fixed; inset:0; z-index:2; pointer-events:none;
+      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
+    }
+
+
+
+    /* HUD */
+    .hud-bar {
+      position:fixed; top:0; left:0; right:0; z-index:40; height:44px;
+      display:flex; align-items:center; justify-content:space-between; padding:0 26px;
+      border-bottom:1px solid rgba(30,30,42,0.7);
+      background:linear-gradient(180deg,rgba(6,6,8,0.98),transparent);
+      opacity:0; transform:translateY(-8px);
+      animation:slide-dn 0.6s var(--expo) 0.2s forwards;
+    }
+    @keyframes slide-dn { to { opacity:1; transform:none; } }
+    .hud-brand { font-family:var(--font-display); font-size:15px; letter-spacing:4px; color:rgba(240,240,255,0.4); }
+    .hud-brand span { color:var(--red); }
+    .hud-status { font-family:var(--font-mono); font-size:9px; color:var(--muted); display:flex; gap:18px; align-items:center; }
+    .hud-dot { width:5px; height:5px; border-radius:50%; background:var(--red); box-shadow:0 0 5px var(--red); animation:blink 1.8s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.1} }
+
+    /* BOTTOM */
+    .bottom-bar {
+      position:fixed; bottom:0; left:0; right:0; z-index:40; height:38px;
+      display:flex; align-items:center; justify-content:space-between; padding:0 26px;
+      border-top:1px solid rgba(30,30,42,0.7);
+      background:linear-gradient(0deg,rgba(6,6,8,0.98),transparent);
+      opacity:0; animation:fi 0.6s ease 1.5s forwards;
+    }
+    @keyframes fi { to { opacity:1; } }
+    .bc { font-family:var(--font-mono); font-size:8px; letter-spacing:2px; color:var(--muted); opacity:0.3; }
+    .bu { font-family:var(--font-mono); font-size:8px; color:var(--red); opacity:0.4; }
+
+    /* MAIN */
+    #root {
+      position:relative; z-index:10; width:100vw; height:100vh;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden;
+    }
+
+    /* BADGE — just text, no border clash with corners */
+    .layer-badge {
+      font-family:var(--font-mono); font-size:9px; letter-spacing:3px;
+      color:var(--red); text-transform:uppercase;
+      padding:5px 16px; border:1px solid rgba(229,62,62,0.22); border-radius:2px;
+      background:rgba(229,62,62,0.05); margin-bottom:62px;
+      position:relative; overflow:hidden;
+      opacity:0; transform:translateY(6px);
+      animation:fi2 0.6s var(--expo) 1.0s forwards;
+    }
+    .layer-badge::after {
+      content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(229,62,62,0.12),transparent);
+      animation:shine 3.5s ease 2.2s infinite;
+    }
+    @keyframes shine { to { left:200%; } }
+    @keyframes fi2 { to { opacity:1; transform:none; } }
+
+    /* 404 */
+    .giant-wrap {
+      position:relative; display:flex; align-items:center; justify-content:center;
+      margin-bottom:14px; opacity:0; transform:translateY(28px) scale(0.93);
+      animation:hero-in 1s var(--expo) 0.45s forwards;
+    }
+    @keyframes hero-in { to { opacity:1; transform:none; } }
+    .giant-404 {
+      font-family:var(--font-display); font-size:clamp(130px,21vw,300px);
+      line-height:0.85; letter-spacing:-4px;
+      color:transparent; -webkit-text-stroke:1px rgba(229,62,62,0.18);
+      position:relative; user-select:none;
+    }
+    .giant-404::before, .giant-404::after {
+      content:'404'; position:absolute; inset:0;
+      font-family:inherit; font-size:inherit; line-height:inherit; letter-spacing:inherit;
+    }
+    .giant-404::before {
+      color:var(--red); -webkit-text-stroke:0;
+      clip-path:polygon(0 0,100% 0,100% 45%,0 45%);
+      animation:gt 4.5s infinite steps(1); opacity:0.88;
+    }
+    .giant-404::after {
+      color:var(--cyan); -webkit-text-stroke:0;
+      clip-path:polygon(0 58%,100% 58%,100% 100%,0 100%);
+      animation:gb 4.5s infinite steps(1); opacity:0.62;
+    }
+    @keyframes gt {
+      0%,100%{opacity:.88}
+    }
+    @keyframes gb {
+      0%,100%{opacity:.62}
+    }
+    .giant-404-fill {
+      font-family:var(--font-display); font-size:clamp(130px,21vw,300px);
+      line-height:0.85; letter-spacing:-4px;
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(135deg,#ff5555 0%,#ff3030 40%,#cc1a1a 75%,#880000 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      filter:drop-shadow(0 0 35px rgba(255,48,48,.7)) drop-shadow(0 0 80px rgba(255,48,48,.25));
+      animation:pglow 3.2s ease-in-out infinite; pointer-events:none;
+    }
+    @keyframes pglow {
+      0%,100%{filter:drop-shadow(0 0 28px rgba(255,48,48,.65)) drop-shadow(0 0 65px rgba(255,48,48,.22))}
+      50%{filter:drop-shadow(0 0 55px rgba(255,48,48,1)) drop-shadow(0 0 130px rgba(255,107,53,.35))}
+    }
+    .glitch-sweep {
+      position:absolute; left:-8%; right:-8%; height:2px;
+      background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+      opacity:0; pointer-events:none; filter:blur(1px);
+      animation:sweep 5.5s ease-in-out infinite;
+    }
+    @keyframes sweep {
+      0%{top:-5%;opacity:0} 5%{opacity:.7} 50%{top:108%;opacity:.7} 55%{opacity:0} 100%{top:108%;opacity:0}
+    }
+
+    /* SUBTITLE */
+    .subtitle-wrap {
+      text-align:center; margin-bottom:26px;
+      opacity:0; transform:translateY(10px);
+      animation:fi2 0.7s var(--expo) 1.1s forwards;
+    }
+    .subtitle-main { font-family:var(--font-display); font-size:clamp(20px,2.8vw,34px); letter-spacing:7px; opacity:.9; line-height:1; margin-bottom:10px; }
+    .subtitle-sub { font-family:var(--font-mono); font-size:10px; color:var(--muted); letter-spacing:1.5px; line-height:1.9; }
+    .subtitle-sub .ac { color:var(--cyan); }
+
+    /* LAYER BARS */
+    .layers-viz {
+      display:flex; gap:3px; margin-bottom:28px;
+      opacity:0; animation:fi2 0.7s var(--expo) 1.3s forwards;
+    }
+    .lyr { width:clamp(26px,3.8vw,44px); height:5px; border-radius:1px; background:var(--border); position:relative; overflow:hidden; }
+    .lyr-fill { position:absolute; top:0; left:0; height:100%; border-radius:inherit; width:0%; transition:width 0.07s steps(1), background 0.07s steps(1); }
+    @keyframes lf { from { transform:scaleX(0); } }
+
+    /* BUTTONS */
+    .cta-group {
+      display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
+      opacity:0; transform:translateY(12px);
+      animation:fi2 0.8s var(--expo) 1.55s forwards;
+    }
+    .btn {
+      font-family:var(--font-mono); font-size:10px; letter-spacing:3px;
+      text-transform:uppercase; text-decoration:none;
+      padding:13px 28px; border-radius:2px; position:relative; overflow:hidden;
+      cursor:pointer; transition:transform 0.18s var(--spring), box-shadow 0.2s, filter 0.2s;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn:active { transform:scale(0.95)!important; }
+    .btn--p {
+      background: linear-gradient(135deg, #ff3030 0%, #cc1a1a 60%, #991010 100%);
+      color:#fff; border:none;
+      box-shadow: 0 4px 20px rgba(255,48,48,.4);
+    }
+    .btn--p::before { content:''; position:absolute; top:-50%; left:-60%; width:50%; height:200%; background:rgba(255,255,255,.16); transform:skewX(-18deg); transition:left .4s var(--expo); }
+    .btn--p:hover { transform:translateY(-3px) scale(1.04); filter:brightness(1.15); box-shadow:0 8px 32px rgba(255,48,48,.6); }
+    .btn--p:hover::before { left:150%; }
+    .btn--g {
+      background:transparent; color:var(--text);
+      border:1px solid rgba(255,48,48,.2);
+      transition:transform 0.18s var(--spring), border-color .2s, box-shadow .2s, background .2s;
+    }
+    .btn--g::before { content:''; position:absolute; inset:0; background:rgba(255,48,48,.06); transform:scaleX(0); transform-origin:left; transition:transform .3s var(--expo); }
+    .btn--g:hover { transform:translateY(-2px) scale(1.02); border-color:rgba(255,48,48,.5); box-shadow:0 4px 18px rgba(255,48,48,.15); }
+    .btn--g:hover::before { transform:scaleX(1); }
+
+    /* TELEMETRY */
+    .telemetry {
+      position:fixed; right:22px; top:50%; transform:translateY(-50%);
+      display:flex; flex-direction:column; gap:9px; z-index:15;
+      opacity:0; animation:fi 0.5s ease 1.8s forwards;
+    }
+    .tl { display:flex; flex-direction:column; gap:2px; }
+    .tl-l { font-family:var(--font-mono); font-size:7px; letter-spacing:2px; color:var(--muted); opacity:.4; }
+    .tl-v { font-family:var(--font-mono); font-size:10px; color:var(--text); opacity:.6; }
+    .tl-v.r { color:var(--red); }
+    .tl-s { width:100%; height:1px; background:var(--border); margin:3px 0; }
+
+    /* ERROR LOG */
+    .error-log {
+      position:fixed; left:22px; top:50%; transform:translateY(-50%);
+      width:168px; z-index:15; opacity:0; animation:fi 0.5s ease 2.0s forwards;
+    }
+    .lh { font-family:var(--font-mono); font-size:7px; letter-spacing:3px; color:var(--red); margin-bottom:9px; opacity:.5; }
+    .ll {
+      font-family:var(--font-mono); font-size:8px; color:var(--muted);
+      padding:3px 0; border-bottom:1px solid var(--border); display:flex; gap:6px;
+      opacity:0; transform:translateX(-5px);
+      animation:login .35s var(--expo) var(--ld,2.2s) forwards;
+    }
+    @keyframes login { to { opacity:1; transform:none; } }
+    .lt { color:#44446a; min-width:30px; }
+    .lm { opacity:.5; }
+    .lm.e { color:var(--red); opacity:.8; }
+
+    /* PARTICLES */
+    .particles { position:fixed; inset:0; z-index:3; pointer-events:none; }
+    .p {
+      position:absolute; border-radius:50%; opacity:0;
+      animation:flt var(--dur,8s) linear var(--del,0s) infinite;
+    }
+    @keyframes flt {
+      0%{transform:translateY(100vh) translateX(0);opacity:0}
+      8%{opacity:.7} 92%{opacity:.3}
+      100%{transform:translateY(-10vh) translateX(var(--dx,0px));opacity:0}
+    }
+
+    /* PRINT PROGRESS */
+    .print-progress {
+      position:fixed; bottom:38px; left:0; right:0;
+      display:flex; align-items:center; justify-content:center; gap:12px;
+      z-index:30; opacity:0; animation:fi 0.5s ease 2.2s forwards;
+    }
+    .ppl { font-family:var(--font-mono); font-size:8px; letter-spacing:2px; color:var(--muted); opacity:.35; }
+    .ppb { width:110px; height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+    .ppf { height:100%; background:linear-gradient(90deg,var(--red),var(--cyan)); width:0%; animation:ppgo 2.8s var(--expo) 2.6s forwards; }
+    @keyframes ppgo { to { width:7%; } }
+    .ppp { font-family:var(--font-mono); font-size:9px; color:var(--red); min-width:26px; }
+
+    @media(max-width:680px){
+      .telemetry,.error-log{display:none}
+      .hud-status>span:not(.hud-dot){font-size:8px}
+    }
+  </style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+<canvas id="scene-canvas"></canvas>
+<div class="particles" id="particles"></div>
+
+<div class="hud-bar">
+  <div class="hud-brand">PRINT<span>3D</span> STUDIO</div>
+  <div class="hud-status">
+    <div class="hud-dot"></div>
+    <span id="hud-time">—</span>
+    <span style="color:var(--red)">ERR:404</span>
+    <span>FDM v3.6.2</span>
+  </div>
+</div>
+
+<div class="error-log">
+  <div class="lh">// SYSTEM LOG</div>
+  <div class="ll" style="--ld:2.1s"><span class="lt">00:01</span><span class="lm">INIT request</span></div>
+  <div class="ll" style="--ld:2.3s"><span class="lt">00:02</span><span class="lm">Routing...</span></div>
+  <div class="ll" style="--ld:2.5s"><span class="lt">00:04</span><span class="lm e">PATH_NOT_FOUND</span></div>
+  <div class="ll" style="--ld:2.7s"><span class="lt">00:04</span><span class="lm e">LAYER ERR #404</span></div>
+  <div class="ll" style="--ld:2.9s"><span class="lt">00:05</span><span class="lm">Extruder halt</span></div>
+  <div class="ll" style="--ld:3.1s"><span class="lt">00:06</span><span class="lm">Print aborted</span></div>
+  <div class="ll" style="--ld:3.3s"><span class="lt">00:07</span><span class="lm">Await input...</span></div>
+</div>
+
+<div id="root">
+  <div class="layer-badge">// ERRORE DI STAMPA — STRATO NON TROVATO</div>
+
+  <div class="giant-wrap">
+    <div class="giant-404">404</div>
+    <div class="giant-404-fill">404</div>
+    <div class="glitch-sweep"></div>
+  </div>
+
+  <div class="subtitle-wrap">
+    <div class="subtitle-main">STRATO MANCANTE</div>
+    <div class="subtitle-sub">
+      La pagina che cerchi non è mai stata estrusa.<br>
+      <span class="ac">PATH_NOT_FOUND</span> — il materiale è esaurito a questo livello.
+    </div>
+  </div>
+
+  <div class="layers-viz" id="layers-viz">
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+    <div class="lyr"><div class="lyr-fill"></div></div>
+  </div>
+
+  <div class="cta-group">
+    <a href="/" class="btn btn--p">
+      <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
+        <path d="M5 1L1 5L5 9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M1 5H9"       stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      TORNA ALL'INIZIO
+    </a>
+    <a href="/catalogo" class="btn btn--g">CATALOGO</a>
+    <a href="/contatti" class="btn btn--g">CONTATTI</a>
+    <a href="javascript:location.reload()" class="btn btn--g">↺ AGGIORNA</a>
+  </div>
+</div>
+
+<div class="telemetry">
+  <div class="tl"><div class="tl-l">NOZZLE TEMP</div><div class="tl-v r">— °C</div></div>
+  <div class="tl-s"></div>
+  <div class="tl"><div class="tl-l">BED TEMP</div><div class="tl-v">60 °C</div></div>
+  <div class="tl-s"></div>
+  <div class="tl"><div class="tl-l">LAYER HEIGHT</div><div class="tl-v r">N/A</div></div>
+  <div class="tl-s"></div>
+  <div class="tl"><div class="tl-l">MATERIAL</div><div class="tl-v">PLA+</div></div>
+  <div class="tl-s"></div>
+  <div class="tl"><div class="tl-l">ERROR CODE</div><div class="tl-v r">0x404</div></div>
+  <div class="tl-s"></div>
+  <div class="tl"><div class="tl-l">STATUS</div><div class="tl-v r">HALTED</div></div>
+</div>
+
+<div class="bottom-bar">
+  <div class="bc">PRINT3D.STUDIO — SYS:ERR — LAYER:0x404</div>
+  <div class="bu" id="bottom-uid">UID:—</div>
+</div>
+
+<div class="print-progress">
+  <span class="ppl">PRINT PROGRESS</span>
+  <div class="ppb"><div class="ppf"></div></div>
+  <span class="ppp" id="pp-pct">0%</span>
+</div>
+
+<script>
+// CLOCK
+(function(){ const e=document.getElementById('hud-time');
+  function t(){ const n=new Date(); e.textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':'); }
+  t(); setInterval(t,1000);
+})();
+
+// UID
+document.getElementById('bottom-uid').textContent='UID:'+Math.random().toString(36).substr(2,8).toUpperCase();
+
+// PROGRESS
+setTimeout(()=>{ let v=0; const e=document.getElementById('pp-pct');
+  const s=()=>{ if(v<7){ v++; e.textContent=v+'%'; setTimeout(s,110); } }; s();
+},2700);
+
+// PARTICLES
+(function(){
+  const c=document.getElementById('particles');
+  const cols=['#e53e3e','#00f0ff','rgba(255,255,255,0.6)'];
+  for(let i=0;i<38;i++){
+    const el=document.createElement('div'); el.className='p';
+    const col=cols[i%cols.length]; const sz=1.2+Math.random()*2.5;
+    el.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:${col};--dur:${6+Math.random()*12}s;--del:${-Math.random()*12}s;--dx:${(Math.random()-.5)*140}px;${col==='#00f0ff'?'box-shadow:0 0 5px #00f0ff':col==='#e53e3e'?'box-shadow:0 0 5px #e53e3e':''}`;
+    c.appendChild(el);
+  }
+})();
+
+// GLITCH BARS
+(function(){
+  const fills = Array.from(document.querySelectorAll('.lyr-fill'));
+  const colors = ['#ff3030','#cc1a1a','#ff5555','#00ffff','#6b1a1a','#ff3030','#ff6b35'];
+  const states = fills.map(() => ({
+    w: Math.random() * 100,
+    col: colors[0],
+    nextTick: 400 + Math.random() * 1200
+  }));
+
+  function tick(i) {
+    const s = states[i];
+    const f = fills[i];
+    const r = Math.random();
+    // mostly red, rarely cyan, sometimes empty or near-full
+    if (r < 0.08)       { s.w = 0; s.col = '#ff3030'; }
+    else if (r < 0.14)  { s.w = 100; s.col = '#00ffff'; }
+    else if (r < 0.22)  { s.w = Math.random()*15; s.col='#6b1a1a'; }
+    else                { s.w = 30 + Math.random()*70; s.col = colors[Math.floor(Math.random()*colors.length)]; }
+
+    f.style.width = s.w + '%';
+    f.style.background = s.col;
+    if (s.col === '#00ffff') f.style.boxShadow = '0 0 8px #00ffff, 0 0 16px rgba(0,255,255,.4)';
+    else if (s.w > 85)      f.style.boxShadow = '0 0 8px #ff3030, 0 0 16px rgba(255,48,48,.3)';
+    else if (s.col === '#ff6b35') f.style.boxShadow = '0 0 6px #ff6b35';
+    else                    f.style.boxShadow = 'none';
+
+    s.nextTick = 120 + Math.random() * 900;
+    setTimeout(() => tick(i), s.nextTick);
+  }
+
+  // stagger start after entrance animation
+  fills.forEach((_, i) => setTimeout(() => tick(i), 1600 + i * 80));
+})();
+document.querySelectorAll('.btn').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{ const r=btn.getBoundingClientRect(); btn.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.16}px,${(e.clientY-r.top-r.height/2)*.16}px) scale(1.03)`; });
+  btn.addEventListener('mouseleave',()=>btn.style.transform='');
+});
+
+// ══════════════════════════════════════════════════════
+// CANVAS — SISTEMA ESTREMO (nessuna griglia)
+// 1. Plasma Web (nodi + filamenti connessi)
+// 2. Faglie/Rift che si aprono e chiudono
+// 3. Filamento FDM fuso che cade dall'alto
+// 4. Vortici di scintille
+// 5. Shockwave radiali automatici
+// 6. Glitch lines
+// ══════════════════════════════════════════════════════
+const canvas=document.getElementById('scene-canvas');
+const ctx=canvas.getContext('2d');
+let W,H,cx,cy;
+function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; cx=W/2; cy=H/2; }
+resize(); window.addEventListener('resize',resize);
+let mx=cx, my=cy;
+document.addEventListener('mousemove',e=>{ mx=e.clientX; my=e.clientY; });
+let t=0;
+
+// ── PLASMA WEB NODES ────────────────────────────────
+const NODES=58;
+const nodes=Array.from({length:NODES},(_,i)=>{
+  const a=Math.random()*Math.PI*2, d=80+Math.random()*Math.max(500,Math.max(W||800,H||600)*0.7);
+  return {
+    bx:(cx||400)+Math.cos(a)*d*0.8, by:(cy||300)+Math.sin(a)*d*0.6,
+    phase:Math.random()*Math.PI*2, amp:18+Math.random()*65,
+    freq:0.0006+Math.random()*0.0025,
+    col:Math.random()<0.28?'c':'r',
+    pt:Math.random()*1000,
+  };
+});
+function npos(n,t){ return { x:n.bx+Math.sin(t*n.freq*.7+n.phase)*n.amp+Math.cos(t*n.freq*1.4+n.phase*1.5)*n.amp*.45, y:n.by+Math.cos(t*n.freq*.9+n.phase*.9)*n.amp*.6+Math.sin(t*n.freq*1.2+n.phase*2)*n.amp*.3 }; }
+
+// ── RIFTS ────────────────────────────────────────────
+const rifts=Array.from({length:5},(_,i)=>({
+  cx:.15+(i*.17), cy:.2+Math.random()*.6,
+  angle:Math.random()*Math.PI,
+  phase:Math.random()*1200, period:240+Math.random()*200,
+}));
+
+// ── FDM FILAMENTS ────────────────────────────────────
+const filaments=Array.from({length:6},(_,i)=>({
+  x:.08+(i/5)*.84, phase:i*360, period:160+i*35,
+}));
+
+// ── VORTICES ────────────────────────────────────────
+const vortices=Array.from({length:3},(_,i)=>({
+  cx:[.22,.78,.5][i], cy:[.32,.68,.18][i],
+  r:55+i*28, speed:.007+i*.004, phase:i*Math.PI*.66,
+  sparks:Array.from({length:20},(_,j)=>({
+    a:j/20*Math.PI*2, r:.3+Math.random()*.7,
+    sp:.018+Math.random()*.04, life:Math.random(),
+  })),
+}));
+
+// ── SHOCKWAVES ───────────────────────────────────────
+const sw=[];
+
+// ── DRAW ─────────────────────────────────────────────
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  // Ambient glow
+  const pulse=.5+.5*Math.sin(t*.014);
+  let g=ctx.createRadialGradient(mx,my,0,mx,my,300);
+  g.addColorStop(0,`rgba(229,62,62,${.04+pulse*.03})`); g.addColorStop(1,'transparent');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  g=ctx.createRadialGradient(cx,cy,0,cx,cy,260+pulse*55);
+  g.addColorStop(0,`rgba(229,62,62,${.025+pulse*.025})`);
+  g.addColorStop(.4,`rgba(0,240,255,${.012+pulse*.012})`);
+  g.addColorStop(1,'transparent');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  // PLASMA WEB connections
+  const pos=nodes.map(n=>npos(n,t));
+  for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
+    const a=pos[i],b=pos[j],dx=a.x-b.x,dy=a.y-b.y,dist=Math.sqrt(dx*dx+dy*dy);
+    const maxD=125+45*Math.sin(t*.0018+i+j);
+    if(dist<maxD){
+      const alpha=(1-dist/maxD)*.20;
+      const isc=nodes[i].col==='c'||nodes[j].col==='c';
+      const pij=.5+.5*Math.sin(t*.009+nodes[i].phase+nodes[j].phase);
+      const lg=ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+      const c0=isc?`rgba(0,240,255,${alpha*(0.55+pij*.45)})`:`rgba(229,62,62,${alpha*(0.65+pij*.35)})`;
+      lg.addColorStop(0,c0); lg.addColorStop(.5,`rgba(229,62,62,${alpha*.35})`); lg.addColorStop(1,c0);
+      ctx.strokeStyle=lg; ctx.lineWidth=.4+alpha*1.4;
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    }
+  }
+
+  // PLASMA WEB nodes
+  for(let i=0;i<nodes.length;i++){
+    const p=pos[i],n=nodes[i];
+    const glow=.5+.5*Math.sin((t+n.pt)*.024);
+    const r=n.r*(0.8+glow*.5)||1.8+glow*.9;
+    const isc=n.col==='c';
+    const ng=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*4.5);
+    ng.addColorStop(0,isc?`rgba(0,240,255,${.1+glow*.09})`:`rgba(229,62,62,${.09+glow*.1})`);
+    ng.addColorStop(1,'transparent');
+    ctx.fillStyle=ng; ctx.fillRect(p.x-r*5,p.y-r*5,r*10,r*10);
+    ctx.fillStyle=isc?`rgba(0,240,255,${.3+glow*.5})`:`rgba(229,62,62,${.4+glow*.4})`;
+    ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+  }
+
+  // FDM FILAMENTS
+  for(const fl of filaments){
+    const fx=fl.x*W;
+    const life=(.5+.5*Math.sin((t+fl.phase)*Math.PI/fl.period));
+    const botY=H*(.28+life*.52);
+    const wob=10*Math.sin(t*.028+fl.phase);
+    ctx.save(); ctx.globalAlpha=.1+life*.17;
+    const fg=ctx.createLinearGradient(0,-20,0,botY);
+    fg.addColorStop(0,'rgba(229,62,62,0)'); fg.addColorStop(.18,'rgba(255,80,80,.9)');
+    fg.addColorStop(.7,'rgba(180,25,25,.45)'); fg.addColorStop(1,'rgba(229,62,62,0)');
+    ctx.strokeStyle=fg; ctx.lineWidth=1.4+life*2.2;
+    ctx.beginPath();
+    for(let y=-20;y<=botY;y+=5){
+      const x=fx+Math.sin(y*.038+t*.022+fl.phase)*wob;
+      y===-20?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    if(life>.38){
+      const dy=botY, dx2=fx+Math.sin(dy*.038+t*.022+fl.phase)*wob;
+      const dr=1.8+life*3.8;
+      const dg=ctx.createRadialGradient(dx2,dy,0,dx2,dy,dr*2.5);
+      dg.addColorStop(0,`rgba(255,110,110,${life})`); dg.addColorStop(1,'transparent');
+      ctx.fillStyle=dg; ctx.fillRect(dx2-dr*3,dy-dr*3,dr*6,dr*6);
+      ctx.fillStyle=`rgba(255,80,80,${life*.8})`;
+      ctx.beginPath(); ctx.arc(dx2,dy,dr,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // VORTICES
+  for(const vx of vortices){
+    const vrx=vx.cx*W, vry=vx.cy*H;
+    for(const sp of vx.sparks){
+      sp.a+=vx.speed*(1+sp.r*.5); sp.life+=.007;
+      if(sp.life>1) sp.life=0;
+      const age=sp.life<.5?sp.life*2:(1-sp.life)*2;
+      const rad=vx.r*sp.r*(.5+.5*Math.sin(sp.a*2));
+      const sx=vrx+Math.cos(sp.a)*rad, sy=vry+Math.sin(sp.a)*rad*.5;
+      ctx.fillStyle=sp.a%(Math.PI*.7)<.4?`rgba(0,240,255,${age*.45})`:`rgba(229,62,62,${age*.5})`;
+      const sr=.7+age*1.7;
+      ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  t++; requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

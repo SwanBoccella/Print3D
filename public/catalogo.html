@@ -6,6 +6,60 @@
   <title>Catalogo — Print3D Studio</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/pages.css">
+  <style>
+    /* ---- NAV CANVAS (coerente con index) ---- */
+    #nav-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    nav > *:not(#nav-canvas) { position: relative; z-index: 1; }
+
+    /* ---- PAGE HEADER CANVAS (blueprint grid + tracing lines) ---- */
+    #header-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .page-header-sm { overflow: hidden; }
+    .page-header-sm > *:not(#header-canvas) { position: relative; z-index: 1; }
+
+    /* ---- FILTER BAR CANVAS (scanline + ticks) ---- */
+    #filter-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .filter-bar { position: relative; overflow: hidden; }
+    .filter-bar > *:not(#filter-canvas) { position: relative; z-index: 1; }
+
+    /* ---- CATALOG SECTION CANVAS (ambient particles) ---- */
+    #catalog-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .catalog-section { position: relative; overflow: hidden; }
+    .catalog-section > *:not(#catalog-canvas) { position: relative; z-index: 1; }
+
+    /* ---- CTA CANVAS (geometric radial pulse) ---- */
+    #cta-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .page-cta { position: relative; overflow: hidden; }
+    .page-cta > *:not(#cta-canvas) { position: relative; z-index: 1; }
+
+    /* ---- FOOTER CANVAS ---- */
+    #footer-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    footer { overflow: hidden; }
+    footer > *:not(#footer-canvas) { position: relative; z-index: 1; }
+  </style>
 </head>
 <body>
 
@@ -14,6 +68,7 @@
 <div id="page-transition"></div>
 
 <nav>
+  <canvas id="nav-canvas" aria-hidden="true"></canvas>
   <a href="/" class="nav-logo"><img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" onerror="this.style.display='none'">PRINT<span>3D</span></a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
@@ -37,6 +92,7 @@
 </div>
 
 <header class="page-header-sm">
+  <canvas id="header-canvas" aria-hidden="true"></canvas>
   <div class="page-header-sm-content">
     <div class="section-label" style="justify-content:center; margin-bottom:16px;">Cosa realizziamo</div>
     <h1 class="page-header-sm-title">Catalogo<br><span>& Ispirazioni</span></h1>
@@ -46,6 +102,7 @@
 
 <!-- FILTER BAR -->
 <div class="filter-bar">
+  <canvas id="filter-canvas" aria-hidden="true"></canvas>
   <div class="container">
     <div class="filters">
       <button class="filter-btn active" data-filter="all">Tutto</button>
@@ -59,6 +116,7 @@
 
 <!-- CATALOG GRID -->
 <section class="catalog-section">
+  <canvas id="catalog-canvas" aria-hidden="true"></canvas>
   <div class="container">
     <div class="catalog-grid" id="catalog-grid">
     </div>
@@ -67,6 +125,7 @@
 
 <!-- CTA -->
 <section class="page-cta">
+  <canvas id="cta-canvas" aria-hidden="true"></canvas>
   <div class="container">
     <div class="page-cta-inner" data-reveal>
       <h2>Non trovi quello<br>che cerchi?</h2>
@@ -80,6 +139,7 @@
 </section>
 
 <footer>
+  <canvas id="footer-canvas" aria-hidden="true"></canvas>
   <div class="footer-brand">PRINT<span>3D</span><p>Stampa 3D artigianale<br>su prenotazione</p></div>
   <div class="footer-col">
     <h4>Navigazione</h4>
@@ -106,5 +166,450 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="/js/global.js"></script>
 <script src="/js/catalogo.js"></script>
+<script>
+/* ============================================================
+   PRINT3D CATALOGO — DECORATIVE CANVAS ANIMATIONS
+   1. Nav         — floating micro-particles (identical to index)
+   2. Header      — blueprint grid + tracing corner brackets
+   3. Filter bar  — precision scanline ruler
+   4. Catalog     — ambient layering particles (slow, wide)
+   5. CTA         — geometric radial pulse rings
+   6. Footer      — glow dots + bracket corners (identical to index)
+   ============================================================ */
+
+(function () {
+  'use strict';
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+
+  /* ============================================================
+     1. NAV — micro-particles + red connections (same as index)
+     ============================================================ */
+  (function initNav() {
+    const canvas = document.getElementById('nav-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const nav = canvas.parentElement;
+
+    function resize() { canvas.width = nav.offsetWidth; canvas.height = nav.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const COUNT = 38;
+    const dots = Array.from({ length: COUNT }, () => ({
+      x: rand(0, 1), y: rand(0, 1),
+      vx: rand(-0.08, 0.08), vy: rand(-0.04, 0.04),
+      r: rand(0.6, 1.8), alpha: rand(0.08, 0.32),
+      red: Math.random() > 0.82,
+      pulse: rand(0, Math.PI * 2), pulseSpeed: rand(0.008, 0.022)
+    }));
+
+    (function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      dots.forEach(d => {
+        d.pulse += d.pulseSpeed;
+        d.x += d.vx / W * 60; d.y += d.vy / H * 60;
+        if (d.x < -0.02) d.x = 1.02; if (d.x > 1.02) d.x = -0.02;
+        if (d.y < -0.02) d.y = 1.02; if (d.y > 1.02) d.y = -0.02;
+        const a = d.alpha * (0.7 + 0.3 * Math.sin(d.pulse));
+        ctx.beginPath();
+        ctx.arc(d.x * W, d.y * H, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`;
+        ctx.fill();
+      });
+      const reds = dots.filter(d => d.red);
+      for (let i = 0; i < reds.length; i++) {
+        for (let j = i + 1; j < reds.length; j++) {
+          const ax = reds[i].x * W, ay = reds[i].y * H;
+          const bx = reds[j].x * W, by = reds[j].y * H;
+          const dist = Math.hypot(ax - bx, ay - by);
+          if (dist < 120) {
+            ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+            ctx.strokeStyle = `rgba(229,62,62,${(1 - dist / 120) * 0.08})`;
+            ctx.lineWidth = 0.5; ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+    })();
+  })();
+
+  /* ============================================================
+     2. PAGE HEADER — blueprint engineering grid
+        Faint isometric-like grid + corner brackets that
+        trace themselves + drifting crosshair cursor dot
+     ============================================================ */
+  (function initHeader() {
+    const canvas = document.getElementById('header-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; buildBrackets(); }
+
+    let brackets = [];
+    function buildBrackets() {
+      const W = canvas.width, H = canvas.height;
+      brackets = [
+        // Four large corner brackets for the header frame
+        { x: 28, y: 28, sz: 36, dir: [1, 1], progress: 0, speed: 0.008 },
+        { x: W - 28, y: 28, sz: 36, dir: [-1, 1], progress: 0, speed: 0.009 },
+        { x: 28, y: H - 28, sz: 36, dir: [1, -1], progress: 0, speed: 0.007 },
+        { x: W - 28, y: H - 28, sz: 36, dir: [-1, -1], progress: 0, speed: 0.01 },
+        // Small accent brackets scattered
+        { x: W * 0.25, y: H * 0.72, sz: 18, dir: [1, -1], progress: rand(0.2, 0.6), speed: 0.005 },
+        { x: W * 0.75, y: H * 0.28, sz: 18, dir: [-1, 1], progress: rand(0.2, 0.6), speed: 0.006 },
+        { x: W * 0.5, y: H - 16, sz: 14, dir: [1, -1], progress: rand(0, 0.5), speed: 0.007 },
+      ];
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Grid parameters
+    const CELL = 44;
+    let t = 0;
+
+    // Floating crosshair target
+    const target = { x: 0.62, y: 0.38, vx: rand(0.0002, 0.0005), vy: rand(0.0001, 0.0003) };
+
+    function drawGrid(W, H) {
+      ctx.strokeStyle = 'rgba(229,62,62,0.04)';
+      ctx.lineWidth = 0.5;
+      for (let x = 0; x < W; x += CELL) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = 0; y < H; y += CELL) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      // Horizontal axis line (slightly brighter)
+      const midY = H * 0.5;
+      ctx.strokeStyle = 'rgba(229,62,62,0.07)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(W, midY); ctx.stroke();
+    }
+
+    function drawCrosshair(W, H) {
+      target.x += target.vx; target.y += target.vy;
+      if (target.x < 0.1 || target.x > 0.9) target.vx *= -1;
+      if (target.y < 0.08 || target.y > 0.92) target.vy *= -1;
+      const cx = target.x * W, cy = target.y * H;
+      const sz = 12;
+      const alpha = 0.12 + 0.06 * Math.sin(t * 0.04);
+      ctx.strokeStyle = `rgba(229,62,62,${alpha})`;
+      ctx.lineWidth = 0.8;
+      // Cross
+      ctx.beginPath(); ctx.moveTo(cx - sz, cy); ctx.lineTo(cx + sz, cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy - sz); ctx.lineTo(cx, cy + sz); ctx.stroke();
+      // Circle
+      ctx.beginPath(); ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(229,62,62,${alpha * 1.4})`;
+      ctx.lineWidth = 0.7; ctx.stroke();
+    }
+
+    function drawBrackets(W, H) {
+      brackets.forEach(b => {
+        b.progress = Math.min(1, b.progress + b.speed);
+        const p = b.progress;
+        const dx = b.dir[0], dy = b.dir[1];
+        const sz = b.sz;
+        // Each bracket = 2 arms: arm1 horizontal, arm2 vertical
+        // p 0→0.5 draws horizontal arm, p 0.5→1 draws vertical arm
+        const alpha = 0.13 + 0.05 * Math.sin(t * 0.02 + b.x);
+        ctx.strokeStyle = `rgba(229,62,62,${alpha})`;
+        ctx.lineWidth = 1;
+        ctx.lineCap = 'square';
+        if (p > 0) {
+          const p1 = Math.min(p * 2, 1);
+          ctx.beginPath();
+          ctx.moveTo(b.x, b.y);
+          ctx.lineTo(b.x + dx * sz * p1, b.y);
+          ctx.stroke();
+        }
+        if (p > 0.5) {
+          const p2 = (p - 0.5) * 2;
+          ctx.beginPath();
+          ctx.moveTo(b.x, b.y);
+          ctx.lineTo(b.x, b.y + dy * sz * p2);
+          ctx.stroke();
+        }
+        // Loop: reset slowly and retrace
+        if (b.progress >= 1) {
+          b.progress = rand(0, 0.15);
+        }
+      });
+    }
+
+    let running = false, raf;
+    function draw() {
+      t++;
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      drawGrid(W, H);
+      drawBrackets(W, H);
+      drawCrosshair(W, H);
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        running = e.isIntersecting;
+        if (running) draw(); else cancelAnimationFrame(raf);
+      });
+    }, { threshold: 0.05 });
+    io.observe(section);
+  })();
+
+  /* ============================================================
+     3. FILTER BAR — precision ruler scanline
+        A faint moving horizontal line + measurement tick marks
+        evenly spaced along top/bottom of the bar
+     ============================================================ */
+  (function initFilter() {
+    const canvas = document.getElementById('filter-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const bar = canvas.parentElement;
+
+    function resize() { canvas.width = bar.offsetWidth; canvas.height = bar.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    let scanX = 0;
+    let t = 0;
+
+    (function draw() {
+      t++;
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Tick marks — top edge, evenly every 20px
+      ctx.strokeStyle = 'rgba(229,62,62,0.12)';
+      ctx.lineWidth = 0.6;
+      const TICK_SPACING = 20;
+      for (let x = 0; x < W; x += TICK_SPACING) {
+        const tall = (x % 100 === 0);
+        const h = tall ? 6 : 3;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, H); ctx.lineTo(x, H - h); ctx.stroke();
+      }
+
+      // Moving vertical scanline
+      scanX = (scanX + 0.6) % W;
+      const grd = ctx.createLinearGradient(scanX - 30, 0, scanX + 30, 0);
+      grd.addColorStop(0, 'rgba(229,62,62,0)');
+      grd.addColorStop(0.5, 'rgba(229,62,62,0.12)');
+      grd.addColorStop(1, 'rgba(229,62,62,0)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(scanX - 30, 0, 60, H);
+
+      // Thin center horizontal line
+      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+
+      requestAnimationFrame(draw);
+    })();
+  })();
+
+  /* ============================================================
+     4. CATALOG SECTION — ambient layering particles
+        Similar to nav but much slower, larger spread, lower density
+        Evokes floating dust / material filaments in a studio
+     ============================================================ */
+  (function initCatalog() {
+    const canvas = document.getElementById('catalog-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const COUNT = 55;
+    const dots = Array.from({ length: COUNT }, () => ({
+      x: rand(0, 1), y: rand(0, 1),
+      vx: rand(-0.018, 0.018), vy: rand(-0.009, 0.009),
+      r: rand(0.8, 2.2),
+      alpha: rand(0.04, 0.14),
+      red: Math.random() > 0.88,
+      pulse: rand(0, Math.PI * 2), pulseSpeed: rand(0.004, 0.012),
+      // Some dots leave faint trails (filament feel)
+      trail: Math.random() > 0.78
+    }));
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Very faint vertical column dividers (grid columns hint)
+      ctx.strokeStyle = 'rgba(255,255,255,0.018)';
+      ctx.lineWidth = 0.4;
+      const cols = 3;
+      for (let i = 1; i < cols; i++) {
+        const x = W * i / cols;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+
+      dots.forEach(d => {
+        d.pulse += d.pulseSpeed;
+        d.x += d.vx / W * 60; d.y += d.vy / H * 60;
+        if (d.x < -0.02) d.x = 1.02; if (d.x > 1.02) d.x = -0.02;
+        if (d.y < -0.02) d.y = 1.02; if (d.y > 1.02) d.y = -0.02;
+
+        const a = d.alpha * (0.6 + 0.4 * Math.sin(d.pulse));
+        const color = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`;
+
+        if (d.trail) {
+          // Short trailing segment
+          const tx = (d.x - d.vx / W * 120) * W;
+          const ty = (d.y - d.vy / H * 120) * H;
+          ctx.beginPath(); ctx.moveTo(d.x * W, d.y * H); ctx.lineTo(tx, ty);
+          ctx.strokeStyle = d.red ? `rgba(229,62,62,${a * 0.25})` : `rgba(255,255,255,${a * 0.2})`;
+          ctx.lineWidth = d.r * 0.6; ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.arc(d.x * W, d.y * H, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+      });
+
+      // Faint connections between nearby white dots
+      for (let i = 0; i < dots.length; i++) {
+        for (let j = i + 1; j < dots.length; j++) {
+          if (dots[i].red || dots[j].red) continue;
+          const ax = dots[i].x * W, ay = dots[i].y * H;
+          const bx = dots[j].x * W, by = dots[j].y * H;
+          const dist = Math.hypot(ax - bx, ay - by);
+          if (dist < 90) {
+            ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+            ctx.strokeStyle = `rgba(255,255,255,${(1 - dist / 90) * 0.04})`;
+            ctx.lineWidth = 0.4; ctx.stroke();
+          }
+        }
+      }
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        running = e.isIntersecting;
+        if (running) draw(); else cancelAnimationFrame(raf);
+      });
+    }, { threshold: 0.02 });
+    io.observe(section);
+  })();
+
+  /* ============================================================
+     5. CTA SECTION — corner brackets + center crosshair
+     ============================================================ */
+  (function initCTA() {
+    const canvas = document.getElementById('cta-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function drawCorners(W, H) {
+      const sz = 28;
+      ctx.strokeStyle = 'rgba(229,62,62,0.10)';
+      ctx.lineWidth = 1;
+      [[28, 28, 1, 1], [W - 28, 28, -1, 1], [28, H - 28, 1, -1], [W - 28, H - 28, -1, -1]].forEach(([x, y, dx, dy]) => {
+        ctx.beginPath(); ctx.moveTo(x + dx * sz, y); ctx.lineTo(x, y); ctx.lineTo(x, y + dy * sz); ctx.stroke();
+      });
+      const cx = W / 2, cy = H / 2, csz = 10;
+      ctx.strokeStyle = 'rgba(229,62,62,0.07)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(cx - csz, cy); ctx.lineTo(cx + csz, cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy - csz); ctx.lineTo(cx, cy + csz); ctx.stroke();
+    }
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      drawCorners(W, H);
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        running = e.isIntersecting;
+        if (running) draw(); else cancelAnimationFrame(raf);
+      });
+    }, { threshold: 0.05 });
+    io.observe(section);
+  })();
+
+  /* ============================================================
+     6. FOOTER — glow dots + bracket corners (same as index)
+     ============================================================ */
+  (function initFooter() {
+    const canvas = document.getElementById('footer-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const footer = canvas.parentElement;
+
+    function resize() { canvas.width = footer.offsetWidth; canvas.height = footer.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const COUNT = 28;
+    const dots = Array.from({ length: COUNT }, () => ({
+      x: rand(0.02, 0.98), y: rand(0.05, 0.95),
+      r: rand(1.0, 3.2), alpha: rand(0.04, 0.14),
+      red: Math.random() > 0.68,
+      phase: rand(0, Math.PI * 2), speed: rand(0.006, 0.018),
+      vx: rand(-0.015, 0.015), vy: rand(-0.008, 0.008)
+    }));
+
+    function drawStatic(W, H) {
+      ctx.strokeStyle = 'rgba(229,62,62,0.06)'; ctx.lineWidth = 0.8;
+      const sz = 22;
+      [[22, 22, 1, 1], [W - 22, 22, -1, 1], [22, H - 22, 1, -1], [W - 22, H - 22, -1, -1]].forEach(([x, y, dx, dy]) => {
+        ctx.beginPath(); ctx.moveTo(x + dx * sz, y); ctx.lineTo(x, y); ctx.lineTo(x, y + dy * sz); ctx.stroke();
+      });
+    }
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      drawStatic(W, H);
+      dots.forEach(d => {
+        d.phase += d.speed;
+        d.x += d.vx / 100; d.y += d.vy / 100;
+        if (d.x < 0) d.x = 1; if (d.x > 1) d.x = 0;
+        if (d.y < 0) d.y = 1; if (d.y > 1) d.y = 0;
+        const a = d.alpha * (0.5 + 0.5 * Math.sin(d.phase));
+        const grd = ctx.createRadialGradient(d.x * W, d.y * H, 0, d.x * W, d.y * H, d.r * 4);
+        grd.addColorStop(0, d.red ? `rgba(229,62,62,${a * 0.6})` : `rgba(255,255,255,${a * 0.4})`);
+        grd.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.beginPath(); ctx.arc(d.x * W, d.y * H, d.r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = grd; ctx.fill();
+        ctx.beginPath(); ctx.arc(d.x * W, d.y * H, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`;
+        ctx.fill();
+      });
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        running = e.isIntersecting;
+        if (running) draw(); else cancelAnimationFrame(raf);
+      });
+    }, { threshold: 0.05 });
+    io.observe(footer);
+  })();
+
+})();
+</script>
 </body>
 </html>

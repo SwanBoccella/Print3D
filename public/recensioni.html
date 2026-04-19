@@ -8,6 +8,29 @@
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/pages.css">
   <style>
+    /* ---- NAV CANVAS ---- */
+    #nav-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0; }
+    nav > *:not(#nav-canvas) { position:relative;z-index:1; }
+    /* ---- HERO CANVAS ---- */
+    #hero-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0; }
+    .rec-hero > *:not(#hero-canvas) { position:relative;z-index:1; }
+    /* ---- AGGREGATE CANVAS ---- */
+    #aggregate-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0; }
+    .rec-aggregate { position:relative;overflow:hidden; }
+    .rec-aggregate > *:not(#aggregate-canvas) { position:relative;z-index:1; }
+    /* ---- FORM CANVAS ---- */
+    #form-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0; }
+    .rec-form-section > *:not(#form-canvas) { position:relative;z-index:1; }
+    /* ---- LIST CANVAS ---- */
+    #list-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0; }
+    .rec-list-section { position:relative;overflow:hidden; }
+    .rec-list-section > *:not(#list-canvas) { position:relative;z-index:1; }
+    /* ---- FOOTER CANVAS ---- */
+    #footer-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0; }
+    footer { overflow:hidden; }
+    footer > *:not(#footer-canvas) { position:relative;z-index:1; }
+  </style>
+  <style>
     /* =============================================
        RECENSIONI PAGE
        ============================================= */
@@ -724,6 +747,7 @@
 
 <!-- NAV -->
 <nav>
+  <canvas id="nav-canvas" aria-hidden="true"></canvas>
   <a href="/" class="nav-logo">
     <img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" />
     PRINT<span>3D</span>
@@ -753,6 +777,7 @@
 
 <!-- HERO -->
 <section class="rec-hero" data-reveal>
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <div class="rec-hero-label">Opinioni Verificate</div>
   <h1>Cosa dicono<br>i <span>nostri clienti</span>.</h1>
   <p class="rec-hero-sub">Ogni recensione è autentica. Leggi le esperienze di chi ha già stampato con noi, o condividi la tua.</p>
@@ -760,6 +785,7 @@
 
 <!-- AGGREGATE SCORE -->
 <div class="rec-aggregate" id="rec-aggregate">
+  <canvas id="aggregate-canvas" aria-hidden="true"></canvas>
   <div class="rec-agg-cell">
     <div class="agg-num" id="agg-score">—<span>/5</span></div>
     <div class="agg-stars-row" id="agg-stars">
@@ -793,6 +819,7 @@
 
 <!-- SUBMIT FORM -->
 <section class="rec-form-section" id="scrivi-recensione">
+  <canvas id="form-canvas" aria-hidden="true"></canvas>
   <div class="rec-form-inner">
     <div class="rec-hero-label" style="animation:none;">Lascia il tuo feedback</div>
     <h2 class="rec-form-title">La tua <span>esperienza</span><br>conta.</h2>
@@ -880,6 +907,7 @@
 
 <!-- REVIEWS LIST -->
 <section class="rec-list-section">
+  <canvas id="list-canvas" aria-hidden="true"></canvas>
   <div class="rec-list-header">
     <div>
       <div class="rec-hero-label" style="animation:none; margin-bottom:8px;">Tutte le recensioni</div>
@@ -934,6 +962,7 @@
 
 <!-- FOOTER -->
 <footer>
+  <canvas id="footer-canvas" aria-hidden="true"></canvas>
   <div class="footer-brand">
     PRINT<span>3D</span>
     <p>Stampa 3D artigianale<br>su prenotazione</p>
@@ -1487,6 +1516,466 @@ if (loadMoreBtn) {
   loadMoreBtn.addEventListener('mouseenter', () => gsap.to(loadMoreBtn, { letterSpacing:'4px', duration:0.3, ease:'power2.out' }));
   loadMoreBtn.addEventListener('mouseleave', () => gsap.to(loadMoreBtn, { letterSpacing:'3px', duration:0.3, ease:'power2.out' }));
 }
+</script>
+<script>
+/* ============================================================
+   PRINT3D RECENSIONI — DECORATIVE CANVAS ANIMATIONS
+   1. Nav          — micro-particles identici all'index
+   2. Hero         — stelle che galleggiano (tema recensioni)
+   3. Aggregate    — linee di dati orizzontali animate
+   4. Form section — particelle che salgono lentamente
+   5. List section — virgolette tipografiche fluttuanti
+   6. Footer       — glow dots + bracket corners
+   ============================================================ */
+
+(function () {
+  'use strict';
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+
+  /* ============================================================
+     1. NAV — identico all'index
+     ============================================================ */
+  (function initNav() {
+    const canvas = document.getElementById('nav-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const nav = canvas.parentElement;
+    function resize() { canvas.width = nav.offsetWidth; canvas.height = nav.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const dots = Array.from({ length: 38 }, () => ({
+      x: rand(0,1), y: rand(0,1),
+      vx: rand(-0.08,0.08), vy: rand(-0.04,0.04),
+      r: rand(0.6,1.8), alpha: rand(0.08,0.32),
+      red: Math.random() > 0.82,
+      pulse: rand(0,Math.PI*2), pulseSpeed: rand(0.008,0.022)
+    }));
+
+    (function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+      dots.forEach(d => {
+        d.pulse += d.pulseSpeed;
+        d.x += d.vx/W*60; d.y += d.vy/H*60;
+        if (d.x < -0.02) d.x = 1.02; if (d.x > 1.02) d.x = -0.02;
+        if (d.y < -0.02) d.y = 1.02; if (d.y > 1.02) d.y = -0.02;
+        const a = d.alpha * (0.7 + 0.3 * Math.sin(d.pulse));
+        ctx.beginPath();
+        ctx.arc(d.x*W, d.y*H, d.r, 0, Math.PI*2);
+        ctx.fillStyle = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`;
+        ctx.fill();
+      });
+      const reds = dots.filter(d => d.red);
+      for (let i = 0; i < reds.length; i++) {
+        for (let j = i+1; j < reds.length; j++) {
+          const ax = reds[i].x*W, ay = reds[i].y*H, bx = reds[j].x*W, by = reds[j].y*H;
+          const dist = Math.hypot(ax-bx, ay-by);
+          if (dist < 120) {
+            ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
+            ctx.strokeStyle = `rgba(229,62,62,${(1-dist/120)*0.08})`;
+            ctx.lineWidth = 0.5; ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+    })();
+  })();
+
+
+  /* ============================================================
+     2. HERO — stelle che galleggiano e pulsano
+        Contesto: pagina recensioni → stelle = valutazione
+        Mix di stelle piccole (★ come carattere disegnato su canvas)
+        e micro-dot, tutto lentissimo e tenue
+     ============================================================ */
+  (function initHero() {
+    const canvas = document.getElementById('hero-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Mix: stelle grandi (testo "★") + micro-dot bianchi
+    const stars = Array.from({ length: 18 }, () => ({
+      x: rand(0,1), y: rand(0,1),
+      vx: rand(-0.012,0.012), vy: rand(-0.018,0.006),
+      size: rand(10,26),
+      alpha: rand(0.04,0.13),
+      red: Math.random() > 0.72,
+      pulse: rand(0, Math.PI*2),
+      pulseSpeed: rand(0.005,0.015),
+      rot: rand(-0.3,0.3),
+      rotSpeed: rand(-0.002,0.002),
+    }));
+
+    const microdots = Array.from({ length: 24 }, () => ({
+      x: rand(0,1), y: rand(0,1),
+      vx: rand(-0.009,0.009), vy: rand(-0.006,0.006),
+      r: rand(0.5,1.4),
+      alpha: rand(0.05,0.16),
+      pulse: rand(0,Math.PI*2), pulseSpeed: rand(0.006,0.016),
+    }));
+
+    let running = false, raf;
+
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+
+      // Stelle fluttuanti
+      stars.forEach(s => {
+        s.pulse += s.pulseSpeed;
+        s.rot += s.rotSpeed;
+        s.x += s.vx / W * 60; s.y += s.vy / H * 60;
+        // Wrap verticale: risalgono lentamente, quando escono in alto riappaiono in basso
+        if (s.y < -0.06) s.y = 1.04;
+        if (s.y > 1.04) s.y = -0.04;
+        if (s.x < -0.04) s.x = 1.04;
+        if (s.x > 1.04) s.x = -0.04;
+
+        const a = s.alpha * (0.6 + 0.4 * Math.sin(s.pulse));
+        ctx.save();
+        ctx.translate(s.x*W, s.y*H);
+        ctx.rotate(s.rot);
+        ctx.font = `${s.size}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = s.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`;
+        ctx.fillText('★', 0, 0);
+        ctx.restore();
+      });
+
+      // Micro-dot ambientali
+      microdots.forEach(d => {
+        d.pulse += d.pulseSpeed;
+        d.x += d.vx/W*60; d.y += d.vy/H*60;
+        if (d.x < 0) d.x = 1; if (d.x > 1) d.x = 0;
+        if (d.y < 0) d.y = 1; if (d.y > 1) d.y = 0;
+        const a = d.alpha * (0.5 + 0.5*Math.sin(d.pulse));
+        ctx.beginPath();
+        ctx.arc(d.x*W, d.y*H, d.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${a})`;
+        ctx.fill();
+      });
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); });
+    }, { threshold: 0.05 });
+    io.observe(section);
+  })();
+
+
+  /* ============================================================
+     3. AGGREGATE — linee orizzontali animate tipo data viz
+        Contesto: celle con score/distribuzione/% raccomandati
+        → linee sottili che si tracciano da sinistra a destra
+        e svaniscono, evocando grafici / dashboard analytics
+     ============================================================ */
+  (function initAggregate() {
+    const canvas = document.getElementById('aggregate-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; buildLines(); }
+
+    let lines = [];
+    function buildLines() {
+      const W = canvas.width, H = canvas.height;
+      lines = [];
+      // Linee orizzontali di dati — si tracciano da sx a dx, pause, poi fade out e ripartono
+      const count = Math.floor(H / 22);
+      for (let i = 0; i < count; i++) {
+        lines.push({
+          y: rand(8, H - 8),
+          progress: rand(0,1),   // 0=nascosta, 0–1=tracciatura, >1=fade
+          speed: rand(0.0008, 0.0025),
+          width: rand(0.15, 0.65),  // larghezza max come frazione di W
+          startX: rand(0, 0.4),
+          alpha: rand(0.04, 0.10),
+          red: Math.random() > 0.80,
+          phase: rand(0, Math.PI*2),
+          phaseSpeed: rand(0.003, 0.01),
+          // piccolo "tick" su alcune righe
+          hasTick: Math.random() > 0.6,
+          tickX: rand(0.1, 0.9),
+        });
+      }
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+
+      lines.forEach(ln => {
+        ln.phase += ln.phaseSpeed;
+        ln.progress += ln.speed;
+        if (ln.progress > 1.6) { ln.progress = -rand(0.2, 1.2); ln.startX = rand(0, 0.4); ln.width = rand(0.15, 0.65); }
+
+        // Tracciatura: 0→1; Fade: 1→1.6
+        let lineAlpha;
+        if (ln.progress < 0) return;
+        else if (ln.progress < 1) lineAlpha = ln.alpha * ln.progress * (0.8 + 0.2*Math.sin(ln.phase));
+        else lineAlpha = ln.alpha * (1.6 - ln.progress) / 0.6 * (0.8 + 0.2*Math.sin(ln.phase));
+
+        if (lineAlpha <= 0) return;
+
+        const x0 = ln.startX * W;
+        const x1 = x0 + ln.width * W * Math.min(ln.progress, 1);
+
+        ctx.beginPath(); ctx.moveTo(x0, ln.y); ctx.lineTo(x1, ln.y);
+        ctx.strokeStyle = ln.red ? `rgba(229,62,62,${lineAlpha})` : `rgba(255,255,255,${lineAlpha * 0.7})`;
+        ctx.lineWidth = 0.6; ctx.stroke();
+
+        // Tick mark verticale su alcune linee
+        if (ln.hasTick && ln.progress > ln.tickX) {
+          const tx = x0 + ln.tickX * ln.width * W;
+          if (tx > x0 && tx < x1) {
+            ctx.beginPath(); ctx.moveTo(tx, ln.y - 3); ctx.lineTo(tx, ln.y + 3);
+            ctx.strokeStyle = ln.red ? `rgba(229,62,62,${lineAlpha * 1.5})` : `rgba(255,255,255,${lineAlpha})`;
+            ctx.lineWidth = 0.8; ctx.stroke();
+          }
+        }
+      });
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); });
+    }, { threshold: 0.05 });
+    io.observe(section);
+  })();
+
+
+  /* ============================================================
+     4. FORM SECTION — particelle che salgono lentamente
+        Contesto: form di invio recensione → evoca il concetto
+        di "inviare", "mandare su", "trasmettere feedback"
+        Punti che nascono dal basso e risalgono svanendo
+     ============================================================ */
+  (function initForm() {
+    const canvas = document.getElementById('form-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const COUNT = 32;
+    const particles = Array.from({ length: COUNT }, () => spawnParticle(true));
+
+    function spawnParticle(randomY) {
+      return {
+        x: rand(0.05, 0.95),
+        y: randomY ? rand(0,1) : 1.0 + rand(0, 0.1),
+        vy: rand(0.0004, 0.0014),   // sale verso l'alto (y decresce)
+        vx: rand(-0.00015, 0.00015),
+        r: rand(0.8, 2.0),
+        alpha: rand(0.06, 0.18),
+        life: rand(0,1),   // 0=appena nato, 1=morente
+        lifeSpeed: rand(0.001, 0.003),
+        red: Math.random() > 0.82,
+      };
+    }
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+
+      particles.forEach((p, i) => {
+        p.y -= p.vy;    // sale
+        p.x += p.vx;
+        p.life += p.lifeSpeed;
+
+        if (p.y < -0.05 || p.life > 1) {
+          particles[i] = spawnParticle(false);
+          return;
+        }
+
+        // Fade in (life 0→0.15), plateau, fade out (life 0.7→1)
+        let a;
+        if (p.life < 0.15) a = p.alpha * (p.life / 0.15);
+        else if (p.life < 0.7) a = p.alpha;
+        else a = p.alpha * (1 - (p.life - 0.7) / 0.3);
+
+        ctx.beginPath();
+        ctx.arc(p.x*W, p.y*H, p.r, 0, Math.PI*2);
+        ctx.fillStyle = p.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`;
+        ctx.fill();
+      });
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); });
+    }, { threshold: 0.02 });
+    io.observe(section);
+  })();
+
+
+  /* ============================================================
+     5. LIST SECTION — virgolette tipografiche fluttuanti
+        Contesto: griglia di recensioni → le virgolette " evocano
+        le citazioni. Appaiono lentamente in posizioni sparse,
+        pulsano e svaniscono. Variazione: alcune sono "
+        (open), altre " (close), dimensioni variabili
+     ============================================================ */
+  (function initList() {
+    const canvas = document.getElementById('list-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; buildQuotes(); }
+
+    const CHARS = ['\u201C', '\u201D', '\u2018', '\u2019'];
+    let quotes = [];
+
+    function buildQuotes() {
+      const W = canvas.width, H = canvas.height;
+      quotes = Array.from({ length: 14 }, () => ({
+        x: rand(0.03, 0.97),
+        y: rand(0.03, 0.97),
+        char: CHARS[Math.floor(Math.random()*CHARS.length)],
+        size: rand(28, 72),
+        alpha: 0,
+        targetAlpha: rand(0.04, 0.10),
+        fadeIn: true,
+        speed: rand(0.0003, 0.0008),
+        pause: rand(60, 200),   // frame di pausa al massimo
+        pauseLeft: 0,
+        vx: rand(-0.00008, 0.00008),
+        vy: rand(-0.00006, 0.00006),
+        red: Math.random() > 0.80,
+        phase: rand(0,Math.PI*2),
+        phaseSpeed: rand(0.004,0.012),
+      }));
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+
+      quotes.forEach(q => {
+        q.phase += q.phaseSpeed;
+        q.x += q.vx; q.y += q.vy;
+        if (q.x < 0) q.x = 1; if (q.x > 1) q.x = 0;
+        if (q.y < 0) q.y = 1; if (q.y > 1) q.y = 0;
+
+        if (q.fadeIn) {
+          q.alpha = Math.min(q.alpha + q.speed, q.targetAlpha);
+          if (q.alpha >= q.targetAlpha) { q.fadeIn = false; q.pauseLeft = q.pause; }
+        } else if (q.pauseLeft > 0) {
+          q.pauseLeft--;
+          // lieve pulsazione in pausa
+          q.alpha = q.targetAlpha * (0.85 + 0.15*Math.sin(q.phase));
+        } else {
+          q.alpha = Math.max(q.alpha - q.speed * 0.7, 0);
+          if (q.alpha <= 0) {
+            // respawn in nuova posizione
+            q.x = rand(0.03,0.97); q.y = rand(0.03,0.97);
+            q.char = CHARS[Math.floor(Math.random()*CHARS.length)];
+            q.size = rand(28,72);
+            q.targetAlpha = rand(0.04,0.10);
+            q.red = Math.random() > 0.80;
+            q.fadeIn = true; q.alpha = 0;
+          }
+        }
+
+        if (q.alpha <= 0.001) return;
+
+        ctx.save();
+        ctx.font = `${q.size}px Georgia, serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = q.red ? `rgba(229,62,62,${q.alpha})` : `rgba(255,255,255,${q.alpha})`;
+        ctx.fillText(q.char, q.x*W, q.y*H);
+        ctx.restore();
+      });
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); });
+    }, { threshold: 0.02 });
+    io.observe(section);
+  })();
+
+
+  /* ============================================================
+     6. FOOTER — identico all'index
+     ============================================================ */
+  (function initFooter() {
+    const canvas = document.getElementById('footer-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const footer = canvas.parentElement;
+    function resize() { canvas.width = footer.offsetWidth; canvas.height = footer.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const dots = Array.from({ length: 28 }, () => ({
+      x: rand(0.02,0.98), y: rand(0.05,0.95),
+      r: rand(1.0,3.2), alpha: rand(0.04,0.14),
+      red: Math.random() > 0.68,
+      phase: rand(0,Math.PI*2), speed: rand(0.006,0.018),
+      vx: rand(-0.015,0.015), vy: rand(-0.008,0.008)
+    }));
+
+    function drawStatic(W, H) {
+      ctx.strokeStyle = 'rgba(229,62,62,0.06)'; ctx.lineWidth = 0.8;
+      const sz = 22;
+      [[22,22,1,1],[W-22,22,-1,1],[22,H-22,1,-1],[W-22,H-22,-1,-1]].forEach(([x,y,dx,dy]) => {
+        ctx.beginPath(); ctx.moveTo(x+dx*sz,y); ctx.lineTo(x,y); ctx.lineTo(x,y+dy*sz); ctx.stroke();
+      });
+    }
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+      drawStatic(W,H);
+      dots.forEach(d => {
+        d.phase += d.speed; d.x += d.vx/100; d.y += d.vy/100;
+        if (d.x < 0) d.x = 1; if (d.x > 1) d.x = 0;
+        if (d.y < 0) d.y = 1; if (d.y > 1) d.y = 0;
+        const a = d.alpha * (0.5 + 0.5*Math.sin(d.phase));
+        const grd = ctx.createRadialGradient(d.x*W,d.y*H,0,d.x*W,d.y*H,d.r*4);
+        grd.addColorStop(0, d.red ? `rgba(229,62,62,${a*0.6})` : `rgba(255,255,255,${a*0.4})`);
+        grd.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.beginPath(); ctx.arc(d.x*W,d.y*H,d.r*4,0,Math.PI*2);
+        ctx.fillStyle = grd; ctx.fill();
+        ctx.beginPath(); ctx.arc(d.x*W,d.y*H,d.r,0,Math.PI*2);
+        ctx.fillStyle = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`;
+        ctx.fill();
+      });
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); });
+    }, { threshold: 0.05 });
+    io.observe(footer);
+  })();
+
+})();
 </script>
 </body>
 </html>

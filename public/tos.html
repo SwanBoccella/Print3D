@@ -436,6 +436,18 @@
       .tos-contact { flex-direction: column; align-items: flex-start; }
     }
   </style>
+  <style>
+    /* ---- NAV CANVAS (identico index) ---- */
+    #nav-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0; }
+    nav > *:not(#nav-canvas) { position:relative;z-index:1; }
+    /* ---- HERO CANVAS (document scan lines) ---- */
+    #hero-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0; }
+    .tos-hero > *:not(#hero-canvas) { position:relative;z-index:1; }
+    /* ---- FOOTER CANVAS (identico index) ---- */
+    #footer-canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0; }
+    footer { overflow:hidden; }
+    footer > *:not(#footer-canvas) { position:relative;z-index:1; }
+  </style>
 </head>
 <body>
 
@@ -446,6 +458,7 @@
 
 <!-- NAV -->
 <nav>
+  <canvas id="nav-canvas" aria-hidden="true"></canvas>
   <a href="/" class="nav-logo">
     <img src="https://i.ibb.co/MxZ1Z00K/Picsart-26-04-16-03-57-58-688.png" alt="Logo" class="nav-logo-img" />
     PRINT<span>3D</span>
@@ -475,6 +488,7 @@
 
 <!-- HERO -->
 <div class="tos-hero" data-reveal>
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <div class="tos-hero-label">Documentazione Legale</div>
   <h1>TERMINI &<br><span>PRIVACY</span></h1>
   <div class="tos-hero-meta">
@@ -796,6 +810,7 @@
 
 <!-- FOOTER -->
 <footer>
+  <canvas id="footer-canvas" aria-hidden="true"></canvas>
   <div class="footer-brand">
     PRINT<span>3D</span>
     <p>Stampa 3D artigianale<br>su prenotazione</p>
@@ -1028,6 +1043,219 @@ if (contactLink) {
     gsap.to(contactLink, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1,0.5)' });
   });
 }
+</script>
+<script>
+/* ============================================================
+   PRINT3D TOS — DECORATIVE CANVAS ANIMATIONS
+   1. Nav    — micro-particelle (identico index)
+   2. Hero   — document scan lines (righe che scorrono
+               lentamente come scansione di un documento legale)
+   3. Footer — glow dots + brackets (identico index)
+   ============================================================ */
+(function () {
+  'use strict';
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+
+  /* ============================================================
+     1. NAV — micro-particles + connessioni rosse (uguale index)
+     ============================================================ */
+  (function initNav() {
+    const canvas = document.getElementById('nav-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const nav = canvas.parentElement;
+    function resize() { canvas.width = nav.offsetWidth; canvas.height = nav.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    const dots = Array.from({ length: 38 }, () => ({
+      x: rand(0,1), y: rand(0,1),
+      vx: rand(-0.08,0.08), vy: rand(-0.04,0.04),
+      r: rand(0.6,1.8), alpha: rand(0.08,0.32),
+      red: Math.random() > 0.82,
+      pulse: rand(0, Math.PI*2), pulseSpeed: rand(0.008,0.022)
+    }));
+
+    (function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+      dots.forEach(d => {
+        d.pulse += d.pulseSpeed;
+        d.x += d.vx/W*60; d.y += d.vy/H*60;
+        if (d.x < -0.02) d.x = 1.02; if (d.x > 1.02) d.x = -0.02;
+        if (d.y < -0.02) d.y = 1.02; if (d.y > 1.02) d.y = -0.02;
+        const a = d.alpha * (0.7 + 0.3*Math.sin(d.pulse));
+        ctx.beginPath(); ctx.arc(d.x*W, d.y*H, d.r, 0, Math.PI*2);
+        ctx.fillStyle = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`; ctx.fill();
+      });
+      const redDots = dots.filter(d => d.red);
+      for (let i = 0; i < redDots.length; i++) {
+        for (let j = i+1; j < redDots.length; j++) {
+          const ax=redDots[i].x*W, ay=redDots[i].y*H, bx=redDots[j].x*W, by=redDots[j].y*H;
+          const dist = Math.hypot(ax-bx, ay-by);
+          if (dist < 120) {
+            ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
+            ctx.strokeStyle = `rgba(229,62,62,${(1-dist/120)*0.08})`; ctx.lineWidth=0.5; ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+    })();
+  })();
+
+
+  /* ============================================================
+     2. HERO — Document scan lines
+        Contesto: pagina legale/termini → evoca la scansione
+        di un documento. Linee orizzontali sottilissime che
+        scorrono lentamente dall'alto verso il basso, come
+        la testina di uno scanner che legge il documento.
+        Una sola "testina" attiva per volta, molto tenue.
+        Qualche piccolo bracket statico agli angoli.
+     ============================================================ */
+  (function initHero() {
+    const canvas = document.getElementById('hero-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+    function resize() { canvas.width = section.offsetWidth; canvas.height = section.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    // Scanners: bright scan lines that slowly travel top→bottom
+    const scanners = [
+      { y: rand(0, 0.5), speed: 0.00045, alpha: 0.10, width: 18, red: true  },
+      { y: rand(0.4, 1), speed: 0.00030, alpha: 0.06, width: 32, red: false },
+      { y: rand(0, 0.3), speed: 0.00060, alpha: 0.07, width: 12, red: false },
+    ];
+
+    // Static text-line marks: simulate faint ruled lines of a document
+    let docLines = [];
+    function buildDocLines() {
+      docLines = [];
+      const H = canvas.height;
+      const lineSpacing = 14;
+      const count = Math.floor(H / lineSpacing) + 2;
+      for (let i = 0; i < count; i++) {
+        docLines.push({
+          y: i * lineSpacing,
+          width: rand(0.35, 0.72),   // normalized: how wide the line is
+          xStart: rand(0.04, 0.12),
+          alpha: rand(0.018, 0.048),
+          phase: rand(0, Math.PI*2),
+          speed: rand(0.002, 0.006),
+        });
+      }
+    }
+    buildDocLines();
+    window.addEventListener('resize', () => { resize(); buildDocLines(); });
+
+    // Static corner brackets
+    function drawCorners(W, H) {
+      ctx.strokeStyle = 'rgba(229,62,62,0.07)'; ctx.lineWidth = 0.8;
+      const sz = 20;
+      [[22,22,1,1],[W-22,22,-1,1],[22,H-22,1,-1],[W-22,H-22,-1,-1]].forEach(([x,y,dx,dy]) => {
+        ctx.beginPath(); ctx.moveTo(x+dx*sz,y); ctx.lineTo(x,y); ctx.lineTo(x,y+dy*sz); ctx.stroke();
+      });
+    }
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H);
+      drawCorners(W, H);
+
+      // Draw faint document ruled lines
+      docLines.forEach(l => {
+        l.phase += l.speed;
+        const a = l.alpha * (0.6 + 0.4 * Math.sin(l.phase));
+        ctx.beginPath();
+        ctx.moveTo(l.xStart * W, l.y);
+        ctx.lineTo((l.xStart + l.width) * W, l.y);
+        ctx.strokeStyle = `rgba(200,200,200,${a})`;
+        ctx.lineWidth = 0.4;
+        ctx.stroke();
+      });
+
+      // Draw scan beams
+      scanners.forEach(s => {
+        s.y += s.speed;
+        if (s.y > 1.05) s.y = -0.05;
+
+        const sy = s.y * H;
+        const grd = ctx.createLinearGradient(0, sy - s.width, 0, sy + s.width);
+        const col = s.red ? `229,62,62` : `200,200,200`;
+        grd.addColorStop(0,   `rgba(${col},0)`);
+        grd.addColorStop(0.4, `rgba(${col},${s.alpha * 0.4})`);
+        grd.addColorStop(0.5, `rgba(${col},${s.alpha})`);
+        grd.addColorStop(0.6, `rgba(${col},${s.alpha * 0.4})`);
+        grd.addColorStop(1,   `rgba(${col},0)`);
+
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, sy - s.width, W, s.width * 2);
+      });
+
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(es => {
+      es.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); });
+    }, { threshold: 0.05 });
+    io.observe(section);
+  })();
+
+
+  /* ============================================================
+     3. FOOTER — glow dots + bracket corners (uguale index)
+     ============================================================ */
+  (function initFooter() {
+    const canvas = document.getElementById('footer-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const footer = canvas.parentElement;
+    function resize() { canvas.width = footer.offsetWidth; canvas.height = footer.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    const dots = Array.from({ length: 28 }, () => ({
+      x: rand(0.02,0.98), y: rand(0.05,0.95),
+      r: rand(1.0,3.2), alpha: rand(0.04,0.14),
+      red: Math.random() > 0.68,
+      phase: rand(0,Math.PI*2), speed: rand(0.006,0.018),
+      vx: rand(-0.015,0.015), vy: rand(-0.008,0.008)
+    }));
+
+    function drawStatic(W, H) {
+      ctx.strokeStyle = 'rgba(229,62,62,0.06)'; ctx.lineWidth = 0.8;
+      const sz = 22;
+      [[22,22,1,1],[W-22,22,-1,1],[22,H-22,1,-1],[W-22,H-22,-1,-1]].forEach(([x,y,dx,dy]) => {
+        ctx.beginPath(); ctx.moveTo(x+dx*sz,y); ctx.lineTo(x,y); ctx.lineTo(x,y+dy*sz); ctx.stroke();
+      });
+    }
+
+    let running = false, raf;
+    function draw() {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0,0,W,H); drawStatic(W,H);
+      dots.forEach(d => {
+        d.phase += d.speed; d.x += d.vx/100; d.y += d.vy/100;
+        if (d.x < 0) d.x = 1; if (d.x > 1) d.x = 0;
+        if (d.y < 0) d.y = 1; if (d.y > 1) d.y = 0;
+        const a = d.alpha * (0.5 + 0.5*Math.sin(d.phase));
+        const grd = ctx.createRadialGradient(d.x*W,d.y*H,0,d.x*W,d.y*H,d.r*4);
+        grd.addColorStop(0, d.red ? `rgba(229,62,62,${a*0.6})` : `rgba(255,255,255,${a*0.4})`);
+        grd.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.beginPath(); ctx.arc(d.x*W,d.y*H,d.r*4,0,Math.PI*2); ctx.fillStyle=grd; ctx.fill();
+        ctx.beginPath(); ctx.arc(d.x*W,d.y*H,d.r,0,Math.PI*2);
+        ctx.fillStyle = d.red ? `rgba(229,62,62,${a})` : `rgba(255,255,255,${a})`; ctx.fill();
+      });
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    const io = new IntersectionObserver(es => {
+      es.forEach(e => { running = e.isIntersecting; if (running) draw(); else cancelAnimationFrame(raf); });
+    }, { threshold: 0.05 });
+    io.observe(footer);
+  })();
+
+})();
 </script>
 </body>
 </html>
