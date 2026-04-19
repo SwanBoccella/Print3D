@@ -24,12 +24,22 @@
     'Navigazione': 'Navigation',
 
     // HERO / INDEX
-    'DAL FILE': 'FROM FILE',
-    "ALL'OGGETTO": 'TO OBJECT',
-    'REALE.': 'REAL.',
+    'Stampa 3D su richiesta': '3D printing on demand',
+    'a Firenze —': 'from Florence —',
+    "dal file all'oggetto reale.": 'from file to real object.',
     'Stampa 3D su prenotazione': '3D Printing by Appointment',
+    // SEO TEXT SECTION
+    'Servizio di stampa 3D su richiesta a Firenze': '3D printing on demand service in Florence',
+    'Print3D Studio offre un servizio professionale di': 'Print3D Studio offers a professional',
+    'stampa 3D su richiesta a Firenze': '3D printing on demand in Florence',
+    'Che tu abbia un file 3D pronto o solo un\'idea, possiamo trasformarla in un oggetto reale con': 'Whether you have a ready 3D file or just an idea, we can turn it into a real object with',
+    'precisione millimetrica': 'millimeter precision',
+    'preventivo gratuito in 24 ore': 'free quote within 24 hours',
+    'spedizione tracciata in tutta Italia': 'tracked shipping across Italy',
+
     'Stampa 3D artigianale su misura — solo su prenotazione.': 'Handcrafted 3D printing — by appointment only.',
-    'Realizziamo ogni idea con precisione millimetrica.': 'We bring every idea to life with millimeter precision.',
+    'Servizio artigianale a Calenzano (FI) — spediamo in tutta Italia.': 'Handcrafted service in Calenzano (FI) — we ship across Italy.',
+    'Stampa 3D su misura, prototipi e oggetti personalizzati, solo su prenotazione.': 'Custom 3D printing, prototypes and personalized objects, by appointment only.',
     'Inizia la Prenotazione': 'Start Booking',
     'Vedi il Catalogo': 'View Catalog',
     'Vedi il Catalogo →': 'View Catalog →',

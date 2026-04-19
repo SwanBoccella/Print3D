@@ -43,10 +43,13 @@
 
     // ── INDEX ────────────────────────────────────────────────────────────
     'index.hero_badge':   { it: 'Stampa 3D su prenotazione', en: '3D Printing by appointment' },
-    'index.hero_line1':   { it: 'DAL FILE',               en: 'FROM FILE' },
-    'index.hero_line2':   { it: "ALL'OGGETTO",            en: 'TO OBJECT' },
-    'index.hero_line3':   { it: 'REALE.',                 en: 'REAL.' },
-    'index.hero_sub':     { it: 'Realizziamo ogni idea con precisione millimetrica.<br>Stampa 3D artigianale su misura — solo su prenotazione.', en: 'We bring every idea to life with millimeter precision.<br>Handcrafted 3D printing — by appointment only.' },
+    'index.hero_line1':   { it: 'Stampa 3D su richiesta',  en: '3D printing on demand' },
+    'index.hero_line2':   { it: 'a Firenze —',              en: 'from Florence —' },
+    'index.hero_line3':   { it: "dal file all'oggetto reale.", en: 'from file to real object.' },
+    'index.hero_sub':     { it: 'Servizio artigianale a Calenzano (FI) — spediamo in tutta Italia.<br>Stampa 3D su misura, prototipi e oggetti personalizzati, solo su prenotazione.', en: 'Handcrafted service in Calenzano (FI) — we ship across Italy.<br>Custom 3D printing, prototypes and personalized objects, by appointment only.' },
+    'index.seo_h2':       { it: 'Servizio di stampa 3D su richiesta a Firenze', en: '3D printing on demand service in Florence' },
+    'index.seo_p1':       { it: 'Print3D Studio offre un servizio professionale di <strong>stampa 3D su richiesta a Firenze</strong> e in tutta Italia, con sede a Calenzano (FI). Realizziamo oggetti personalizzati, prototipi funzionali e componenti tecnici utilizzando tecnologie FDM con materiali certificati: PLA, PLA+, PETG e ABS.', en: 'Print3D Studio offers a professional <strong>3D printing on demand service in Florence</strong> and across Italy, based in Calenzano (FI). We create custom objects, functional prototypes and technical components using FDM technology with certified materials: PLA, PLA+, PETG and ABS.' },
+    'index.seo_p2':       { it: 'Che tu abbia un file 3D pronto o solo un\'idea, possiamo trasformarla in un oggetto reale con <strong>precisione millimetrica</strong>. Offriamo consulenza, modellazione e produzione su misura — con preventivo gratuito in 24 ore e spedizione tracciata in tutta Italia.', en: 'Whether you have a ready 3D file or just an idea, we can turn it into a real object with <strong>millimeter precision</strong>. We offer consulting, modeling and custom manufacturing — with a free quote within 24 hours and tracked shipping across Italy.' },
     'index.hero_cta1':    { it: 'Prenota Ora',            en: 'Book Now' },
     'index.hero_cta2':    { it: 'Vedi il Catalogo',       en: 'View Catalog' },
     'index.ticker1':      { it: '⬡ STAMPA FDM',           en: '⬡ FDM PRINTING' },

@@ -160,11 +160,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- Phases ----
     const lddPhases = [
-      { pct: 12,  label: 'LOADING ASSETS',     chk: 0, delay: 200  },
-      { pct: 30,  label: 'CALIBRATING AXES',   chk: 1, delay: 750  },
-      { pct: 55,  label: 'SLICING GEOMETRY',   chk: 2, delay: 1550 },
-      { pct: 78,  label: 'HEATING EXTRUDER',   chk: 3, delay: 2400 },
-      { pct: 100, label: 'SYSTEM READY',       chk: 4, delay: 3300 },
+      { pct: 12,  label: 'LOADING ASSETS',     chk: 0, delay: 120  },
+      { pct: 30,  label: 'CALIBRATING AXES',   chk: 1, delay: 450  },
+      { pct: 55,  label: 'SLICING GEOMETRY',   chk: 2, delay: 900  },
+      { pct: 78,  label: 'HEATING EXTRUDER',   chk: 3, delay: 1500 },
+      { pct: 100, label: 'SYSTEM READY',       chk: 4, delay: 2100 },
     ];
 
     let lddCurrPct = 0;
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (lddStatusEl) lddStatusEl.textContent = 'ALL SYSTEMS NOMINAL — READY';
       const dot = desktopLoader.querySelector('.ldd-bb-dot');
       if (dot) dot.style.background = '#4caf50';
-    }, 3900);
+    }, 2400);
 
     // Hide desktop loader
     setTimeout(() => {
@@ -221,8 +221,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         if (desktopLoader) desktopLoader.remove();
         if (window.ScrollTrigger) ScrollTrigger.refresh();
-      }, 950);
-    }, 4500);
+      }, 600);
+    }, 2800);
 
     // ---- Desktop canvas: parametric grid + oscillating lines ----
     if (lddCanvas) {
@@ -459,11 +459,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ---- Phases ----
   const phases = [
-    { pct: 12,  label: 'LOADING ASSETS',     chk: 0, delay: 250  },
-    { pct: 30,  label: 'CALIBRATING AXES',   chk: 1, delay: 800  },
-    { pct: 55,  label: 'SLICING GEOMETRY',   chk: 2, delay: 1500 },
-    { pct: 78,  label: 'WARMING EXTRUDER',   chk: 3, delay: 2300 },
-    { pct: 100, label: 'SYSTEM READY',       chk: 4, delay: 3200 },
+    { pct: 12,  label: 'LOADING ASSETS',     chk: 0, delay: 120  },
+    { pct: 30,  label: 'CALIBRATING AXES',   chk: 1, delay: 450  },
+    { pct: 55,  label: 'SLICING GEOMETRY',   chk: 2, delay: 900  },
+    { pct: 78,  label: 'WARMING EXTRUDER',   chk: 3, delay: 1450 },
+    { pct: 100, label: 'SYSTEM READY',       chk: 4, delay: 1950 },
   ];
 
   // Animate progress — organic micro-step crawl (irregular, never a-scatti)
@@ -514,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (el) { el.classList.remove('active'); el.classList.add('done'); el.querySelector('.ldr-chk-icon').textContent = '✓'; }
     }
     if (ldrStatus) { ldrStatus.textContent = '● READY'; ldrStatus.style.color = '#4caf50'; }
-  }, 3800);
+  }, 2200);
 
   // Hide
   setTimeout(() => {
@@ -524,8 +524,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       if (loadScreen) loadScreen.remove();
       if (window.ScrollTrigger) ScrollTrigger.refresh();
-    }, 850);
-  }, 4400);
+    }, 600);
+  }, 2650);
   } // end if (!isDesktop) — mobile loader
 
   // ---- HERO CANVAS — Particle Grid ----
