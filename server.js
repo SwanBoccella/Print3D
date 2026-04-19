@@ -304,6 +304,45 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
+// ─── SEO Routes ────────────────────────────────────────────
+
+// Sitemap XML dinamica (aggiorna lastmod automaticamente)
+app.get('/sitemap.xml', (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
+  const BASE   = 'https://www.print3dstudio.it';
+  const urls = [
+    { loc: '/',               freq: 'weekly',  pri: '1.0'  },
+    { loc: '/catalogo',       freq: 'weekly',  pri: '0.9'  },
+    { loc: '/personalizzati', freq: 'monthly', pri: '0.9'  },
+    { loc: '/prototipi',      freq: 'monthly', pri: '0.85' },
+    { loc: '/decorativi',     freq: 'monthly', pri: '0.85' },
+    { loc: '/componentistica',freq: 'monthly', pri: '0.85' },
+    { loc: '/materiali',      freq: 'monthly', pri: '0.8'  },
+    { loc: '/prenotazione',   freq: 'monthly', pri: '0.9'  },
+    { loc: '/contatti',       freq: 'monthly', pri: '0.8'  },
+    { loc: '/recensioni',     freq: 'weekly',  pri: '0.75' },
+  ];
+  const xml = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+    '        xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+    ...urls.map(u =>
+      `  <url>\n    <loc>${BASE}${u.loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${u.freq}</changefreq>\n    <priority>${u.pri}</priority>\n  </url>`
+    ),
+    '</urlset>'
+  ].join('\n');
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=86400'); // cache 24h
+  res.send(xml);
+});
+
+// robots.txt con cache
+app.get('/robots.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.sendFile(path.join(__dirname, 'public', 'robots.txt'));
+});
+
 // ─── Public Routes ─────────────────────────────────────────
 const noCache = (req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
